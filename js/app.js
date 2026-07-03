@@ -7,6 +7,146 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeline = document.getElementById('progress-timeline');
     const timelineFill = document.getElementById('progress-timeline-fill');
     const timeDisplay = document.getElementById('timestamp-display');
+    const ccBtn = document.getElementById('btn-cc-toggle');
+    const captionsContainer = document.getElementById('captions-container');
+    const linesContainer = document.getElementById('script-lines-container');
+    const toggleZh = document.getElementById('toggle-zh');
+    const togglePy = document.getElementById('toggle-py');
+    const toggleEn = document.getElementById('toggle-en');
+
+    let subtitlesVisible = false;
+
+    // A. Language Toggle Matrix Constraints Engine
+    function updateLanguageVisibility(mode) {
+        // Clear layout visibility rules classes
+        linesContainer.classList.remove('show-zh', 'show-py', 'show-en');
+
+        // Clear active button presentation properties
+        [toggleZh, togglePy, toggleEn].forEach(btn => {
+            btn.className = "w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant font-bold text-xs transition-colors";
+        });
+
+        const activeBtnClass = "w-8 h-8 rounded-full bg-primary text-on-primary font-bold text-xs transition-colors";
+
+        if (mode === 'ZH') {
+            linesContainer.classList.add('show-zh');
+            toggleZh.className = activeBtnClass;
+        } else if (mode === 'PY') {
+            linesContainer.classList.add('show-zh', 'show-py');
+            toggleZh.className = activeBtnClass;
+            togglePy.className = activeBtnClass;
+        } else if (mode === 'EN') {
+            linesContainer.classList.add('show-en');
+            toggleEn.className = activeBtnClass;
+        }
+    }
+
+    toggleZh.addEventListener('click', () => updateLanguageVisibility('ZH'));
+    togglePy.addEventListener('click', () => updateLanguageVisibility('PY'));
+    toggleEn.addEventListener('click', () => updateLanguageVisibility('EN'));
+
+    // B. Render JSON Script Elements dynamically
+    function renderScriptLines() {
+        linesContainer.innerHTML = '';
+
+        videoScript.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.id = `script-row-${index}`;
+            row.className = "p-md rounded-2xl hover:bg-surface-container-highest cursor-pointer transition-all border border-transparent transition-colors duration-200";
+
+            // Auto calculate visible clock display representation text
+            const displayTime = formatTime(item.start);
+
+            row.innerHTML = `
+              <div class="flex gap-sm mb-xs">
+                <span class="breadcrumb-item text-primary font-mono">${displayTime}</span>
+                <div class="flex items-center gap-xs w-full">
+                  <button class="btn-tts-speak material-symbols-outlined text-sm text-primary hover:scale-120 transition-transform" data-text="${item.text}">play_circle</button>
+                  <p class="font-body-md text-on-surface script-zh font-medium">${item.text}</p>
+                </div>
+              </div>
+              <p class="text-xs text-on-surface-variant italic script-py mb-xs">${item.pinyin || ''}</p>
+              <p class="text-sm text-on-surface-variant script-en">${item.english || 'Translation unavailable'}</p>
+            `;
+
+            // Jump video timeline to position when clicking the text track row background
+            row.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('btn-tts-speak')) {
+                    video.currentTime = item.start;
+                }
+            });
+
+            linesContainer.appendChild(row);
+        });
+
+        // Attach Audio Slow Play Engine to individual rows
+        document.querySelectorAll('.btn-tts-speak').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Avoid triggering parent row video timeline jumps
+                speakSlowMandarin(btn.getAttribute('data-text'));
+            });
+        });
+    }
+
+    // C. Slow Mechanical Audio Voice Playback System (Web Speech API Synthesis)
+    function speakSlowMandarin(rawText) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Terminate pending utterances safely
+
+            // Remove pinyin or syntax formatting symbols if present
+            const cleanText = rawText.replace(/[^\u4e00-\u9fa5]/g, '');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.55; // Controlled slow cadence for structural tone review
+            utterance.pitch = 1.0;
+
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.warn("Local browser configuration environment lacks Web Speech API drivers.");
+        }
+    }
+
+    // D. Sync Scrolling Highlighting Track Line (Extend your existing handleTimeUpdate)
+    let lastActiveIndex = -1;
+
+    function syncScriptSidebarHighlight(currentTime) {
+        let activeIndex = -1;
+
+        // Find current line segment
+        for (let i = 0; i < videoScript.length; i++) {
+            if (currentTime >= videoScript[i].start && (!videoScript[i + 1] || currentTime < videoScript[i + 1].start)) {
+                activeIndex = i;
+                break;
+            }
+        }
+
+        // Trigger update only when row threshold crosses over
+        if (activeIndex !== lastActiveIndex && activeIndex !== -1) {
+            // 1. Remove previous row active styles
+            document.querySelectorAll('.script-row-active').forEach(el => el.classList.remove('script-row-active'));
+
+            const currentActiveRow = document.getElementById(`script-row-${activeIndex}`);
+            if (currentActiveRow) {
+                // 2. Add active focus styles to current element block
+                currentActiveRow.classList.add('script-row-active');
+
+                // 3. Precision Smart Centering Scroll Calculation
+                const containerHeight = linesContainer.clientHeight;
+                const rowTopPosition = currentActiveRow.offsetTop;
+                const rowHeight = currentActiveRow.clientHeight;
+
+                // Calculate target top point so item sits exactly in middle of layout track area
+                const targetScrollPosition = rowTopPosition - (containerHeight / 2) + (rowHeight / 2);
+
+                linesContainer.scrollTo({
+                    top: targetScrollPosition,
+                    behavior: 'smooth'
+                });
+            }
+            lastActiveIndex = activeIndex;
+        }
+    }
 
     // Captions Display Elements
     const captionCn = document.getElementById('caption-text-cn');
@@ -25,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Sort array by timestamp safely to guarantee binary search calculations pass
             videoScript.sort((a, b) => a.start - b.start);
+            renderScriptLines();
         } catch (error) {
             console.error('Error compiling timeline scripts:', error);
             captionCn.textContent = "Error loading subtitles.";
@@ -71,6 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeText) {
             captionCn.textContent = activeText;
         }
+
+        syncScriptSidebarHighlight(currentTime);
     }
 
     // 4. Interactive Scrubbing System
@@ -79,6 +222,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const clickPositionOffset = (e.clientX - rect.left) / rect.width;
         video.currentTime = clickPositionOffset * video.duration;
     }
+
+    ccBtn.addEventListener('click', () => {
+        subtitlesVisible = !subtitlesVisible;
+
+        if (subtitlesVisible) {
+            // Reveal tray and turn button active (red accent color)
+            captionsContainer.classList.remove('opacity-0', 'pointer-events-none');
+            ccBtn.classList.remove('text-neutral-500', 'line-through');
+            ccBtn.classList.add('text-primary');
+        } else {
+            // Hide tray and dim button state
+            captionsContainer.classList.add('opacity-0', 'pointer-events-none');
+            ccBtn.classList.remove('text-primary');
+            ccBtn.classList.add('text-neutral-500', 'line-through');
+        }
+    });
 
     // Helper Utility: Formatting raw milliseconds/seconds to standard text outputs
     function formatTime(seconds) {

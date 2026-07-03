@@ -134,14 +134,13 @@
           <div class="player-tint-overlay pointer-events-none"></div>
 
           <!-- Dynamic Active Captions Overlay -->
-          <div class="captions-overlay">
+          <div id="captions-container" class="captions-overlay opacity-0 pointer-events-none transition-opacity duration-200">
             <p id="caption-text-cn" class="caption-chinese">Click play to begin lesson</p>
             <p id="caption-text-py" class="caption-pinyin"></p>
           </div>
 
           <!-- Playback Control Bar Overlay -->
           <div class="player-controls-bar">
-            <!-- Clickable Interactive Track Line -->
             <div id="progress-timeline" class="video-progress-track cursor-pointer group/track h-2 hover:h-3 transition-all">
               <div id="progress-timeline-fill" class="video-progress-fill w-0"></div>
             </div>
@@ -152,6 +151,8 @@
                 <span id="timestamp-display" class="breadcrumb-item">0:00 / 0:00</span>
               </div>
               <div class="flex items-center gap-md">
+                <!-- New: Subtitle Visibility Toggle Button -->
+                <button id="btn-cc-toggle" class="material-symbols-outlined text-primary hover:text-white transition-colors" title="Toggle Subtitles">closed_caption</button>
                 <button class="material-symbols-outlined">settings</button>
                 <button id="btn-fullscreen" class="material-symbols-outlined">fullscreen</button>
               </div>
@@ -197,49 +198,17 @@
       </div>
 
       <div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
-        <div class="bento-card-compact h-full flex flex-col">
-          <div class="flex items-center justify-between mb-md">
+        <div class="bento-card-compact h-[650px] lg:h-[calc(100vh-220px)] flex flex-col sticky top-[100px]">
+          <div class="flex items-center justify-between mb-md flex-shrink-0">
             <h3 class="font-headline-md text-headline-md text-on-surface">Full Script</h3>
-            <div class="flex gap-xs">
-              <button class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">中</button>
-              <button class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">ǎ</button>
-              <button class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">EN</button>
+            <div class="flex gap-xs" id="script-toggles">
+              <button id="toggle-zh" class="w-8 h-8 rounded-full bg-primary text-on-primary font-bold text-xs transition-colors">中</button>
+              <button id="toggle-py" class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant font-bold text-xs transition-colors">ǎ</button>
+              <button id="toggle-en" class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant font-bold text-xs transition-colors">EN</button>
             </div>
           </div>
 
-          <div class="flex-1 overflow-y-auto pr-sm custom-scrollbar space-y-md">
-            <div class="p-md rounded-2xl hover:bg-surface-container-highest cursor-pointer transition-all border border-transparent hover:border-outline-variant">
-              <div class="flex gap-sm mb-xs">
-                <span class="breadcrumb-item text-primary">00:12</span>
-                <div class="flex items-center gap-xs">
-                  <button class="material-symbols-outlined text-sm text-primary hover:scale-110 transition-transform">play_circle</button>
-                  <p class="font-body-md text-on-surface-variant">A: 你最近怎么样？<span class="material-symbols-outlined text-xs ml-xs cursor-pointer hover:text-primary transition-colors" title="Look up">search</span></p>
-                </div>
-              </div>
-              <p class="text-sm text-on-surface-variant italic">How have you been lately?</p>
-            </div>
-
-            <div class="p-md rounded-2xl border relative overflow-hidden hover:bg-surface-container-highest border-transparent">
-              <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
-              <div class="flex gap-sm mb-xs">
-                <span class="breadcrumb-item text-primary">00:44</span>
-                <div class="flex items-center gap-xs">
-                  <button class="material-symbols-outlined text-sm text-primary hover:scale-110 transition-transform">play_circle</button>
-                  <p class="font-body-md font-bold text-on-secondary-container">B: 是啊，你就说来我们公司面试的这几个吧……<span class="material-symbols-outlined text-xs ml-xs cursor-pointer hover:text-primary transition-colors" title="Look up">search</span></p>
-                </div>
-              </div>
-              <p class="text-sm text-on-secondary-container italic opacity-80">Yeah, just look at these people coming to our company for interviews...</p>
-            </div>
-          </div>
-
-          <div class="mt-md pt-md border-t border-outline-variant">
-            <button class="w-full flex items-center justify-between group p-sm rounded-xl hover:bg-surface-variant transition-all">
-              <span class="breadcrumb-item text-on-surface-variant">Learning Progress</span>
-              <span class="breadcrumb-item text-primary">75% Complete</span>
-            </button>
-            <div class="w-full h-1.5 bg-surface-container-highest rounded-full mt-xs overflow-hidden">
-              <div class="h-full bg-primary w-[75%] transition-all duration-1000"></div>
-            </div>
+          <div id="script-lines-container" class="flex-1 overflow-y-auto pr-sm custom-scrollbar space-y-md show-zh">
           </div>
         </div>
       </div>
