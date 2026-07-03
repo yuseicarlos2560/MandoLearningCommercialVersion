@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-
-<html class="light" lang="en" style="width: 1280px; height: 1588px; overflow: hidden; position: relative;"><head>
+<html class="light scroll-smooth" lang="en">
+<head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>MandoLearning - Video Lesson Review</title>
@@ -17,7 +17,7 @@
   <script src="js/app.js" defer></script>
 </head>
 
-<body class="text-on-surface">
+<body class="text-on-surface bg-surface-bright min-h-screen">
 <header class="app-header glass-nav">
   <div class="header-container">
     <div class="flex items-center gap-md">
@@ -122,31 +122,38 @@
     </div>
 
     <div class="grid grid-cols-12 gap-md">
-
       <div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
         <div class="player-wrapper group">
-          <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4eZ5ZuRAFIKQTjbn0hO4ruI2tn5fnyB0N4-5DIeKxdK50dSg73h64_MnY3n4r_tQKSlvbaww9aKXwayvS5-pLAARtxARNAqM_gcuRtPj5zL9OEYrVSJBs-brsmnGJpw6Zw-WJKSGcuWxyrAyuP1--vX66-UD0KcSJb-S2778lG92KRHPhAVI5js9CouA2xB4jgYpeuhzxNlvznmsUR_-bhxKOF_Ssl1T1ZgsRIfd6-GKmd0cdHgwzFCF-RJv_l6L9ErOetGJ5B6w" alt="Educational standard scenario scene"/>
+          <!-- Replaced placeholder img with HTML5 Video element -->
+          <video id="main-video" class="w-full h-full object-cover" preload="auto">
+            <source src="assets/videos/AAA000.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
 
+          <!-- Darken layer on hover -->
           <div class="player-tint-overlay pointer-events-none"></div>
 
+          <!-- Dynamic Active Captions Overlay -->
           <div class="captions-overlay">
-            <p class="caption-chinese">是啊，你就说来我们公司面试的这几个吧……</p>
-            <p class="caption-pinyin">shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba...</p>
+            <p id="caption-text-cn" class="caption-chinese">Click play to begin lesson</p>
+            <p id="caption-text-py" class="caption-pinyin"></p>
           </div>
 
+          <!-- Playback Control Bar Overlay -->
           <div class="player-controls-bar">
-            <div class="video-progress-track">
-              <div class="video-progress-fill"></div>
+            <!-- Clickable Interactive Track Line -->
+            <div id="progress-timeline" class="video-progress-track cursor-pointer group/track h-2 hover:h-3 transition-all">
+              <div id="progress-timeline-fill" class="video-progress-fill w-0"></div>
             </div>
             <div class="flex justify-between items-center text-white">
               <div class="flex items-center gap-md">
-                <button class="material-symbols-outlined hover:scale-110 transition-transform">play_arrow</button>
-                <button class="material-symbols-outlined hover:scale-110 transition-transform">replay_10</button>
-                <span class="breadcrumb-item">0:44 / 1:40</span>
+                <button id="btn-play-toggle" class="material-symbols-outlined hover:scale-110 transition-transform">play_arrow</button>
+                <button id="btn-rewind" class="material-symbols-outlined hover:scale-110 transition-transform">replay_10</button>
+                <span id="timestamp-display" class="breadcrumb-item">0:00 / 0:00</span>
               </div>
               <div class="flex items-center gap-md">
                 <button class="material-symbols-outlined">settings</button>
-                <button class="material-symbols-outlined">fullscreen</button>
+                <button id="btn-fullscreen" class="material-symbols-outlined">fullscreen</button>
               </div>
             </div>
           </div>
