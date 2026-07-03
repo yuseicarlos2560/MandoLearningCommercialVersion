@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>MandoLearning | Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-dim": "#9e1425",
+                        "tertiary-container": "#c99dff",
+                        "surface-dim": "#ffc6d0",
+                        "on-error": "#ffefec",
+                        "on-secondary-container": "#842141",
+                        "on-primary": "#ffefee",
+                        "secondary": "#9e3655",
+                        "primary-fixed": "#ff7576",
+                        "surface-container": "#ffe1e5",
+                        "primary-container": "#ff7576",
+                        "inverse-surface": "#24020c",
+                        "surface-container-highest": "#ffd1d9",
+                        "on-tertiary-fixed": "#25004b",
+                        "tertiary": "#7144aa",
+                        "tertiary-fixed": "#c99dff",
+                        "surface-container-high": "#ffd9df",
+                        "secondary-container": "#ffc2cd",
+                        "tertiary-dim": "#65379d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#520c00",
+                        "outline": "#a06773",
+                        "tertiary-fixed-dim": "#bd8df9",
+                        "surface": "#fff4f4",
+                        "on-surface-variant": "#814c58",
+                        "on-tertiary-fixed-variant": "#4d1c85",
+                        "on-primary-container": "#4e000a",
+                        "inverse-primary": "#f9595f",
+                        "on-tertiary": "#faefff",
+                        "error-container": "#f95630",
+                        "primary": "#af2330",
+                        "secondary-fixed": "#ffc2cd",
+                        "outline-variant": "#dc9ca8",
+                        "on-secondary-fixed-variant": "#902b4a",
+                        "inverse-on-surface": "#ca8c98",
+                        "primary-fixed-dim": "#fc5c61",
+                        "on-surface": "#4c212c",
+                        "on-primary-fixed": "#000000",
+                        "surface-variant": "#ffd1d9",
+                        "error-dim": "#b92902",
+                        "secondary-dim": "#8e2a49",
+                        "on-primary-fixed-variant": "#60000f",
+                        "surface-bright": "#fff4f4",
+                        "on-tertiary-container": "#440e7c",
+                        "surface-container-low": "#ffecee",
+                        "background": "#fff4f4",
+                        "error": "#b02500",
+                        "secondary-fixed-dim": "#ffadbe",
+                        "on-secondary": "#ffeff0",
+                        "on-secondary-fixed": "#6a0a2f",
+                        "on-background": "#4c212c",
+                        "surface-tint": "#af2330"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "12px",
+                        "xl": "20px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "base": "8px",
+                        "sm": "12px",
+                        "xl": "80px",
+                        "margin-desktop": "auto",
+                        "max-width": "1200px",
+                        "lg": "48px",
+                        "margin-mobile": "20px",
+                        "gutter": "16px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "character-display": ["Noto Serif"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "character-display": ["64px", {"lineHeight": "80px", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "38px", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fff4f4;
+            color: #4c212c;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .seigaiha-pattern {
+            background-image: radial-gradient(circle at 100% 150%, transparent 24%, #af2330 25%, #af2330 28%, transparent 29%, transparent 36%, #af2330 36%, #af2330 40%, transparent 41%, transparent),
+            radial-gradient(circle at 0 150%, transparent 24%, #af2330 25%, #af2330 28%, transparent 29%, transparent 36%, #af2330 36%, #af2330 40%, transparent 41%, transparent),
+            radial-gradient(circle at 50% 100%, transparent 24%, #af2330 25%, #af2330 28%, transparent 29%, transparent 36%, #af2330 36%, #af2330 40%, transparent 41%, transparent),
+            radial-gradient(circle at 100% 50%, transparent 24%, #af2330 25%, #af2330 28%, transparent 29%, transparent 36%, #af2330 36%, #af2330 40%, transparent 41%, transparent),
+            radial-gradient(circle at 0 50%, transparent 24%, #af2330 25%, #af2330 28%, transparent 29%, transparent 36%, #af2330 36%, #af2330 40%, transparent 41%, transparent);
+            background-size: 60px 30px;
+            opacity: 0.02;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #fff4f4; }
+        ::-webkit-scrollbar-thumb { background: #dc9ca8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a06773; }
+    </style>
+</head>
+<body class="font-body-md overflow-x-hidden">
+<!-- Cultural Background Pattern -->
+<div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
+<!-- SideNavBar (Shared Component) -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface dark:bg-surface-dim bg-surface-container dark:bg-surface-container-high shadow-sm flex flex-col h-full py-md px-base z-50">
+    <div class="mb-lg px-base">
+        <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
+        <p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
+    </div>
+    <nav class="flex-1 space-y-1">
+        <!-- Active: Videos (Dashboard Home) -->
+        <a class="flex items-center gap-sm px-base py-sm rounded-lg text-primary font-bold border-r-4 border-primary dark:text-primary-fixed dark:border-primary-fixed hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="/user-videos.html">
+            <span class="material-symbols-outlined" data-icon="play_circle">play_circle</span>
+            <span class="font-body-md text-body-md">Videos</span>
+        </a>
+        <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="/user-scripts.html">
+            <span class="material-symbols-outlined" data-icon="description">description</span>
+            <span class="font-body-md text-body-md">Scripts</span>
+        </a>
+        <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="/user-documents.html">
+            <span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+            <span class="font-body-md text-body-md">Documents</span>
+        </a>
+        <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="/flashcards-dashboard.html">
+            <span class="material-symbols-outlined" data-icon="quiz">quiz</span>
+            <span class="font-body-md text-body-md">Flashcards</span>
+        </a>
+        <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="/user-stats.html">
+            <span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+            <span class="font-body-md text-body-md">Stats</span>
+        </a>
+    </nav>
+    <div class="mt-auto px-base py-md">
+        <button class="w-full bg-primary text-on-primary font-headline-md text-headline-md py-base rounded-xl hover:bg-primary-dim transition-all shadow-md active:scale-95">
+            Start Practice
+        </button>
+        <div class="mt-md flex items-center gap-sm">
+            <div class="w-10 h-10 rounded-full border-2 border-outline-variant overflow-hidden">
+                <img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young adult with a friendly expression, soft cinematic lighting, warm skin tones, and a clean minimalist background that matches the soft reds and whites of the MandoLearning brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB82jUAlXAkov_25SX7S1L-AuNwKItdv3kl-pd93K1pTfY5MJA8SzDHPJrW0uvB9Q5Wabsk7Tp9IvPk_0BkRI-GyM5FurOKptJ6-9YODzYZMAspSyK6Sds99iyMyP1F2JfMLO3GyA_IDgR8GaoKQKvTMK55oXhBBWBMBkl9c8FUoPJ0GHjL1QvOemTieK6CT1klHa6kquRsOqorGgKgAPblzLhFl7L8LxVs7Tvk6OHZwNbRmtiX0meE"/>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-on-surface font-bold text-sm">Li Wei</span>
+                <span class="text-on-surface-variant text-xs font-label-caps">HSK 4 Learner</span>
+            </div>
+        </div>
+    </div>
+</aside>
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md bg-surface-container dark:bg-surface-container-high flex justify-between items-center px-md w-full z-40">
+    <div class="flex items-center gap-md">
+        <div class="relative w-96">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+            <input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 text-on-surface transition-all" placeholder="Search lessons, characters, grammar..." type="text"/>
+        </div>
+    </div>
+    <div class="flex items-center gap-md">
+        <div class="flex items-center gap-sm text-on-surface-variant">
+            <button class="p-2 rounded-full hover:bg-secondary-container transition-colors relative opacity-80 hover:opacity-100">
+                <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-surface"></span>
+            </button>
+        </div>
+        <div class="h-8 w-px bg-outline-variant"></div>
+        <div class="flex items-center gap-sm cursor-pointer group">
+            <span class="font-label-caps text-label-caps text-on-surface-variant group-hover:text-primary transition-opacity duration-200">Daily Goal: 85%</span>
+            <div class="w-24 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                <div class="h-full bg-primary w-[85%] rounded-full"></div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[280px] pt-24 px-md pb-xl min-h-screen relative z-10">
+    <div class="max-w-[1200px] mx-auto">
+        <!-- Header Section -->
+        <div class="mb-lg">
+            <h2 class="font-headline-lg text-headline-lg text-primary">Welcome back, Li Wei!</h2>
+            <p class="text-body-lg text-on-surface-variant mt-xs">You're 3 days away from hitting your weekly streak goal. Keep it up!</p>
+        </div>
+        <!-- Bento Grid Layout -->
+        <div class="grid grid-cols-12 gap-md items-stretch">
+            <!-- Continue Learning - Hero Card -->
+            <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                <div class="flex flex-col md:flex-row gap-md">
+                    <div class="w-full md:w-1/2 aspect-video rounded-lg overflow-hidden relative">
+                        <img class="w-full h-full object-cover" data-alt="A high-quality video still of a Mandarin instructor explaining Chinese hobbies in a bright, modern studio. The instructor is smiling, and there are stylish graphical overlays showing Hanzi characters like '爱好' in Noto Serif Hanzi font. Soft red accents and clean professional lighting create an inviting learning atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALPPBwB1vBOKHzIbtsoVGBa_bum56PS9oqIh0oWUqiNM-KaS9sWtDhpXh5zA3uZqv865ojan5XYzDMepgcKPdE9OgY7CdPmdiTl19p7iM8P4Pc-UlnAjGp1prxbBkdWYpCJ60wWp3cwEhdqe9KS36LZX4xml9mQDSKvPEEzu60YJFUfv6GHbwyhZTg5NDM7SshzRNhw2fOC5bbfTUq9KL5hmPslBa1B1F_6PqGS4_vCXU4P9KjDOhL"/>
+                        <div class="absolute inset-0 bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="material-symbols-outlined text-white text-5xl" data-icon="play_circle" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+                        </div>
+                        <div class="absolute bottom-2 right-2 bg-primary text-on-primary px-sm py-xs rounded text-xs font-bold">14:20</div>
+                    </div>
+                    <div class="w-full md:w-1/2 flex flex-col justify-center">
+                        <span class="text-primary font-label-caps text-label-caps uppercase mb-xs tracking-widest">Continue Learning</span>
+                        <h3 class="font-headline-md text-headline-md text-on-surface">Discussing Hobbies (爱好)</h3>
+                        <p class="text-body-md text-on-surface-variant mt-xs mb-md">Learn how to express your interests and ask others about their free time activities using common sentence patterns.</p>
+                        <div class="mt-auto">
+                            <div class="flex justify-between items-center mb-xs">
+                                <span class="text-xs font-bold text-on-surface">Progress: 65%</span>
+                                <span class="text-xs text-on-surface-variant">9 mins remaining</span>
+                            </div>
+                            <div class="w-full h-2 bg-tertiary-container/30 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary w-[65%] rounded-full shadow-[0_0_8px_rgba(175,35,48,0.3)]"></div>
+                            </div>
+                            <button class="mt-md w-full bg-primary text-on-primary py-sm rounded-lg font-bold hover:bg-primary-dim transition-colors flex items-center justify-center gap-sm">
+                                <span class="material-symbols-outlined" data-icon="resume" style="font-variation-settings: 'FILL' 1;">resume</span>
+                                Resume Lesson
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Daily Goals Widget -->
+            <div class="col-span-12 lg:col-span-4 flex flex-col gap-md">
+                <div class="bg-primary text-on-primary rounded-xl p-md shadow-lg relative overflow-hidden flex-1">
+                    <!-- Decorative background element -->
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-md">
+                            <span class="font-label-caps text-label-caps tracking-widest uppercase opacity-80">Daily Goal Progress</span>
+                            <span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+                        </div>
+                        <div class="flex items-center gap-md mb-lg">
+                            <div class="relative w-20 h-20 flex items-center justify-center">
+                                <svg class="w-full h-full -rotate-90">
+                                    <circle cx="40" cy="40" fill="transparent" r="36" stroke="rgba(255,255,255,0.2)" stroke-width="6"></circle>
+                                    <circle cx="40" cy="40" fill="transparent" r="36" stroke="white" stroke-dasharray="226" stroke-dashoffset="34" stroke-linecap="round" stroke-width="6"></circle>
+                                </svg>
+                                <span class="absolute font-bold text-xl">85%</span>
+                            </div>
+                            <div>
+                                <h4 class="text-2xl font-bold leading-tight">12/15</h4>
+                                <p class="text-sm opacity-90">Characters today</p>
+                            </div>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-sm border border-white/20 flex items-center gap-md">
+                            <div class="p-2 bg-white/20 rounded-lg">
+                                <span class="material-symbols-outlined" data-icon="local_fire_department" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                            </div>
+                            <div>
+                                <div class="text-lg font-bold">14 Day Streak</div>
+                                <div class="text-xs opacity-80">Personal record: 21 days</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Quick Actions Area -->
+            <div class="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md mt-md">
+                <button class="flex items-center gap-md p-md bg-white border border-secondary-fixed-dim rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                    <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                        <span class="material-symbols-outlined" data-icon="quiz">quiz</span>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-on-surface">Start Flashcards</div>
+                        <div class="text-xs text-on-surface-variant">Review 42 due items</div>
+                    </div>
+                </button>
+                <button class="flex items-center gap-md p-md bg-white border border-secondary-fixed-dim rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                    <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                        <span class="material-symbols-outlined" data-icon="upload_file">upload_file</span>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-on-surface">Upload Document</div>
+                        <div class="text-xs text-on-surface-variant">AI Scan &amp; Pinyin tagging</div>
+                    </div>
+                </button>
+                <button class="flex items-center gap-md p-md bg-white border border-secondary-fixed-dim rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                    <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                        <span class="material-symbols-outlined" data-icon="translate">translate</span>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-on-surface">Quick Dictionary</div>
+                        <div class="text-xs text-on-surface-variant">Instant lookups</div>
+                    </div>
+                </button>
+                <button class="flex items-center gap-md p-md bg-white border border-secondary-fixed-dim rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                    <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                        <span class="material-symbols-outlined" data-icon="headset_mic">headset_mic</span>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-on-surface">Oral Practice</div>
+                        <div class="text-xs text-on-surface-variant">AI Speech Recognition</div>
+                    </div>
+                </button>
+            </div>
+            <!-- Recommended for You Section -->
+            <div class="col-span-12 mt-lg">
+                <div class="flex justify-between items-end mb-md">
+                    <div>
+                        <h3 class="font-headline-md text-headline-md text-on-surface">Recommended for You</h3>
+                        <p class="text-body-md text-on-surface-variant">Based on your HSK 4 progress and recent activity</p>
+                    </div>
+                    <a class="text-primary font-bold hover:underline flex items-center gap-xs" href="#">
+                        View All <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+                    <!-- Recommendation Card 1 -->
+                    <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist workspace with a laptop, a notebook featuring handwritten Chinese characters, and a cup of tea. The image is captured in a high-key, bright light mode with a sophisticated red and white color palette. The focus is on the beauty of learning Mandarin in a modern, calm environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBe7z8onD2RVf4Vx7gU8UPSX-2jypiPSsnYxmbQbllG12Rx8n17SMQgrTRasaD8J0XcvRwPUMjaedaMgCIPcH3PrglsJsZvYiI34C29P_kB2ZAVDY3Rly7Dm_QJjZI2P0TwC-RsCZgY5iTOzUN81uRKi_1RSrSQxDn2siXZsW58rHX_0PhIGuiNTYjaxC8kY-FgV69rFLUHpMhJMYZ_4dqTZ4Dulp0bIO42AEi3CxpGQGAxtUr7vDy"/>
+                            <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">HSK 4</div>
+                        </div>
+                        <div class="p-md">
+                            <h4 class="font-bold text-on-surface text-lg leading-tight group-hover:text-primary transition-colors">Professional Emails &amp; Etiquette</h4>
+                            <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">Master the art of formal correspondence in a Chinese business environment.</p>
+                            <div class="flex items-center gap-md mt-md text-xs text-on-surface-variant">
+                                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span> 18m</span>
+                                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm" data-icon="bar_chart">bar_chart</span> Intermediate</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Recommendation Card 2 -->
+                    <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An artistic close-up of vibrant street food stalls in a bustling Asian night market, rendered with a modern, high-contrast digital art style. Neon signs in Chinese characters cast a warm red glow. The scene is full of energy and cultural vitality, emphasizing the practical use of language in daily life. Professional color grading using soft reds and deep blacks." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtsHkqvb0kreVEcLM37x6dZy_eZdxFbcsgAXx7750hKmpAqu0dpBf_dE9a6rCyk5VZXX1hYtZSbpgB6qOgfEYafyLwrZRnzTyhMJvC-Nw2_DiyMnYofW2E47m8TqxnEU0sUNStEj1_8hw4OrdQuQxhc7neG8Ieui6R7n-bqXdddaYGdimA_K29_j-fKrCHq_AKnzkNOi_BH1tVF9_f0LSw3uU8oa---59DRuZJsvDnjkSZHeWAszlm"/>
+                            <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">HSK 3+</div>
+                        </div>
+                        <div class="p-md">
+                            <h4 class="font-bold text-on-surface text-lg leading-tight group-hover:text-primary transition-colors">Ordering at the Night Market</h4>
+                            <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">Survival Chinese for navigating the delicious world of street food and vendors.</p>
+                            <div class="flex items-center gap-md mt-md text-xs text-on-surface-variant">
+                                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span> 12m</span>
+                                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm" data-icon="bar_chart">bar_chart</span> Lower-Int</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Recommendation Card 3 -->
+                    <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group">
+                        <div class="aspect-video relative overflow-hidden">
+                            <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A modern architectural shot of a sleek high-speed train at a terminal in China, with clean lines and a sense of motion. The image uses a minimalist color palette of cool greys and the signature Mandarin red. The aesthetic is futuristic and high-end, representing the theme of travel and modern infrastructure in China." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTQer4pj3bvsWh3gnJ8fAsfw8Zidp2YBAcyz54Q0cEMvS2HFQ6T3jlzqAXIwyyIjmw9a_1lYMWJIbndS5WkEnQNMEs7lbyiH3pFNG0RKu1l-ms7XSWCuU7kxKIxSRvlukcIlswuSu8HLRrgLKknR5dBLYV21NLS06qW73rCv5A15rLxKI8v2SYnxGipVRqoz9TbJARQ6ov0oWXOpHt2uPBLcyfm6Xa2w5VVe2xVQMwimtxLGkfrDcc"/>
+                            <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">HSK 4</div>
+                        </div>
+                        <div class="p-md">
+                            <h4 class="font-bold text-on-surface text-lg leading-tight group-hover:text-primary transition-colors">Traveling by High-Speed Rail</h4>
+                            <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">Learn vocabulary for booking tickets and navigating modern travel hubs in China.</p>
+                            <div class="flex items-center gap-md mt-md text-xs text-on-surface-variant">
+                                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span> 22m</span>
+                                <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm" data-icon="bar_chart">bar_chart</span> Intermediate</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Learning Statistics Small Widget -->
+            <div class="col-span-12 mt-lg flex flex-col md:flex-row gap-md">
+                <div class="flex-1 bg-surface-container/50 rounded-xl p-md border border-outline-variant/30 backdrop-blur-sm">
+                    <h5 class="text-xs font-label-caps uppercase tracking-widest text-on-surface-variant mb-md">Character Mastery</h5>
+                    <div class="flex items-end gap-xs h-32">
+                        <div class="flex-1 bg-primary/20 rounded-t-sm h-[40%] transition-all hover:bg-primary/40 cursor-pointer" title="Mon: 12"></div>
+                        <div class="flex-1 bg-primary/20 rounded-t-sm h-[65%] transition-all hover:bg-primary/40 cursor-pointer" title="Tue: 18"></div>
+                        <div class="flex-1 bg-primary/20 rounded-t-sm h-[30%] transition-all hover:bg-primary/40 cursor-pointer" title="Wed: 8"></div>
+                        <div class="flex-1 bg-primary/20 rounded-t-sm h-[85%] transition-all hover:bg-primary/40 cursor-pointer" title="Thu: 24"></div>
+                        <div class="flex-1 bg-primary/20 rounded-t-sm h-[55%] transition-all hover:bg-primary/40 cursor-pointer" title="Fri: 15"></div>
+                        <div class="flex-1 bg-primary rounded-t-sm h-[95%] transition-all hover:bg-primary-dim cursor-pointer" title="Today: 28"></div>
+                        <div class="flex-1 bg-outline-variant/20 rounded-t-sm h-[10%] cursor-not-allowed" title="Sun: 0"></div>
+                    </div>
+                    <div class="flex justify-between mt-sm text-[10px] text-on-surface-variant uppercase font-bold px-1">
+                        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span class="text-primary">S</span><span>S</span>
+                    </div>
+                </div>
+                <div class="w-full md:w-[350px] bg-secondary-container/30 rounded-xl p-md border border-secondary-fixed-dim/30 backdrop-blur-sm relative overflow-hidden">
+                    <div class="absolute -bottom-4 -right-4 text-primary opacity-[0.03] rotate-12">
+                        <span class="material-symbols-outlined text-[160px]" data-icon="translate" style="font-variation-settings: 'FILL' 1;">translate</span>
+                    </div>
+                    <h5 class="text-xs font-label-caps uppercase tracking-widest text-on-secondary-fixed-variant mb-sm">Study Tip</h5>
+                    <p class="text-sm italic text-on-secondary-container leading-relaxed">"Focus on tone pairs today. The third tone can be tricky, but practicing the 'dip' will make your speech sound more natural and professional."</p>
+                    <button class="mt-md text-xs font-bold text-primary flex items-center gap-xs group">
+                        Read more tips <span class="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script>
+    // Micro-interaction for cards
+    document.querySelectorAll('.rounded-xl').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            if(!card.classList.contains('bg-primary')) {
+                card.classList.add('shadow-md');
+            }
+        });
+        card.addEventListener('mouseleave', () => {
+            if(!card.classList.contains('bg-primary')) {
+                card.classList.remove('shadow-md');
+            }
+        });
+    });
+
+    // Search bar focus effect
+    const searchInput = document.querySelector('input[type="text"]');
+    searchInput.addEventListener('focus', () => {
+        searchInput.parentElement.classList.add('w-[500px]');
+    });
+    searchInput.addEventListener('blur', () => {
+        searchInput.parentElement.classList.remove('w-[500px]');
+    });
+</script>
+</body></html>

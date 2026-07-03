@@ -1,0 +1,557 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>MandarinFlow | Deck Management</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .fill-icon {
+      font-variation-settings: 'FILL' 1;
+    }
+    /* Custom Scrollbar for a clean UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #dc9ca8;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a06773;
+    }
+
+    .glass-header {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .seigaiha-pattern {
+      background-color: transparent;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cpath d='M0 40a40 40 0 0 1 40-40 40 40 0 0 1 40 40h-2a38 38 0 0 0-38-38A38 38 0 0 0 2 40H0zm4 0a36 36 0 0 1 36-36 36 36 0 0 1 36 36h-2a34 34 0 0 0-34-34A34 34 0 0 0 6 40H4zm4 0a32 32 0 0 1 32-32 32 32 0 0 1 32 32h-2a30 30 0 0 0-30-30A30 30 0 0 0 10 40H8zm4 0a28 28 0 0 1 28-28 28 28 0 0 1 28 28h-2a26 26 0 0 0-26-26A26 26 0 0 0 14 40h-2zm4 0a24 24 0 0 1 24-24 24 24 0 0 1 24 24h-2a22 22 0 0 0-22-22A22 22 0 0 0 18 40h-2zm4 0a20 20 0 0 1 20-20 20 20 0 0 1 20 20h-2a18 18 0 0 0-18-18A18 18 0 0 0 22 40h-2zm4 0a16 16 0 0 1 16-16 16 16 0 0 1 16 16h-2a14 14 0 0 0-14-14A14 14 0 0 0 26 40h-2zm4 0a12 12 0 0 1 12-12 12 12 0 0 1 12 12h-2a10 10 0 0 0-10-10A10 10 0 0 0 30 40h-2zm4 0a8 8 0 0 1 8-8 8 8 0 0 1 8 8h-2a6 6 0 0 0-6-6A6 6 0 0 0 34 40h-2zm4 0a4 4 0 0 1 4-4 4 4 0 0 1 4 4h-2a2 2 0 0 0-2-2 2 2 0 0 0-2 2h-2z' fill='%23af2330' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "error-dim": "#b92902",
+            "secondary": "#9e3655",
+            "primary-fixed": "#ff7576",
+            "surface-dim": "#ffc6d0",
+            "on-primary-fixed": "#000000",
+            "background": "#fff4f4",
+            "secondary-fixed": "#ffc2cd",
+            "inverse-primary": "#f9595f",
+            "on-primary-container": "#4e000a",
+            "secondary-container": "#ffc2cd",
+            "primary-dim": "#9e1425",
+            "on-secondary": "#ffeff0",
+            "surface-container-low": "#ffecee",
+            "primary-fixed-dim": "#fc5c61",
+            "surface": "#fff4f4",
+            "on-secondary-fixed-variant": "#902b4a",
+            "error-container": "#f95630",
+            "tertiary": "#7144aa",
+            "on-tertiary": "#faefff",
+            "surface-container": "#ffe1e5",
+            "on-tertiary-fixed-variant": "#4d1c85",
+            "surface-container-high": "#ffd9df",
+            "on-error-container": "#520c00",
+            "on-primary": "#ffefee",
+            "secondary-fixed-dim": "#ffadbe",
+            "inverse-surface": "#24020c",
+            "surface-tint": "#af2330",
+            "on-tertiary-fixed": "#25004b",
+            "primary": "#af2330",
+            "surface-bright": "#fff4f4",
+            "outline": "#a06773",
+            "inverse-on-surface": "#ca8c98",
+            "surface-container-highest": "#ffd1d9",
+            "surface-variant": "#ffd1d9",
+            "tertiary-fixed-dim": "#bd8df9",
+            "primary-container": "#ff7576",
+            "tertiary-container": "#c99dff",
+            "on-surface-variant": "#814c58",
+            "on-secondary-fixed": "#6a0a2f",
+            "on-surface": "#4c212c",
+            "error": "#b02500",
+            "tertiary-dim": "#65379d",
+            "on-background": "#4c212c",
+            "on-primary-fixed-variant": "#60000f",
+            "on-error": "#ffefec",
+            "on-tertiary-container": "#440e7c",
+            "surface-container-lowest": "#ffffff",
+            "outline-variant": "#dc9ca8",
+            "on-secondary-container": "#842141",
+            "tertiary-fixed": "#c99dff",
+            "secondary-dim": "#8e2a49"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "xs": "4px",
+            "xl": "80px",
+            "sm": "12px",
+            "md": "24px",
+            "margin-desktop": "auto",
+            "gutter": "16px",
+            "base": "8px",
+            "max-width": "1200px",
+            "margin-mobile": "20px",
+            "lg": "48px"
+          },
+          "fontFamily": {
+            "body-md": ["Inter"],
+            "label-caps": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "character-display": ["Noto Serif SC"]
+          },
+          "fontSize": {
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+            "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "headline-lg-mobile": ["32px", {"lineHeight": "38px", "fontWeight": "700"}],
+            "character-display": ["64px", {"lineHeight": "80px", "fontWeight": "500"}]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-background font-body-md text-on-background selection:bg-primary-container selection:text-on-primary-container seigaiha-pattern min-h-screen flex overflow-hidden">
+<!-- SideNavBar Component (JSON Anchor) -->
+<aside class="hidden md:flex flex-col h-full py-lg px-md w-[280px] fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant z-40">
+  <div class="mb-lg px-2">
+    <h1 class="font-headline-md text-headline-md font-bold text-primary">MandarinFlow</h1>
+    <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Level 4 Learner</p>
+  </div>
+  <nav class="flex-1 space-y-1">
+    <a class="flex items-center gap-3 px-4 py-3 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl group transition-transform duration-200 active:translate-x-1" href="#">
+      <span class="material-symbols-outlined text-xl group-hover:text-primary">home</span>
+      Home
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl group transition-transform duration-200 active:translate-x-1" href="#">
+      <span class="material-symbols-outlined text-xl group-hover:text-primary">style</span>
+      Decks
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 font-label-caps text-label-caps text-primary font-bold border-r-4 border-primary bg-surface-container-highest transition-transform duration-200 active:translate-x-1" href="#">
+      <span class="material-symbols-outlined text-xl fill-icon">edit</span>
+      Editor
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl group transition-transform duration-200 active:translate-x-1" href="#">
+      <span class="material-symbols-outlined text-xl group-hover:text-primary">query_stats</span>
+      Stats
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl group transition-transform duration-200 active:translate-x-1" href="#">
+      <span class="material-symbols-outlined text-xl group-hover:text-primary">settings</span>
+      Settings
+    </a>
+  </nav>
+  <div class="mt-auto space-y-1 border-t border-outline-variant pt-md">
+    <button class="w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 rounded-xl shadow-lg hover:bg-primary-dim transition-all active:scale-95 flex items-center justify-center gap-2 mb-4">
+      <span class="material-symbols-outlined text-lg">add_circle</span>
+      New Deck
+    </button>
+    <a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl group" href="#">
+      <span class="material-symbols-outlined text-xl">help</span>
+      Help
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-xl group" href="#">
+      <span class="material-symbols-outlined text-xl">logout</span>
+      Logout
+    </a>
+  </div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-[280px] h-screen overflow-y-auto pb-24 md:pb-8">
+  <!-- TopNavBar Component (JSON Anchor) -->
+  <header class="sticky top-0 w-full z-30 glass-header bg-surface/90 flex justify-between items-center px-md py-sm max-w-max-width mx-auto">
+    <div class="flex items-center gap-4">
+      <span class="md:hidden material-symbols-outlined text-primary cursor-pointer">menu</span>
+      <h2 class="font-headline-md text-headline-md font-bold text-primary">Editor</h2>
+    </div>
+    <div class="flex items-center gap-md">
+      <nav class="hidden lg:flex items-center gap-6 mr-4">
+        <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">Library</a>
+        <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">Progress</a>
+        <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">Settings</a>
+      </nav>
+      <div class="relative hidden sm:block">
+        <input class="bg-surface-container-highest border-none rounded-full py-2 px-10 text-on-surface w-64 focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-on-surface-variant" placeholder="Search decks..." type="text">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+      </div>
+      <button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-label-caps text-label-caps font-bold hover:brightness-105 transition-all active:scale-95">
+        Study Now
+      </button>
+    </div>
+  </header>
+  <div class="max-w-max-width mx-auto px-margin-mobile md:px-md py-lg space-y-lg">
+    <!-- Bento Grid Section: My Decks -->
+    <section>
+      <div class="flex justify-between items-end mb-md">
+        <div>
+          <h3 class="font-headline-md text-headline-md text-on-surface">My Decks</h3>
+          <p class="text-on-surface-variant">Manage your vocabulary collections and tracking</p>
+        </div>
+        <button class="hidden sm:flex items-center gap-2 text-secondary font-label-caps text-label-caps hover:bg-secondary-container px-4 py-2 rounded-full transition-colors">
+          <span class="material-symbols-outlined">filter_list</span>
+          Sort by Recent
+        </button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md"><!-- All Decks Card -->
+        <div class="group relative bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all duration-300 hover:border-primary hover:shadow-lg transform hover:-translate-y-1">
+          <div class="flex justify-between items-start mb-4">
+            <div class="bg-primary-container/20 p-2 rounded-lg">
+              <span class="material-symbols-outlined text-primary text-3xl">layers</span>
+            </div>
+            <span class="bg-surface-container-highest text-on-surface-variant text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider">System</span>
+          </div>
+          <h4 class="font-headline-md text-lg text-on-surface mb-1">All Decks</h4>
+          <p class="text-label-caps text-on-surface-variant mb-6">All saved vocabulary</p>
+          <div class="space-y-4">
+            <div class="flex justify-between items-end text-label-caps">
+              <span class="text-on-surface-variant">827 Cards</span>
+              <span class="text-primary font-bold">42% Mastered</span>
+            </div>
+            <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div class="h-full bg-primary transition-all duration-1000 w-[42%]"></div>
+            </div>
+          </div>
+          <div class="mt-6 flex gap-2">
+            <button class="flex-1 border border-primary text-primary py-2.5 rounded-lg font-label-caps text-label-caps font-bold transition-all hover:bg-primary-container/5 active:scale-95">View Cards</button>
+            <button class="p-2.5 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-colors">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Miscellaneous Card -->
+        <div class="group relative bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all duration-300 hover:border-secondary hover:shadow-lg transform hover:-translate-y-1">
+          <div class="flex justify-between items-start mb-4">
+            <div class="bg-secondary-container/20 p-2 rounded-lg">
+              <span class="material-symbols-outlined text-secondary text-3xl">folder</span>
+            </div>
+            <span class="bg-secondary-container text-on-secondary-container text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider">Unassigned</span>
+          </div>
+          <h4 class="font-headline-md text-lg text-on-surface mb-1">Miscellaneous</h4>
+          <p class="text-label-caps text-on-surface-variant mb-6">Cards without a deck</p>
+          <div class="space-y-4">
+            <div class="flex justify-between items-end text-label-caps">
+              <span class="text-on-surface-variant">12 Cards</span>
+              <span class="text-secondary font-bold">0% Mastered</span>
+            </div>
+            <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div class="h-full bg-secondary transition-all duration-1000 w-[0%]"></div>
+            </div>
+          </div>
+          <div class="mt-6 flex gap-2">
+            <button class="flex-1 border border-secondary text-secondary py-2.5 rounded-lg font-label-caps text-label-caps font-bold transition-all hover:bg-secondary-container/10 active:scale-95">Edit Cards</button>
+            <button class="p-2.5 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-colors">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+          </div>
+        </div>
+        <!-- Deck Card 1 (Active/Selected) -->
+        <div class="group relative bg-surface-container-lowest border-2 border-primary rounded-xl p-md shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <div class="flex justify-between items-start mb-4">
+            <div class="bg-primary-container/20 p-2 rounded-lg">
+              <span class="material-symbols-outlined text-primary fill-icon text-3xl">business_center</span>
+            </div>
+            <span class="bg-primary text-on-primary text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider">Active Edit</span>
+          </div>
+          <h4 class="font-headline-md text-lg text-on-surface mb-1">Business Mandarin</h4>
+          <p class="text-label-caps text-on-surface-variant mb-6">Master formal networking and contracts</p>
+          <div class="space-y-4">
+            <div class="flex justify-between items-end text-label-caps">
+              <span class="text-on-surface-variant">142 Cards</span>
+              <span class="text-primary font-bold">68% Mastered</span>
+            </div>
+            <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div class="h-full bg-primary transition-all duration-1000 w-[68%]"></div>
+            </div>
+          </div>
+          <div class="mt-6 flex gap-2">
+            <button class="flex-1 bg-primary text-on-primary py-2.5 rounded-lg font-label-caps text-label-caps font-bold transition-all hover:shadow-md active:scale-95">Edit Cards</button>
+            <button class="p-2.5 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-colors">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+          </div>
+        </div>
+        <!-- Deck Card 2 -->
+        <div class="group relative bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all duration-300 hover:border-secondary hover:shadow-lg transform hover:-translate-y-1">
+          <div class="flex justify-between items-start mb-4">
+            <div class="bg-secondary-container/20 p-2 rounded-lg">
+              <span class="material-symbols-outlined text-secondary text-3xl">flight_takeoff</span>
+            </div>
+          </div>
+          <h4 class="font-headline-md text-lg text-on-surface mb-1">Travel Essentials</h4>
+          <p class="text-label-caps text-on-surface-variant mb-6">Survival phrases for Beijing &amp; Shanghai</p>
+          <div class="space-y-4">
+            <div class="flex justify-between items-end text-label-caps">
+              <span class="text-on-surface-variant">85 Cards</span>
+              <span class="text-secondary font-bold">92% Mastered</span>
+            </div>
+            <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div class="h-full bg-secondary transition-all duration-1000 w-[92%]"></div>
+            </div>
+          </div>
+          <div class="mt-6 flex gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+            <button class="flex-1 border border-secondary text-secondary py-2.5 rounded-lg font-label-caps text-label-caps font-bold transition-all hover:bg-secondary-container/10 active:scale-95">Edit Cards</button>
+            <button class="p-2.5 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-colors">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+          </div>
+        </div>
+        <!-- Deck Card 3 -->
+        <div class="group relative bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all duration-300 hover:border-tertiary hover:shadow-lg transform hover:-translate-y-1">
+          <div class="flex justify-between items-start mb-4">
+            <div class="bg-tertiary-container/20 p-2 rounded-lg">
+              <span class="material-symbols-outlined text-tertiary text-3xl">school</span>
+            </div>
+          </div>
+          <h4 class="font-headline-md text-lg text-on-surface mb-1">HSK 3 Vocabulary</h4>
+          <p class="text-label-caps text-on-surface-variant mb-6">600 essential characters for level 3</p>
+          <div class="space-y-4">
+            <div class="flex justify-between items-end text-label-caps">
+              <span class="text-on-surface-variant">600 Cards</span>
+              <span class="text-tertiary font-bold">14% Mastered</span>
+            </div>
+            <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div class="h-full bg-tertiary transition-all duration-1000 w-[14%]"></div>
+            </div>
+          </div>
+          <div class="mt-6 flex gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+            <button class="flex-1 border border-tertiary text-tertiary py-2.5 rounded-lg font-label-caps text-label-caps font-bold transition-all hover:bg-tertiary-container/10 active:scale-95">Edit Cards</button>
+            <button class="p-2.5 border border-outline-variant text-on-surface-variant rounded-lg hover:bg-surface-container-high transition-colors">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+          </div>
+        </div>
+        <!-- Add New Deck Empty State -->
+        <button class="group border-2 border-dashed border-outline-variant rounded-xl p-md flex flex-col items-center justify-center gap-4 hover:border-primary hover:bg-surface-container-low transition-all">
+          <div class="p-4 rounded-full bg-surface-container shadow-sm group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-primary text-4xl">add</span>
+          </div>
+          <div class="text-center">
+            <span class="block font-headline-md text-md text-on-surface">Create New Deck</span>
+            <span class="text-label-caps text-on-surface-variant">Custom cards &amp; audio</span>
+          </div>
+        </button>
+      </div>
+    </section>
+    <!-- Card Editor Section (Glassmorphism & Precise UI) -->
+    <section class="bg-surface-container-lowest/80 backdrop-blur-md border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
+      <div class="px-md py-6 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div class="bg-primary-container text-on-primary-container p-2 rounded-lg">
+            <span class="material-symbols-outlined">edit_square</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-lg text-on-surface">Card Editor</h3>
+            <p class="text-label-caps text-on-surface-variant">Managing: Business Mandarin</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-label-caps text-label-caps font-bold shadow-sm hover:brightness-110 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-lg">add</span>
+            Add Card
+          </button>
+          <button class="p-2.5 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-colors">
+            <span class="material-symbols-outlined">download</span>
+          </button>
+        </div>
+      </div>
+      <!-- Card List Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-surface-container/50 text-label-caps text-on-surface-variant border-b border-outline-variant">
+          <tr>
+            <th class="px-md py-4 font-semibold">Chinese</th>
+            <th class="px-md py-4 font-semibold">Pinyin</th>
+            <th class="px-md py-4 font-semibold">English</th>
+            <th class="px-md py-4 font-semibold">Status</th>
+            <th class="px-md py-4 font-semibold text-right">Actions</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/30">
+          <!-- Table Row 1 -->
+          <tr class="hover:bg-primary-container/5 transition-colors group">
+            <td class="px-md py-5">
+              <span class="font-character-display text-2xl text-on-surface">合作</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="text-body-md text-secondary font-medium">hézuò</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="text-body-md text-on-surface">Cooperate; collaboration</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="bg-surface-container-highest text-on-surface-variant text-[10px] px-2 py-0.5 rounded-md font-bold uppercase">Learning</span>
+            </td>
+            <td class="px-md py-5 text-right">
+              <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="p-2 text-outline hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button class="p-2 text-outline hover:text-error transition-colors">
+                  <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Table Row 2 -->
+          <tr class="hover:bg-primary-container/5 transition-colors group">
+            <td class="px-md py-5">
+              <span class="font-character-display text-2xl text-on-surface">合同</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="text-body-md text-secondary font-medium">hétong</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="text-body-md text-on-surface">Contract</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="bg-on-tertiary text-tertiary text-[10px] px-2 py-0.5 rounded-md font-bold uppercase">Mastered</span>
+            </td>
+            <td class="px-md py-5 text-right">
+              <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="p-2 text-outline hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button class="p-2 text-outline hover:text-error transition-colors">
+                  <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Table Row 3 -->
+          <tr class="hover:bg-primary-container/5 transition-colors group">
+            <td class="px-md py-5">
+              <span class="font-character-display text-2xl text-on-surface">谈判</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="text-body-md text-secondary font-medium">tánpàn</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="text-body-md text-on-surface">Negotiate; negotiation</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="bg-surface-container-highest text-on-surface-variant text-[10px] px-2 py-0.5 rounded-md font-bold uppercase">New Card</span>
+            </td>
+            <td class="px-md py-5 text-right">
+              <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="p-2 text-outline hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button class="p-2 text-outline hover:text-error transition-colors">
+                  <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Table Row 4 -->
+          <tr class="hover:bg-primary-container/5 transition-colors group">
+            <td class="px-md py-5">
+              <span class="font-character-display text-2xl text-on-surface">投资</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="text-body-md text-secondary font-medium">tóuzī</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="text-body-md text-on-surface">Investment</span>
+            </td>
+            <td class="px-md py-5">
+              <span class="bg-on-tertiary text-tertiary text-[10px] px-2 py-0.5 rounded-md font-bold uppercase">Mastered</span>
+            </td>
+            <td class="px-md py-5 text-right">
+              <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="p-2 text-outline hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button class="p-2 text-outline hover:text-error transition-colors">
+                  <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Pagination/Load More Footer -->
+      <div class="px-md py-4 border-t border-outline-variant bg-surface-container-lowest/50 flex justify-between items-center">
+        <p class="text-label-caps text-on-surface-variant">Showing 1-10 of 142 cards</p>
+        <div class="flex gap-2">
+          <button class="p-2 text-outline-variant hover:text-primary transition-colors disabled:opacity-30" disabled="">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button class="p-2 text-outline-variant hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<!-- BottomNavBar Component (JSON Anchor - Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface dark:bg-surface-container shadow-lg rounded-t-xl">
+  <a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+    <span class="material-symbols-outlined">school</span>
+    <span class="font-label-caps text-[10px] mt-1">Study</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+    <span class="material-symbols-outlined">layers</span>
+    <span class="font-label-caps text-[10px] mt-1">Decks</span>
+  </a>
+  <a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1" href="#">
+    <span class="material-symbols-outlined fill-icon">edit</span>
+    <span class="font-label-caps text-[10px] mt-1">Editor</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+    <span class="material-symbols-outlined">account_circle</span>
+    <span class="font-label-caps text-[10px] mt-1">Profile</span>
+  </a>
+</nav>
+<!-- Micro-interaction Script -->
+<script>
+  // Simple scale and highlight effects on deck cards
+  document.querySelectorAll('.group.relative').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.style.zIndex = '10';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.zIndex = '1';
+    });
+  });
+
+  // Add Card functional simulation (visual only)
+  const addCardBtn = document.querySelector('button:has(.material-symbols-outlined:contains("add"))');
+  if(addCardBtn) {
+    addCardBtn.addEventListener('click', () => {
+      // Flash an effect to show click registered
+      addCardBtn.classList.add('scale-95');
+      setTimeout(() => addCardBtn.classList.remove('scale-95'), 150);
+    });
+  }
+</script>
+
+
+</body></html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>MandarinFlow - Study Mode</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Serif:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "error-dim": "#b92902",
+            "secondary": "#9e3655",
+            "primary-fixed": "#ff7576",
+            "surface-dim": "#ffc6d0",
+            "on-primary-fixed": "#000000",
+            "background": "#fff4f4",
+            "secondary-fixed": "#ffc2cd",
+            "inverse-primary": "#f9595f",
+            "on-primary-container": "#4e000a",
+            "secondary-container": "#ffc2cd",
+            "primary-dim": "#9e1425",
+            "on-secondary": "#ffeff0",
+            "surface-container-low": "#ffecee",
+            "primary-fixed-dim": "#fc5c61",
+            "surface": "#fff4f4",
+            "on-secondary-fixed-variant": "#902b4a",
+            "error-container": "#f95630",
+            "tertiary": "#7144aa",
+            "on-tertiary": "#faefff",
+            "surface-container": "#ffe1e5",
+            "on-tertiary-fixed-variant": "#4d1c85",
+            "surface-container-high": "#ffd9df",
+            "on-error-container": "#520c00",
+            "on-primary": "#ffefee",
+            "secondary-fixed-dim": "#ffadbe",
+            "inverse-surface": "#24020c",
+            "surface-tint": "#af2330",
+            "on-tertiary-fixed": "#25004b",
+            "primary": "#af2330",
+            "surface-bright": "#fff4f4",
+            "outline": "#a06773",
+            "inverse-on-surface": "#ca8c98",
+            "surface-container-highest": "#ffd1d9",
+            "surface-variant": "#ffd1d9",
+            "tertiary-fixed-dim": "#bd8df9",
+            "primary-container": "#ff7576",
+            "tertiary-container": "#c99dff",
+            "on-surface-variant": "#814c58",
+            "on-secondary-fixed": "#6a0a2f",
+            "on-surface": "#4c212c",
+            "error": "#b02500",
+            "tertiary-dim": "#65379d",
+            "on-background": "#4c212c",
+            "on-primary-fixed-variant": "#60000f",
+            "on-error": "#ffefec",
+            "on-tertiary-container": "#440e7c",
+            "surface-container-lowest": "#ffffff",
+            "outline-variant": "#dc9ca8",
+            "on-secondary-container": "#842141",
+            "tertiary-fixed": "#c99dff",
+            "secondary-dim": "#8e2a49"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "xs": "4px",
+            "xl": "80px",
+            "sm": "12px",
+            "md": "24px",
+            "margin-desktop": "auto",
+            "gutter": "16px",
+            "base": "8px",
+            "max-width": "1200px",
+            "margin-mobile": "20px",
+            "lg": "48px"
+          },
+          "fontFamily": {
+            "body-md": ["Inter"],
+            "label-caps": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Inter"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "character-display": ["Noto Serif"]
+          },
+          "fontSize": {
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+            "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "headline-lg-mobile": ["32px", {"lineHeight": "38px", "fontWeight": "700"}],
+            "character-display": ["64px", {"lineHeight": "80px", "fontWeight": "500"}]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .active-tab {
+      font-variation-settings: 'FILL' 1;
+    }
+    .seigaiha-pattern {
+      background-color: transparent;
+      background-image:  radial-gradient(#af2330 0.5px, transparent 0.5px);
+      background-size: 24px 24px;
+      opacity: 0.03;
+    }
+  </style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen overflow-x-hidden">
+<!-- Sidebar (Shared Component Anchor: SideNavBar) -->
+<aside class="hidden md:flex flex-col h-full py-lg px-md w-[280px] fixed left-0 top-0 bg-surface-container-low dark:bg-surface-container-lowest z-40 transition-all duration-200">
+  <div class="mb-lg">
+    <h1 class="font-headline-md text-headline-md font-bold text-primary">MandarinFlow</h1>
+    <div class="flex items-center mt-sm space-x-sm">
+      <div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+        <span class="material-symbols-outlined text-[18px]">person</span>
+      </div>
+      <div>
+        <p class="font-label-caps text-[11px] text-on-surface uppercase tracking-wider">Level 4 Learner</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-grow space-y-xs">
+    <p class="font-label-caps text-on-surface-variant mb-xs px-sm">Study Modes</p>
+    <a class="flex items-center space-x-md p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors group" href="#">
+      <span class="material-symbols-outlined">shuffle</span>
+      <span class="font-label-caps">Random</span>
+    </a>
+    <a class="flex items-center space-x-md p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+      <span class="material-symbols-outlined">fiber_new</span>
+      <span class="font-label-caps">New</span>
+    </a>
+    <a class="flex items-center space-x-md p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+      <span class="material-symbols-outlined">auto_stories</span>
+      <span class="font-label-caps">Learning</span>
+    </a>
+    <a class="flex items-center space-x-md p-sm rounded-lg text-primary font-bold border-r-4 border-primary bg-surface-container-high" href="#">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timer</span>
+      <span class="font-label-caps">Spaced</span>
+    </a>
+    <a class="flex items-center space-x-md p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+      <span class="material-symbols-outlined">verified</span>
+      <span class="font-label-caps">Confidence</span>
+    </a>
+  </nav>
+  <div class="mt-auto pt-md space-y-xs border-t border-outline-variant">
+    <a class="flex items-center space-x-md p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+      <span class="material-symbols-outlined">help</span>
+      <span class="font-label-caps">Help</span>
+    </a>
+    <a class="flex items-center space-x-md p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+      <span class="material-symbols-outlined">logout</span>
+      <span class="font-label-caps">Logout</span>
+    </a>
+  </div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-[280px] min-h-screen relative flex flex-col items-center justify-center px-margin-mobile md:px-lg py-lg">
+  <!-- Cultural Background Accent -->
+  <div class="absolute inset-0 seigaiha-pattern -z-10 pointer-events-none"></div>
+  <!-- Status & Progress Bar -->
+  <div class="w-full max-w-[640px] mb-md flex flex-col space-y-sm">
+    <div class="flex justify-between items-end">
+      <div>
+        <p class="font-label-caps text-on-surface-variant uppercase tracking-widest text-[10px]">Session Progress</p>
+        <h2 class="font-headline-md text-primary-dim">Spaced Repetition</h2>
+      </div>
+      <div class="text-right">
+        <span class="font-label-caps text-on-surface-variant">Card 12 / 50</span>
+      </div>
+    </div>
+    <!-- Linear Progress Indicator -->
+    <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+      <div class="h-full bg-primary rounded-full transition-all duration-700 ease-out" style="width: 24%;"></div>
+    </div>
+  </div>
+  <!-- The Flashcard -->
+  <div class="relative w-full max-w-[640px] aspect-[4/3] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col items-center justify-center p-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(193,81,112,0.12)]" id="flashcard">
+    <!-- Card Meta Actions -->
+    <div class="absolute top-md right-md flex space-x-xs">
+      <button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors active:scale-90" title="Bookmark">
+        <span class="material-symbols-outlined">bookmark</span>
+      </button>
+      <button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors active:scale-90" id="skipBtn" title="Skip Card">
+        <span class="material-symbols-outlined">skip_next</span>
+      </button>
+    </div>
+    <div class="absolute top-md left-md">
+      <span class="px-sm py-xs bg-tertiary-container text-on-tertiary-container font-label-caps text-[10px] rounded-full uppercase">HSK 4</span>
+    </div>
+    <!-- Character Display -->
+    <div class="flex flex-col items-center">
+      <h3 class="font-character-display text-character-display text-on-surface mb-sm leading-none" id="hanzi">面试</h3>
+      <!-- Pinyin Toggle Zone -->
+      <div class="opacity-0 translate-y-2 transition-all duration-300 pointer-events-none" id="pinyinContainer">
+        <p class="font-body-lg text-secondary text-center tracking-widest">miàn shì</p>
+        <p class="font-body-md text-on-surface-variant text-center mt-xs italic">to interview; interview</p>
+      </div>
+    </div>
+    <button class="mt-lg px-md py-sm rounded-full border border-secondary text-secondary font-label-caps hover:bg-secondary/5 transition-all active:scale-95" id="togglePinyin">
+      Show Pinyin
+    </button>
+  </div>
+  <!-- Response Actions -->
+  <div class="w-full max-w-[640px] mt-lg grid grid-cols-3 gap-md">
+    <button class="h-12 flex flex-col items-center justify-center rounded-xl border-2 border-primary-dim text-primary-dim font-label-caps hover:bg-primary-dim/5 transition-all group active:scale-95">
+      <span class="material-symbols-outlined text-[20px]">replay</span>
+      Again
+    </button>
+    <button class="h-12 flex flex-col items-center justify-center rounded-xl bg-secondary text-on-secondary font-label-caps hover:brightness-110 shadow-md shadow-secondary/20 transition-all active:scale-95">
+      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+      Got it
+    </button>
+    <button class="h-12 flex flex-col items-center justify-center rounded-xl border border-outline-variant text-on-surface-variant font-label-caps hover:bg-surface-container-high transition-all active:scale-95">
+      <span class="material-symbols-outlined text-[20px]">exit_to_app</span>
+      Exit
+    </button>
+  </div>
+  <!-- Mode Info / Tips -->
+  <div class="mt-xl text-center max-w-md">
+    <p class="font-label-caps text-on-surface-variant text-[11px] flex items-center justify-center space-x-xs">
+      <span class="material-symbols-outlined text-[14px]">info</span>
+      <span>Keyboard Shortcuts: 1 (Again), 2 (Got it), Space (Show)</span>
+    </p>
+  </div>
+</main>
+<!-- Mobile Bottom Nav (Shared Component Anchor: BottomNavBar) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-surface dark:bg-surface-container shadow-lg flex justify-around items-center px-4 pb-4 pt-2">
+  <a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-90 transition-transform" href="#">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+    <span class="font-label-caps text-[10px]">Study</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-transform" href="#">
+    <span class="material-symbols-outlined">layers</span>
+    <span class="font-label-caps text-[10px]">Decks</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-transform" href="#">
+    <span class="material-symbols-outlined">add_circle</span>
+    <span class="font-label-caps text-[10px]">Create</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-transform" href="#">
+    <span class="material-symbols-outlined">account_circle</span>
+    <span class="font-label-caps text-[10px]">Profile</span>
+  </a>
+</nav>
+<script>
+  // Micro-interactions
+  const toggleBtn = document.getElementById('togglePinyin');
+  const pinyinContainer = document.getElementById('pinyinContainer');
+  const flashcard = document.getElementById('flashcard');
+  const skipBtn = document.getElementById('skipBtn');
+
+  let isVisible = false;
+
+  toggleBtn.addEventListener('click', () => {
+    isVisible = !isVisible;
+    if (isVisible) {
+      pinyinContainer.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+      pinyinContainer.classList.add('opacity-100', 'translate-y-0');
+      toggleBtn.innerText = 'Hide Pinyin';
+    } else {
+      pinyinContainer.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+      pinyinContainer.classList.remove('opacity-100', 'translate-y-0');
+      toggleBtn.innerText = 'Show Pinyin';
+    }
+  });
+
+  // Skip animation
+  skipBtn.addEventListener('click', () => {
+    flashcard.classList.add('translate-x-12', 'opacity-0');
+    setTimeout(() => {
+      flashcard.classList.remove('translate-x-12', 'opacity-0');
+      flashcard.classList.add('-translate-x-12', 'opacity-0');
+      setTimeout(() => {
+        flashcard.classList.remove('-translate-x-12', 'opacity-0');
+        // Reset pinyin on skip
+        isVisible = false;
+        pinyinContainer.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+        toggleBtn.innerText = 'Show Pinyin';
+      }, 150);
+    }, 300);
+  });
+
+  // Key handlers
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      toggleBtn.click();
+    }
+  });
+</script>
+</body></html>

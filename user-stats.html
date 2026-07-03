@@ -1,0 +1,438 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Learning Journey | MandoLearning Stats</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;family=Noto+Serif:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet">
+    <!-- Tailwind Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#ffd1d9",
+                        "secondary-container": "#ffc2cd",
+                        "error-dim": "#b92902",
+                        "error": "#b02500",
+                        "primary-fixed-dim": "#fc5c61",
+                        "secondary": "#9e3655",
+                        "primary": "#af2330",
+                        "on-secondary-fixed-variant": "#902b4a",
+                        "on-primary": "#ffefee",
+                        "tertiary-container": "#c99dff",
+                        "tertiary-fixed-dim": "#bd8df9",
+                        "outline": "#a06773",
+                        "tertiary-dim": "#65379d",
+                        "secondary-dim": "#8e2a49",
+                        "on-secondary-fixed": "#6a0a2f",
+                        "on-surface": "#4c212c",
+                        "surface-bright": "#fff4f4",
+                        "on-tertiary": "#faefff",
+                        "surface-container-highest": "#ffd1d9",
+                        "primary-fixed": "#ff7576",
+                        "on-primary-fixed-variant": "#60000f",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#814c58",
+                        "on-secondary": "#ffeff0",
+                        "surface-container": "#ffe1e5",
+                        "on-secondary-container": "#842141",
+                        "error-container": "#f95630",
+                        "on-tertiary-fixed-variant": "#4d1c85",
+                        "surface-dim": "#ffc6d0",
+                        "tertiary-fixed": "#c99dff",
+                        "secondary-fixed": "#ffc2cd",
+                        "primary-dim": "#9e1425",
+                        "on-background": "#4c212c",
+                        "surface-container-high": "#ffd9df",
+                        "on-tertiary-fixed": "#25004b",
+                        "on-error-container": "#520c00",
+                        "inverse-primary": "#f9595f",
+                        "inverse-on-surface": "#ca8c98",
+                        "primary-container": "#ff7576",
+                        "on-error": "#ffefec",
+                        "surface-tint": "#af2330",
+                        "outline-variant": "#dc9ca8",
+                        "on-primary-fixed": "#000000",
+                        "inverse-surface": "#24020c",
+                        "tertiary": "#7144aa",
+                        "background": "#fff4f4",
+                        "surface": "#fff4f4",
+                        "surface-container-low": "#ffecee",
+                        "on-tertiary-container": "#440e7c",
+                        "secondary-fixed-dim": "#ffadbe",
+                        "on-primary-container": "#4e000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "md": "24px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "auto",
+                        "sm": "12px",
+                        "base": "8px",
+                        "max-width": "1200px",
+                        "lg": "48px",
+                        "xl": "80px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "character-display": ["Noto Serif"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "character-display": ["64px", {"lineHeight": "80px", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1/1;
+            border-radius: 4px;
+        }
+
+        .glass-card {
+            background: rgba(255, 244, 244, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(220, 156, 168, 0.3);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #dc9ca8;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="w-full sticky top-0 z-50 bg-surface/90 backdrop-blur-md">
+    <div class="flex justify-between items-center px-md py-base w-full max-w-max-width mx-auto">
+        <div class="flex items-center gap-base">
+            <span class="font-headline-md text-headline-md font-bold text-primary">MandoLearning</span>
+        </div>
+        <div class="flex items-center gap-md">
+            <div class="hidden md:flex items-center gap-md">
+                <button class="text-on-surface-variant hover:text-primary transition-colors font-body-md">Videos</button>
+                <button class="text-on-surface-variant hover:text-primary transition-colors font-body-md">Scripts</button>
+                <button class="text-primary font-bold border-b-2 border-primary py-1 font-body-md">Stats</button>
+            </div>
+            <div class="flex items-center gap-base text-primary">
+                <span class="material-symbols-outlined cursor-pointer hover:bg-surface-container-high p-xs rounded-full transition-colors">notifications</span>
+                <span class="material-symbols-outlined cursor-pointer hover:bg-surface-container-high p-xs rounded-full transition-colors">settings</span>
+                <div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden border border-outline-variant">
+                    <img class="w-full h-full object-cover" data-alt="A professional studio portrait of a friendly language learner in their late 20s, smiling warmly. The lighting is soft and natural, emphasizing a bright, light-mode aesthetic with a blurred bookshelf in the background. The color palette features soft reds and warm whites, consistent with a modern, high-end educational platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkGi3mwH685Q-HAM1eVO_ffmFbrVvAbFOvPzqaXkHITCk49X_6o__ug-By6b8wy__z6sRch-ga-_t26BTAGvSjzTyC2VDTeNypDdHz-lJ29MSLsdQqnE_JFWSt7_isAJdPVlmN8EJG16-ffu6z56mgEYyu36sUHzR0U9R0VWTaM9JGktW_0-NFS3Yz4YIIRDkoVdWV4ZpdRtii5QRKpcR54wpSc10-Bd6R6WD2qYnqW_bWjkVpoYn6weWS9_1jQUZKiB-jMHowI_A">
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="flex min-h-screen relative">
+    <!-- SideNavBar -->
+    <aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface dark:bg-surface-dim bg-surface-container dark:bg-surface-container-high shadow-sm flex flex-col h-full py-md px-base z-50">
+        <div class="mb-lg px-base">
+            <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
+            <p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
+        </div>
+        <nav class="flex-1 space-y-1">
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+                <span class="material-symbols-outlined" data-icon="play_circle">play_circle</span>
+                <span class="font-body-md text-body-md">Videos</span>
+            </a>
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+                <span class="material-symbols-outlined" data-icon="description">description</span>
+                <span class="font-body-md text-body-md">Scripts</span>
+            </a>
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+                <span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+                <span class="font-body-md text-body-md">Documents</span>
+            </a>
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+                <span class="material-symbols-outlined" data-icon="quiz">quiz</span>
+                <span class="font-body-md text-body-md">Flashcards</span>
+            </a>
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-primary font-bold border-r-4 border-primary dark:text-primary-fixed dark:border-primary-fixed hover:bg-secondary-container transition-colors duration-200 scale-95 active:scale-90 transition-transform" href="#">
+                <span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+                <span class="font-body-md text-body-md">Stats</span>
+            </a>
+        </nav>
+        <div class="mt-auto px-base py-md">
+            <button class="w-full bg-primary text-on-primary font-headline-md text-headline-md py-base rounded-xl hover:bg-primary-dim transition-all shadow-md active:scale-95">
+                Start Practice
+            </button>
+            <div class="mt-md flex items-center gap-sm">
+                <div class="w-10 h-10 rounded-full border-2 border-outline-variant overflow-hidden">
+                    <img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young adult with a friendly expression, soft cinematic lighting, warm skin tones, and a clean minimalist background that matches the soft reds and whites of the MandoLearning brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkGi3mwH685Q-HAM1eVO_ffmFbrVvAbFOvPzqaXkHITCk49X_6o__ug-By6b8wy__z6sRch-ga-_t26BTAGvSjzTyC2VDTeNypDdHz-lJ29MSLsdQqnE_JFWSt7_isAJdPVlmN8EJG16-ffu6z56mgEYyu36sUHzR0U9R0VWTaM9JGktW_0-NFS3Yz4YIIRDkoVdWV4ZpdRtii5QRKpcR54wpSc10-Bd6R6WD2qYnqW_bWjkVpoYn6weWS9_1jQUZKiB-jMHowI_A">
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-on-surface font-bold text-sm">Li Wei</span>
+                    <span class="text-on-surface-variant text-xs font-label-caps">HSK 4 Learner</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <!-- Main Content Area -->
+    <main class="flex-1 lg:ml-[280px] p-md lg:p-lg max-w-[1400px]">
+        <!-- Header & Filter -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
+            <div>
+                <h1 class="font-headline-lg text-headline-lg text-primary mb-xs">Learning Journey</h1>
+                <p class="text-on-surface-variant text-body-md">Visualize your path to Mandarin fluency.</p>
+            </div>
+            <div class="inline-flex p-1 bg-surface-container rounded-xl">
+                <button class="px-md py-xs rounded-lg text-body-md transition-all hover:text-primary font-medium">Last 15 Days</button>
+                <button class="px-md py-xs rounded-lg text-body-md transition-all bg-surface-bright text-primary font-bold shadow-sm">Last 30 Days</button>
+                <button class="px-md py-xs rounded-lg text-body-md transition-all hover:text-primary font-medium">Last 90 Days</button>
+            </div>
+        </div>
+        <!-- Bento Grid Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-md auto-rows-fr">
+            <!-- Total Study Time -->
+            <div class="xl:col-span-7 glass-card p-md rounded-xl flex flex-col gap-md" style="box-shadow: none; transform: translateY(0px); transition: 0.3s;">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-label-caps text-on-surface-variant mb-xs">TOTAL STUDY TIME</p>
+                        <h3 class="font-headline-md text-headline-md text-on-surface">42h 15m</h3>
+                        <span class="text-[14px] text-primary font-bold flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">trending_up</span> +12% from last month
+                            </span>
+                    </div>
+                    <div class="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+                        <span class="material-symbols-outlined">schedule</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex items-end gap-xs h-40">
+                    <div class="flex-1 bg-primary/20 rounded-t-sm h-[40%]" title="Mon: 1.2h"></div>
+                    <div class="flex-1 bg-primary/40 rounded-t-sm h-[65%]" title="Tue: 2.1h"></div>
+                    <div class="flex-1 bg-primary/30 rounded-t-sm h-[50%]" title="Wed: 1.5h"></div>
+                    <div class="flex-1 bg-primary rounded-t-sm h-[90%]" title="Thu: 3.2h"></div>
+                    <div class="flex-1 bg-primary/60 rounded-t-sm h-[75%]" title="Fri: 2.5h"></div>
+                    <div class="flex-1 bg-primary/50 rounded-t-sm h-[60%]" title="Sat: 2.0h"></div>
+                    <div class="flex-1 bg-primary/30 rounded-t-sm h-[45%]" title="Sun: 1.4h"></div>
+                    <div class="flex-1 bg-primary/40 rounded-t-sm h-[65%]" title="Mon: 2.2h"></div>
+                    <div class="flex-1 bg-primary rounded-t-sm h-[100%]" title="Tue: 3.5h"></div>
+                </div>
+            </div>
+            <!-- Vocabulary Mastery -->
+            <div class="xl:col-span-5 glass-card p-md rounded-xl">
+                <p class="font-label-caps text-on-surface-variant mb-md">VOCABULARY MASTERY</p>
+                <div class="flex flex-col gap-md">
+                    <div class="flex items-center gap-md">
+                        <div class="relative w-16 h-16 shrink-0">
+                            <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                <circle class="stroke-surface-container-highest" cx="18" cy="18" fill="none" r="16" stroke-width="3"></circle>
+                                <circle class="stroke-primary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="75, 100" stroke-linecap="round" stroke-width="3"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center font-bold text-on-surface text-sm">75%</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-xs">
+                                <span class="font-body-md font-semibold text-on-surface">Words Memorized</span>
+                                <span class="text-on-surface-variant">1,240</span>
+                            </div>
+                            <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                                <div class="w-[75%] h-full bg-primary"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-base mt-base">
+                        <div class="p-sm bg-surface-container-low rounded-lg">
+                            <p class="text-[12px] text-on-surface-variant font-medium">WORDS ADDED</p>
+                            <p class="text-headline-md font-bold text-primary">458</p>
+                        </div>
+                        <div class="p-sm bg-surface-container-low rounded-lg">
+                            <p class="text-[12px] text-on-surface-variant font-medium">STILL LEARNING</p>
+                            <p class="text-headline-md font-bold text-secondary">312</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Activity Heatmap -->
+            <div class="xl:col-span-8 glass-card p-md rounded-xl">
+                <div class="flex justify-between items-center mb-md">
+                    <p class="font-label-caps text-on-surface-variant">ACTIVITY HEATMAP</p>
+                    <div class="flex items-center gap-xs text-[12px] text-on-surface-variant">
+                        <span class="">Less</span>
+                        <div class="flex gap-[2px]">
+                            <div class="w-3 h-3 bg-surface-container-highest rounded-sm"></div>
+                            <div class="w-3 h-3 bg-primary/30 rounded-sm"></div>
+                            <div class="w-3 h-3 bg-primary/60 rounded-sm"></div>
+                            <div class="w-3 h-3 bg-primary rounded-sm"></div>
+                        </div>
+                        <span class="">More</span>
+                    </div>
+                </div>
+                <div class="grid grid-flow-col grid-rows-7 gap-1">
+                    <!-- Simulated heatmap grid for 15 weeks -->
+                    <script>
+                        const container = document.currentScript.parentElement;
+                        const intensities = ['bg-surface-container-highest', 'bg-primary/20', 'bg-primary/40', 'bg-primary/70', 'bg-primary'];
+                        for (let i = 0; i < 105; i++) {
+                            const level = Math.floor(Math.random() * 5);
+                            const cell = document.createElement('div');
+                            cell.className = `heatmap-cell w-full ${intensities[level]}`;
+                            container.appendChild(cell);
+                        }
+                    </script><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/20"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-primary/40"></div><div class="heatmap-cell w-full bg-primary/70"></div><div class="heatmap-cell w-full bg-surface-container-highest"></div><div class="heatmap-cell w-full bg-primary/40"></div>
+                </div>
+                <div class="flex justify-between mt-sm text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">
+                    <span class="">Sep</span><span class="">Oct</span><span class="">Nov</span><span class="">Dec</span><span class="">Jan</span>
+                </div>
+            </div>
+            <!-- Top Categories -->
+            <div class="xl:col-span-4 glass-card p-md rounded-xl flex flex-col">
+                <p class="font-label-caps text-on-surface-variant mb-md">TOP CATEGORIES</p>
+                <div class="flex flex-col gap-sm overflow-y-auto custom-scrollbar pr-xs">
+                    <div class="flex items-center justify-between p-base bg-surface-container-low rounded-xl border border-outline-variant/10">
+                        <div class="flex items-center gap-base">
+                            <span class="material-symbols-outlined text-primary">work</span>
+                            <span class="font-body-md font-semibold text-on-surface">Business</span>
+                        </div>
+                        <span class="font-body-md text-on-surface-variant">12.5h</span>
+                    </div>
+                    <div class="flex items-center justify-between p-base bg-surface-container-low rounded-xl border border-outline-variant/10">
+                        <div class="flex items-center gap-base">
+                            <span class="material-symbols-outlined text-primary">flight_takeoff</span>
+                            <span class="font-body-md font-semibold text-on-surface">Travel</span>
+                        </div>
+                        <span class="font-body-md text-on-surface-variant">8.2h</span>
+                    </div>
+                    <div class="flex items-center justify-between p-base bg-surface-container-low rounded-xl border border-outline-variant/10">
+                        <div class="flex items-center gap-base">
+                            <span class="material-symbols-outlined text-primary">restaurant</span>
+                            <span class="font-body-md font-semibold text-on-surface">Food &amp; Culture</span>
+                        </div>
+                        <span class="font-body-md text-on-surface-variant">7.8h</span>
+                    </div>
+                    <div class="flex items-center justify-between p-base bg-surface-container-low rounded-xl border border-outline-variant/10">
+                        <div class="flex items-center gap-base">
+                            <span class="material-symbols-outlined text-primary">family_restroom</span>
+                            <span class="font-body-md font-semibold text-on-surface">Social Life</span>
+                        </div>
+                        <span class="font-body-md text-on-surface-variant">5.4h</span>
+                    </div>
+                </div>
+            </div>
+            <!-- HSK Level Progress -->
+            <div class="xl:col-span-12 glass-card p-md lg:p-lg rounded-xl">
+                <p class="font-label-caps text-on-surface-variant mb-lg">HSK LEVEL PROGRESS</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+                    <!-- HSK 1 -->
+                    <div class="space-y-base">
+                        <div class="flex justify-between items-end">
+                            <span class="font-headline-md text-headline-md text-primary">HSK 1</span>
+                            <span class="text-body-md font-bold text-on-surface">100%</span>
+                        </div>
+                        <div class="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+                            <div class="w-full h-full bg-primary"></div>
+                        </div>
+                        <p class="text-[12px] text-on-surface-variant">150 / 150 Words Mastered</p>
+                    </div>
+                    <!-- HSK 2 -->
+                    <div class="space-y-base">
+                        <div class="flex justify-between items-end">
+                            <span class="font-headline-md text-headline-md text-primary">HSK 2</span>
+                            <span class="text-body-md font-bold text-on-surface">88%</span>
+                        </div>
+                        <div class="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+                            <div class="w-[88%] h-full bg-primary"></div>
+                        </div>
+                        <p class="text-[12px] text-on-surface-variant">264 / 300 Words Mastered</p>
+                    </div>
+                    <!-- HSK 3 -->
+                    <div class="space-y-base">
+                        <div class="flex justify-between items-end">
+                            <span class="font-headline-md text-headline-md text-primary">HSK 3</span>
+                            <span class="text-body-md font-bold text-on-surface">42%</span>
+                        </div>
+                        <div class="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+                            <div class="w-[42%] h-full bg-primary"></div>
+                        </div>
+                        <p class="text-[12px] text-on-surface-variant">252 / 600 Words Mastered</p>
+                    </div>
+                    <!-- HSK 4 -->
+                    <div class="space-y-base">
+                        <div class="flex justify-between items-end">
+                            <span class="font-headline-md text-headline-md text-on-surface-variant">HSK 4</span>
+                            <span class="text-body-md font-bold text-on-surface-variant">12%</span>
+                        </div>
+                        <div class="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+                            <div class="w-[12%] h-full bg-primary-fixed"></div>
+                        </div>
+                        <p class="text-[12px] text-on-surface-variant">144 / 1200 Words Mastered</p>
+                    </div>
+                    <!-- HSK 5 -->
+                    <div class="space-y-base opacity-60">
+                        <div class="flex justify-between items-end">
+                            <span class="font-headline-md text-headline-md text-on-surface-variant">HSK 5</span>
+                            <span class="text-body-md font-bold text-on-surface-variant">0%</span>
+                        </div>
+                        <div class="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+                            <div class="w-0 h-full bg-primary-fixed"></div>
+                        </div>
+                        <p class="text-[12px] text-on-surface-variant">0 / 2500 Words Mastered</p>
+                    </div>
+                    <!-- HSK 6 -->
+                    <div class="space-y-base opacity-60">
+                        <div class="flex justify-between items-end">
+                            <span class="font-headline-md text-headline-md text-on-surface-variant">HSK 6</span>
+                            <span class="text-body-md font-bold text-on-surface-variant">0%</span>
+                        </div>
+                        <div class="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+                            <div class="w-0 h-full bg-primary-fixed"></div>
+                        </div>
+                        <p class="text-[12px] text-on-surface-variant">0 / 5000 Words Mastered</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<!-- Floating Action Button - Only on relevant screens -->
+<button class="fixed bottom-margin-mobile right-margin-mobile w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all lg:hidden z-50">
+    <span class="material-symbols-outlined">add</span>
+</button>
+<script>
+    // Simple micro-interaction for cards
+    document.querySelectorAll('.glass-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.style.boxShadow = '0 10px 30px -10px rgba(175, 35, 48, 0.15)';
+            card.style.transform = 'translateY(-2px)';
+            card.style.transition = 'all 0.3s ease';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.boxShadow = 'none';
+            card.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+</body></html>
