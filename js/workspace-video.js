@@ -1,105 +1,263 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM Core Handles
-    const video = document.getElementById('main-video');
-    const playBtn = document.getElementById('btn-play-toggle');
-    const rewindBtn = document.getElementById('btn-rewind');
-    const fullscreenBtn = document.getElementById('btn-fullscreen');
-    const timeline = document.getElementById('progress-timeline');
-    const timelineFill = document.getElementById('progress-timeline-fill');
-    const timeDisplay = document.getElementById('timestamp-display');
-    const ccBtn = document.getElementById('btn-cc-toggle');
-    const captionsContainer = document.getElementById('captions-container');
-    const linesContainer = document.getElementById('script-lines-container');
-    const toggleZh = document.getElementById('toggle-zh');
-    const togglePy = document.getElementById('toggle-py');
-    const toggleEn = document.getElementById('toggle-en');
     const notebook = document.getElementById('study-notebook');
     const vocabSection = document.getElementById('vocab-section');
     const cardsContainer = document.getElementById('vocab-cards-container');
 
-    if (!vocabSection || !cardsContainer) return;
+    if (!notebook || !vocabSection || !cardsContainer) return;
 
+    // Exact parameter tracking configuration matching user payload specifications
     const userId = vocabSection.getAttribute('data-user-id');
     const videoId = vocabSection.getAttribute('data-video-id');
     const API_BASE = 'http://127.0.0.1:8000/api/v1';
 
-    // =======================================================
-    // PHASE 1: Render Vocabulary Nodes Dynamically from Database
-    // =======================================================
-    function loadVocabularyWorkspace() {
+    let notebookDebounceTimeout = null;
+    let detailedNoteId = null; // Track the backend note_id dynamically
+
+    // ==========================================
+    // PHASE 1: Page Initialization & Hydration
+    // ==========================================
+    function loadWorkspaceState() {
+        // Hits the workspace landing point configuration
         fetch(`${API_BASE}/workspace/load-page?user_id=${userId}&video_id=${videoId}`)
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
             .then(data => {
-                cardsContainer.innerHTML = ''; // Expunge loader indicators
-
                 const notes = data.workspace?.notes || [];
-                // Isolate single-word vocabulary object blocks
+
+                // --- 1. Hydrate Detailed Analysis Notebook ---
+                const detailedNote = notes.find(n => n.type === "detailed_analysis");
+                if (detailedNote) {
+                    detailedNoteId = detailedNote.note_id;
+                    notebook.innerText = detailedNote.content;
+                } else {
+                    notebook.innerHTML = `Start typing your detailed analysis here...<br/><br/>• Key grammar points:<br/>• Cultural context:`;
+                }
+
+                // --- 2. Hydrate Quick Vocabulary Card Matrix ---
+                cardsContainer.innerHTML = ''; // Clear fallback states
                 const vocabNotes = notes.filter(n => n.type === "single_word_vocab");
 
                 if (vocabNotes.length === 0) {
                     cardsContainer.innerHTML = `<p class="text-sm text-on-surface-variant italic p-sm col-span-full">No flashcard terms generated yet for this review module.</p>`;
-                    return;
+                } else {
+                    vocabNotes.forEach(vocab => {
+                        appendVocabCardDOM(vocab);
+                    });
                 }
-
-                // Programmatically stitch card elements to the grid matrix
-                vocabNotes.forEach(vocab => {
-                    const card = document.createElement('div');
-
-                    // Apply 'active' style wrappers natively if user has already assigned meaning details
-                    const isActive = vocab.user_custom_definition ? "active" : "group";
-                    const textClass = vocab.user_custom_definition ? "active-text" : "";
-
-                    card.className = `vocab-input-card ${isActive}`;
-                    card.setAttribute('data-note-id', vocab.note_id);
-                    card.setAttribute('data-character', vocab.character);
-
-                    card.innerHTML = `
-            <span class="vocab-character ${textClass}">${vocab.character}</span>
-            <span class="breadcrumb-item ${vocab.user_custom_definition ? 'text-on-secondary-fixed-variant' : 'text-on-surface-variant'}">
-              ${vocab.pinyin || '---'}
-            </span>
-            <input class="w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline ${vocab.user_custom_definition ? 'text-on-surface font-bold' : ''}" 
-                   placeholder="Meaning..." 
-                   type="text" 
-                   value="${vocab.user_custom_definition || ''}"/>
-          `;
-
-                    cardsContainer.appendChild(card);
-                });
             })
             .catch(() => {
-                cardsContainer.innerHTML = `<p class="text-sm text-error font-medium p-sm col-span-full">Failed to connect to local api database parameters.</p>`;
+                notebook.innerText = "Error pulling cloud sync records.";
+                cardsContainer.innerHTML = `<p class="text-sm text-error font-medium p-sm col-span-full">Failed to connect to local database parameters.</p>`;
             });
     }
 
-    // =======================================================
-    // PHASE 2: Handle Key Press Events via Event Delegation
-    // =======================================================
+    // Helper to stitch dynamic HTML nodes to vocabulary panel layout
+    function appendVocabCardDOM(vocab) {
+        const card = document.createElement('div');
+        const isActive = vocab.user_custom_definition ? "active" : "group";
+        const textClass = vocab.user_custom_definition ? "active-text" : "";
+
+        // Added 'relative' so the delete button can position itself in the top-right corner
+        card.className = `vocab-input-card ${isActive} relative group/card`;
+        card.setAttribute('data-note-id', vocab.note_id);
+        card.setAttribute('data-character', vocab.character);
+
+        card.innerHTML = `
+      <button class="delete-vocab-btn absolute top-1 right-2 text-outline hover:text-error opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 font-bold text-sm cursor-pointer p-xs select-none" title="Delete word">
+        ✕
+      </button>
+
+      <span class="vocab-character ${textClass}">${vocab.character}</span>
+      <span class="breadcrumb-item ${vocab.user_custom_definition ? 'text-on-secondary-fixed-variant' : 'text-on-surface-variant'}">${vocab.pinyin || '---'}</span>
+      <input class="w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline ${vocab.user_custom_definition ? 'text-on-surface font-bold' : ''}" 
+             placeholder="Meaning..." 
+             type="text" 
+             value="${vocab.user_custom_definition || ''}"/>
+    `;
+        cardsContainer.appendChild(card);
+    }
+
+    // ==========================================
+    // PHASE 2: Detailed Notebook Sync (Debounced UPDATE/ADD)
+    // ==========================================
+    notebook.addEventListener('input', (e) => {
+        clearTimeout(notebookDebounceTimeout);
+        const textContents = e.target.innerText;
+
+        notebookDebounceTimeout = setTimeout(() => {
+            console.log("⚡ Syncing Detailed Notebook...");
+
+            const isNewNote = (detailedNoteId === null);
+            const payload = {
+                action: isNewNote ? "ADD" : "UPDATE",
+                note_id: detailedNoteId,
+                type: "detailed_analysis",
+                timestamp: "00:00",
+                content: textContents
+            };
+
+            fetch(`${API_BASE}/workspace/${userId}/${videoId}/notes`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.status === "success" && isNewNote) {
+                        detailedNoteId = result.note_id; // Store runtime generated index key tracking marker
+                    }
+                    console.log("✅ Notebook state synchronized smoothly.");
+                })
+                .catch(err => console.error("❌ Notebook synchronization error:", err));
+        }, 1200); // 1.2 second debounce threshold delay
+    });
+
+    // ==========================================
+    // PHASE 3: Vocabulary Card Sync (On Enter Key)
+    // ==========================================
     cardsContainer.addEventListener('keydown', (e) => {
-        // Process actions ONLY when the targeted keystroke is exactly "Enter"
         if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
 
         const inputElement = e.target;
-        const targetValue = inputElement.value.trim();
         const cardElement = inputElement.closest('.vocab-input-card');
+        const isDraft = cardElement.getAttribute('data-is-draft') === 'true';
 
+        let payload = {};
+
+        if (isDraft) {
+            // ==========================================
+            // CASE A: Processing an Inline Draft Card (ADD)
+            // ==========================================
+            const charInput = cardElement.querySelector('.vocab-character-input');
+            const meaningInput = cardElement.querySelector('.vocab-meaning-input');
+
+            const characterValue = charInput.value.trim();
+            const meaningValue = meaningInput.value.trim();
+
+            if (!characterValue) {
+                charInput.classList.add('border-error');
+                return; // Prevent saving completely blank strings
+            }
+
+            payload = {
+                action: "ADD",
+                type: "single_word_vocab",
+                character: characterValue,
+                user_custom_definition: meaningValue,
+                mastery_status: meaningValue ? "learning" : "unstarted"
+            };
+
+            // Lock UI states during execution processing loops
+            charInput.disabled = true;
+            meaningInput.disabled = true;
+            cardElement.classList.remove('animate-pulse');
+
+            fetch(`${API_BASE}/workspace/${userId}/${videoId}/notes`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+                .then(result => {
+                    if (result.status === "success") {
+                        // Redraw this single card slot into a permanent standard card block asset
+                        cardElement.className = meaningValue ? "vocab-input-card active" : "vocab-input-card group";
+                        cardElement.removeAttribute('data-is-draft');
+                        cardElement.setAttribute('data-note-id', result.note_id);
+                        cardElement.setAttribute('data-character', characterValue);
+
+                        cardElement.innerHTML = `
+          <span class="vocab-character ${meaningValue ? 'active-text' : ''}">${characterValue}</span>
+          <span class="breadcrumb-item ${meaningValue ? 'text-on-secondary-fixed-variant' : 'text-on-surface-variant'}">---</span>
+          <input class="w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline ${meaningValue ? 'text-on-surface font-bold' : ''}" 
+                 placeholder="Meaning..." 
+                 type="text" 
+                 value="${meaningValue}"/>
+        `;
+                        console.log(`✅ Fresh inline card saved: ${characterValue}`);
+                    }
+                })
+                .catch(() => {
+                    charInput.disabled = false;
+                    meaningInput.disabled = false;
+                    cardElement.classList.add('border-error');
+                });
+
+        } else {
+            // ==========================================
+            // CASE B: Standard Card Modification (UPDATE)
+            // ==========================================
+            const targetValue = inputElement.value.trim();
+            const noteId = cardElement.getAttribute('data-note-id');
+            const character = cardElement.getAttribute('data-character');
+
+            inputElement.blur();
+            inputElement.style.opacity = '0.5';
+
+            payload = {
+                action: "UPDATE",
+                note_id: noteId,
+                type: "single_word_vocab",
+                character: character,
+                user_custom_definition: targetValue,
+                mastery_status: targetValue ? "learning" : "unstarted"
+            };
+
+            fetch(`${API_BASE}/workspace/${userId}/${videoId}/notes`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+                .then(result => {
+                    if (result.status === "success") {
+                        inputElement.style.opacity = '1';
+                        if (targetValue) {
+                            cardElement.className = "vocab-input-card active";
+                            cardElement.querySelector('.vocab-character').className = "vocab-character active-text";
+                            inputElement.className = "w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 text-on-surface font-bold";
+                        } else {
+                            cardElement.className = "vocab-input-card group";
+                            cardElement.querySelector('.vocab-character').className = "vocab-character";
+                            inputElement.className = "w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline";
+                        }
+                    }
+                })
+                .catch(() => {
+                    inputElement.style.opacity = '1';
+                    inputElement.style.borderBottom = '2px solid red';
+                });
+        }
+    });
+
+    cardsContainer.addEventListener('click', (e) => {
+        // Target clicks that land on our custom delete button element
+        const deleteBtn = e.target.closest('.delete-vocab-btn');
+        if (!deleteBtn) return;
+
+        const cardElement = deleteBtn.closest('.vocab-input-card');
         const noteId = cardElement.getAttribute('data-note-id');
         const character = cardElement.getAttribute('data-character');
 
-        // Visually confirm saving operation initiation loop
-        inputElement.blur();
-        inputElement.style.opacity = '0.5';
+        // 1. If it's just a blank draft card that hasn't been saved to DB yet, drop it immediately
+        if (cardElement.getAttribute('data-is-draft') === 'true') {
+            cardElement.remove();
+            checkEmptyStateFallback();
+            return;
+        }
 
-        // Construct the operational Action Payload payload schema tracking delta states
+        // Confirm execution before running the network drop command
+        if (!confirm(`Are you sure you want to remove "${character}" from your workspace notes?`)) return;
+
+        // Gray out card to provide instant visual feedback during the network roundtrip
+        cardElement.style.pointerEvents = 'none';
+        cardElement.style.opacity = '0.4';
+
         const payload = {
-            action: "UPDATE", // Leverages our custom PATCH controller matrix cleanly
-            note_id: noteId,
-            type: "single_word_vocab",
-            character: character,
-            user_custom_definition: targetValue,
-            mastery_status: targetValue ? "learning" : "unstarted"
+            action: "DELETE",
+            note_id: noteId
         };
 
+        // 2. Fire the DELETE operation straight to the backend path
         fetch(`${API_BASE}/workspace/${userId}/${videoId}/notes`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -108,403 +266,58 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
             .then(result => {
                 if (result.status === "success") {
-                    console.log(`✅ Flashcard translation committed successfully for: ${character}`);
+                    console.log(`❌ Note expunged successfully from DDB array: ${noteId}`);
 
-                    // Dynamically shift visual classes to match standard production CSS mockups instant feedback
-                    inputElement.style.opacity = '1';
-                    if (targetValue) {
-                        cardElement.className = "vocab-input-card active";
-                        cardElement.querySelector('.vocab-character').className = "vocab-character active-text";
-                        inputElement.className = "w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 text-on-surface font-bold";
-                    } else {
-                        cardElement.className = "vocab-input-card group";
-                        cardElement.querySelector('.vocab-character').className = "vocab-character";
-                        inputElement.className = "w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline";
-                    }
+                    // 3. Animate out and remove the HTML element from the DOM tree
+                    cardElement.classList.add('scale-95', 'opacity-0', 'transition-all', 'duration-200');
+                    setTimeout(() => {
+                        cardElement.remove();
+                        checkEmptyStateFallback();
+                    }, 200);
                 }
             })
-            .catch(err => {
-                console.error("❌ Flashcard state alignment exception:", err);
-                inputElement.style.opacity = '1';
-                inputElement.classList.add('border-b', 'border-error'); // Paint a temporary error ring line boundary marker
+            .catch(() => {
+                // Re-enable UI interaction loop if database connection failures manifest
+                cardElement.style.pointerEvents = 'auto';
+                cardElement.style.opacity = '1';
+                alert("Failed to delete the card. Verify backend synchronization integrity layers.");
             });
     });
 
-    // Run hydration processing immediately on boot lifecycle loops
-    loadVocabularyWorkspace();
+    // Boot hydration sequence processes immediately
+    loadWorkspaceState();
 
-    if (!notebook) return;
-    let debounceTimeout = null;
+    // Place this inside your DOMContentLoaded wrapper in js/workspace.js
+    const addVocabBtn = document.getElementById('add-vocab-btn');
 
-    // ==========================================
-    // PHASE 1: Fetch and Populate Existing Data
-    // ==========================================
-    function loadInitialWorkspace() {
-        fetch(`${API_BASE}/workspace/load-page?user_id=${userId}&video_id=${videoId}`)
-            .then(response => {
-                if (!response.ok) throw new Error("Failed to extract data path.");
-                return response.json();
-            })
-            .then(data => {
-                // If a workspace exists, pull out long-form detailed_analysis notes if present
-                const workspace = data.workspace;
+    addVocabBtn.addEventListener('click', () => {
+        // 1. Clear out empty/fallback text descriptors if they are present
+        if (cardsContainer.querySelector('p.italic')) {
+            cardsContainer.innerHTML = '';
+        }
 
-                if (workspace && workspace.notes) {
-                    // Find the detailed analysis block within our polymorphic data structure array
-                    const longFormNote = workspace.notes.find(note => note.type === "detailed_analysis");
-                    if (longFormNote && longFormNote.content) {
-                        notebook.innerText = longFormNote.content;
-                        return;
-                    }
-                }
+        // 2. Programmatically generate a temporary placeholder card state
+        const draftCard = document.createElement('div');
+        draftCard.className = "vocab-input-card active border-2 border-dashed border-primary animate-pulse";
+        draftCard.setAttribute('data-is-draft', 'true'); // Flag to tell Enter-key handler to use "ADD"
 
-                // Fallback layout template structure if workspace records are entirely blank
-                notebook.innerHTML = `Start typing your detailed analysis here...<br/><br/>• Key grammar points:<br/>• Cultural context:`;
-            })
-            .catch(err => {
-                console.error("Workspace recovery failure:", err);
-                notebook.innerText = "Error pulling cloud sync records. Local offline changes will cache.";
-            });
-    }
+        draftCard.innerHTML = `
+    <input class="vocab-character-input text-center bg-transparent border-b border-outline focus:border-primary focus:ring-0 font-bold text-lg p-0 w-20 placeholder:text-sm placeholder:font-normal" 
+           placeholder="字 / 词" 
+           type="text" 
+           id="draft-character-field"/>
+    <span class="breadcrumb-item text-on-surface-variant">---</span>
+    <input class="vocab-meaning-input w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline" 
+           placeholder="Meaning..." 
+           type="text" 
+           id="draft-meaning-field"/>
+  `;
 
-    // ==========================================
-    // PHASE 2: Send Debounced Updates via Sync API
-    // ==========================================
-    function saveWorkspaceNotes(textContents) {
-        console.log("⚡ Debounce timer cleared. Instigating network background sync process...");
-
-        // 1. Fetch current document layout parameters to preserve progress variables
-        fetch(`${API_BASE}/workspace/load-page?user_id=${userId}&video_id=${videoId}`)
-            .then(res => res.json())
-            .then(currentData => {
-                const existingNotes = currentData.workspace?.notes || [];
-
-                // 2. Locate or structure our long-form document row map element within the array
-                const detailedNoteIndex = existingNotes.findIndex(n => n.type === "detailed_analysis");
-
-                const updatedNoteBlock = {
-                    "type": "detailed_analysis",
-                    "timestamp": "00:00", // Can hook into video.currentTime later
-                    "content": textContents
-                };
-
-                if (detailedNoteIndex !== -1) {
-                    // Update the content field of the existing note in-place
-                    existingNotes[detailedNoteIndex].content = textContents;
-                } else {
-                    // If the array doesn't have a detailed analysis note yet, push a new one
-                    existingNotes.push(updatedNoteBlock);
-                }
-
-                // 3. Compile full payload back to our standard workspace synchronization controller
-                const payload = {
-                    user_id: userId,
-                    video_id: videoId,
-                    progress_percent: currentData.workspace?.progress_percent || 0.0,
-                    playback_position_seconds: currentData.workspace?.playback_position_seconds || 0.0,
-                    notes: existingNotes
-                };
-
-                return fetch(`${API_BASE}/workspace/sync`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === "success") {
-                    console.log("✅ Cloud Core synchronization complete. Workspace state locked.");
-                }
-            })
-            .catch(err => console.error("❌ Real-time synchronization failure:", err));
-    }
-
-    // ==========================================
-    // PHASE 3: Event Listeners & Debounce Logic
-    // ==========================================
-    notebook.addEventListener('input', (e) => {
-        // Clear any pending sync operations while the user continues typing
-        clearTimeout(debounceTimeout);
-
-        // Read the text content immediately
-        const textSnapshot = e.target.innerText;
-
-        // Reset timer: Will execute 1000ms after the user completely stops pressing keys
-        debounceTimeout = setTimeout(() => {
-            saveWorkspaceNotes(textSnapshot);
-        }, 1000);
+        // 3. Append to your grid canvas and automatically force user input focus on the character field
+        cardsContainer.appendChild(draftCard);
+        document.getElementById('draft-character-field').focus();
     });
 
-    // Run initial loading sequence immediately on boot
-    loadInitialWorkspace();
-
-    let subtitlesVisible = false;
-
-    // A. Language Toggle Matrix Constraints Engine
-    function updateLanguageVisibility(mode) {
-        // Clear layout visibility rules classes
-        linesContainer.classList.remove('show-zh', 'show-py', 'show-en');
-
-        // Clear active button presentation properties
-        [toggleZh, togglePy, toggleEn].forEach(btn => {
-            btn.className = "w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant font-bold text-xs transition-colors";
-        });
-
-        const activeBtnClass = "w-8 h-8 rounded-full bg-primary text-on-primary font-bold text-xs transition-colors";
-
-        if (mode === 'ZH') {
-            linesContainer.classList.add('show-zh');
-            toggleZh.className = activeBtnClass;
-        } else if (mode === 'PY') {
-            linesContainer.classList.add('show-zh', 'show-py');
-            toggleZh.className = activeBtnClass;
-            togglePy.className = activeBtnClass;
-        } else if (mode === 'EN') {
-            linesContainer.classList.add('show-en');
-            toggleEn.className = activeBtnClass;
-        }
-    }
-
-    toggleZh.addEventListener('click', () => updateLanguageVisibility('ZH'));
-    togglePy.addEventListener('click', () => updateLanguageVisibility('PY'));
-    toggleEn.addEventListener('click', () => updateLanguageVisibility('EN'));
-
-    // B. Render JSON Script Elements dynamically
-    function renderScriptLines() {
-        linesContainer.innerHTML = '';
-
-        videoScript.forEach((item, index) => {
-            const row = document.createElement('div');
-            row.id = `script-row-${index}`;
-            // Added 'flex gap-sm items-start' to separate the narrow controls column from the text content cleanly
-            row.className = "p-md rounded-2xl hover:bg-surface-container-highest cursor-pointer border border-transparent transition-all duration-200 flex gap-sm items-start";
-
-            const displayTime = formatTime(item.start);
-
-            row.innerHTML = `
-              <div class="flex flex-col items-center justify-center w-14 flex-shrink-0 gap-1 bg-surface-container rounded-lg py-1.5 border border-outline-variant/30 select-none">
-                <span class="text-[11px] font-mono font-bold text-primary leading-none">${displayTime}</span>
-                <button class="btn-tts-speak material-symbols-outlined text-[18px] text-on-surface-variant hover:text-primary hover:scale-110 transition-all p-0 m-0 leading-none" data-text="${item.text}" title="Slow Audio Response">
-                  volume_up
-                </button>
-              </div>
-
-              <div class="flex-1 min-w-0 flex flex-col justify-center pt-0.5">
-                <p class="font-body-md text-on-surface script-zh font-medium text-base leading-relaxed break-words">${item.text}</p>
-                <p class="text-xs text-on-surface-variant italic script-py mt-0.5 break-words">${item.pinyin || ''}</p>
-                <p class="text-sm text-on-surface-variant script-en mt-1 break-words">${item.english || 'Translation unavailable'}</p>
-              </div>
-            `;
-
-            // Jump video timeline to position when clicking the text track row background
-            row.addEventListener('click', (e) => {
-                if (!e.target.closest('.btn-tts-speak')) {
-                    video.currentTime = item.start;
-                }
-            });
-
-            linesContainer.appendChild(row);
-        });
-
-        // Re-attach TTS slow audio listeners
-        document.querySelectorAll('.btn-tts-speak').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                speakSlowMandarin(btn.getAttribute('data-text'));
-            });
-        });
-    }
-
-    // C. Slow Mechanical Audio Voice Playback System (Web Speech API Synthesis)
-    function speakSlowMandarin(rawText) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // Terminate pending utterances safely
-
-            // Remove pinyin or syntax formatting symbols if present
-            const cleanText = rawText.replace(/[^\u4e00-\u9fa5]/g, '');
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-
-            utterance.lang = 'zh-CN';
-            utterance.rate = 0.55; // Controlled slow cadence for structural tone review
-            utterance.pitch = 1.0;
-
-            window.speechSynthesis.speak(utterance);
-        } else {
-            console.warn("Local browser configuration environment lacks Web Speech API drivers.");
-        }
-    }
-
-    // D. Sync Scrolling Highlighting Track Line (Extend your existing handleTimeUpdate)
-    let lastActiveIndex = -1;
-
-    function syncScriptSidebarHighlight(currentTime) {
-        let activeIndex = -1;
-
-        // Find current line segment
-        for (let i = 0; i < videoScript.length; i++) {
-            if (currentTime >= videoScript[i].start && (!videoScript[i + 1] || currentTime < videoScript[i + 1].start)) {
-                activeIndex = i;
-                break;
-            }
-        }
-
-        // Trigger update only when row threshold crosses over
-        if (activeIndex !== lastActiveIndex && activeIndex !== -1) {
-            // 1. Remove previous row active styles
-            document.querySelectorAll('.script-row-active').forEach(el => el.classList.remove('script-row-active'));
-
-            const currentActiveRow = document.getElementById(`script-row-${activeIndex}`);
-            if (currentActiveRow) {
-                // 2. Add active focus styles to current element block
-                currentActiveRow.classList.add('script-row-active');
-
-                // 3. Precision Smart Centering Scroll Calculation
-                const containerHeight = linesContainer.clientHeight;
-                const rowTopPosition = currentActiveRow.offsetTop;
-                const rowHeight = currentActiveRow.clientHeight;
-
-                // Calculate target top point so item sits exactly in middle of layout track area
-                const targetScrollPosition = rowTopPosition - (containerHeight / 2) + (rowHeight / 2);
-
-                linesContainer.scrollTo({
-                    top: targetScrollPosition,
-                    behavior: 'smooth'
-                });
-            }
-            lastActiveIndex = activeIndex;
-        }
-    }
-
-    // Captions Display Elements
-    const captionCn = document.getElementById('caption-text-cn');
-
-    // Script Database Variable
-    let videoScript = [];
-
-    // 1. Fetch JSON Script Data
-    async function loadScriptData() {
-        try {
-            // Points to relative asset folder matching your local project directory structure
-            const response = await fetch('assets/captions/AAA000_script.json');
-            if (!response.ok) throw new Error('Failed to retrieve script database.');
-
-            videoScript = await response.json();
-
-            // Sort array by timestamp safely to guarantee binary search calculations pass
-            videoScript.sort((a, b) => a.start - b.start);
-            renderScriptLines();
-        } catch (error) {
-            console.error('Error compiling timeline scripts:', error);
-            captionCn.textContent = "Error loading subtitles.";
-        }
-    }
-
-    // 2. Playback State Synchronization Toggle
-    function togglePlay() {
-        if (video.paused) {
-            video.play();
-            playBtn.textContent = 'pause';
-        } else {
-            video.pause();
-            playBtn.textContent = 'play_arrow';
-        }
-    }
-
-    // 3. Time Tracker & Active Subtitle Evaluation Line
-    function handleTimeUpdate() {
-        const currentTime = video.currentTime;
-        const duration = video.duration || 0;
-
-        // Refresh structural tracking bar visual
-        const progressPercent = (currentTime / duration) * 100;
-        timelineFill.style.width = `${progressPercent}%`;
-
-        // Refresh structural clock layout text
-        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-
-        // Sync Active Captions via iterative timestamp indexing
-        let activeText = "";
-
-        for (let i = 0; i < videoScript.length; i++) {
-            const currentSegment = videoScript[i];
-            const nextSegment = videoScript[i + 1];
-
-            // If current time is past start marker and safely behind next block or end of file
-            if (currentTime >= currentSegment.start && (!nextSegment || currentTime < nextSegment.start)) {
-                activeText = currentSegment.text;
-                break;
-            }
-        }
-
-        if (activeText) {
-            captionCn.textContent = activeText;
-        }
-
-        syncScriptSidebarHighlight(currentTime);
-    }
-
-    // 4. Interactive Scrubbing System
-    function scrubVideo(e) {
-        const rect = timeline.getBoundingClientRect();
-        const clickPositionOffset = (e.clientX - rect.left) / rect.width;
-        video.currentTime = clickPositionOffset * video.duration;
-    }
-
-    ccBtn.addEventListener('click', () => {
-        subtitlesVisible = !subtitlesVisible;
-
-        if (subtitlesVisible) {
-            // Reveal tray and turn button active (red accent color)
-            captionsContainer.classList.remove('opacity-0', 'pointer-events-none');
-            ccBtn.classList.remove('text-neutral-500', 'line-through');
-            ccBtn.classList.add('text-primary');
-        } else {
-            // Hide tray and dim button state
-            captionsContainer.classList.add('opacity-0', 'pointer-events-none');
-            ccBtn.classList.remove('text-primary');
-            ccBtn.classList.add('text-neutral-500', 'line-through');
-        }
-    });
-
-    // Helper Utility: Formatting raw milliseconds/seconds to standard text outputs
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    }
-
-    // Interactive Control Event Bindings
-    playBtn.addEventListener('click', togglePlay);
-    video.addEventListener('click', togglePlay);
-
-    rewindBtn.addEventListener('click', () => {
-        video.currentTime = Math.max(0, video.currentTime - 10);
-    });
-
-    fullscreenBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-            video.requestFullscreen().catch(err => console.error(err));
-        } else {
-            document.exitFullscreen();
-        }
-    });
-
-    // Structural update triggers
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('loadedmetadata', handleTimeUpdate);
-    timeline.addEventListener('click', scrubVideo);
-
-    // Micro-interaction for HSK highlighting simulation
-    document.querySelectorAll('.hsk-level-1, .hsk-level-2').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            el.style.backgroundColor = 'rgba(183, 16, 42, 0.08)';
-            el.style.transition = 'background-color 0.2s ease';
-        });
-        el.addEventListener('mouseleave', () => {
-            el.style.backgroundColor = 'transparent';
-        });
-    });
 
     // Video Library Collapsible Logic
     const categoryToggles = document.querySelectorAll('.category-toggle');
@@ -527,18 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Simple interactive script syncing simulation
-    const scriptItems = document.querySelectorAll('.overflow-y-auto > div');
-    scriptItems.forEach(item => {
-        item.addEventListener('click', () => {
-            scriptItems.forEach(i => i.classList.remove('bg-secondary-container', 'border-outline-variant', 'shadow-sm', 'font-bold'));
-            scriptItems.forEach(i => i.classList.add('hover:bg-surface-container-highest', 'border-transparent'));
-
-            item.classList.add('bg-secondary-container', 'border-outline-variant', 'shadow-sm', 'font-bold');
-            item.classList.remove('hover:bg-surface-container-highest', 'border-transparent');
-        });
-    });
-
     // Floating Action Button logic for Quick Notes
     const fab = document.querySelector('button.bg-tertiary');
     if (fab) {
@@ -547,6 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initialization Runtime Routine
-    loadScriptData();
+    function checkEmptyStateFallback() {
+        if (cardsContainer.children.length === 0) {
+            cardsContainer.innerHTML = `<p class="text-sm text-on-surface-variant italic p-sm col-span-full">No flashcard terms generated yet for this review module.</p>`;
+        }
+    }
 });

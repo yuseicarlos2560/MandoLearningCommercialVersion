@@ -15,6 +15,7 @@
   <link href="css/navigation.css" rel="stylesheet">
   <link href="css/dashboard.css" rel="stylesheet">
   <script src="js/workspace-video.js" defer></script>
+  <script src="js/video-processor.js" defer></script>
 </head>
 
 <body class="text-on-surface bg-surface-bright min-h-screen">
@@ -168,15 +169,20 @@
           <div id="study-notebook"
                class="notebook-textarea"
                contenteditable="true"
-               data-user-id="USR_789"
+               data-user-id="USR_000789"
                data-video-id="VID_AAA000">
             Loading your saved workspace notes...
           </div>
         </div>
 
-        <div class="bento-card" id="vocab-section" data-user-id="USR_789" data-video-id="VID_AAA000">
+        <div class="bento-card" id="vocab-section" data-user-id="USR_000789" data-video-id="VID_AAA000">
           <div class="flex justify-between items-center mb-lg">
-            <h3 class="font-headline-md text-headline-md text-on-surface">Quick Vocabulary Notes</h3>
+            <div class="flex items-center gap-sm">
+              <h3 class="font-headline-md text-headline-md text-on-surface">Quick Vocabulary Notes</h3>
+              <button id="add-vocab-btn" class="flex items-center gap-xs text-sm font-bold bg-primary text-on-primary px-sm py-xs rounded-full hover:opacity-90 transition-all cursor-pointer ml-md">
+                <span class="material-symbols-outlined text-sm">add</span> Add Word
+              </button>
+            </div>
             <span class="breadcrumb-item text-on-surface-variant">Press Enter to save</span>
           </div>
 
