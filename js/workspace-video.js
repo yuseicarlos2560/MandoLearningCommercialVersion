@@ -14,14 +14,126 @@ document.addEventListener('DOMContentLoaded', () => {
     const togglePy = document.getElementById('toggle-py');
     const toggleEn = document.getElementById('toggle-en');
     const notebook = document.getElementById('study-notebook');
+    const vocabSection = document.getElementById('vocab-section');
+    const cardsContainer = document.getElementById('vocab-cards-container');
+
+    if (!vocabSection || !cardsContainer) return;
+
+    const userId = vocabSection.getAttribute('data-user-id');
+    const videoId = vocabSection.getAttribute('data-video-id');
+    const API_BASE = 'http://127.0.0.1:8000/api/v1';
+
+    // =======================================================
+    // PHASE 1: Render Vocabulary Nodes Dynamically from Database
+    // =======================================================
+    function loadVocabularyWorkspace() {
+        fetch(`${API_BASE}/workspace/load-page?user_id=${userId}&video_id=${videoId}`)
+            .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+            .then(data => {
+                cardsContainer.innerHTML = ''; // Expunge loader indicators
+
+                const notes = data.workspace?.notes || [];
+                // Isolate single-word vocabulary object blocks
+                const vocabNotes = notes.filter(n => n.type === "single_word_vocab");
+
+                if (vocabNotes.length === 0) {
+                    cardsContainer.innerHTML = `<p class="text-sm text-on-surface-variant italic p-sm col-span-full">No flashcard terms generated yet for this review module.</p>`;
+                    return;
+                }
+
+                // Programmatically stitch card elements to the grid matrix
+                vocabNotes.forEach(vocab => {
+                    const card = document.createElement('div');
+
+                    // Apply 'active' style wrappers natively if user has already assigned meaning details
+                    const isActive = vocab.user_custom_definition ? "active" : "group";
+                    const textClass = vocab.user_custom_definition ? "active-text" : "";
+
+                    card.className = `vocab-input-card ${isActive}`;
+                    card.setAttribute('data-note-id', vocab.note_id);
+                    card.setAttribute('data-character', vocab.character);
+
+                    card.innerHTML = `
+            <span class="vocab-character ${textClass}">${vocab.character}</span>
+            <span class="breadcrumb-item ${vocab.user_custom_definition ? 'text-on-secondary-fixed-variant' : 'text-on-surface-variant'}">
+              ${vocab.pinyin || '---'}
+            </span>
+            <input class="w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline ${vocab.user_custom_definition ? 'text-on-surface font-bold' : ''}" 
+                   placeholder="Meaning..." 
+                   type="text" 
+                   value="${vocab.user_custom_definition || ''}"/>
+          `;
+
+                    cardsContainer.appendChild(card);
+                });
+            })
+            .catch(() => {
+                cardsContainer.innerHTML = `<p class="text-sm text-error font-medium p-sm col-span-full">Failed to connect to local api database parameters.</p>`;
+            });
+    }
+
+    // =======================================================
+    // PHASE 2: Handle Key Press Events via Event Delegation
+    // =======================================================
+    cardsContainer.addEventListener('keydown', (e) => {
+        // Process actions ONLY when the targeted keystroke is exactly "Enter"
+        if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+
+        const inputElement = e.target;
+        const targetValue = inputElement.value.trim();
+        const cardElement = inputElement.closest('.vocab-input-card');
+
+        const noteId = cardElement.getAttribute('data-note-id');
+        const character = cardElement.getAttribute('data-character');
+
+        // Visually confirm saving operation initiation loop
+        inputElement.blur();
+        inputElement.style.opacity = '0.5';
+
+        // Construct the operational Action Payload payload schema tracking delta states
+        const payload = {
+            action: "UPDATE", // Leverages our custom PATCH controller matrix cleanly
+            note_id: noteId,
+            type: "single_word_vocab",
+            character: character,
+            user_custom_definition: targetValue,
+            mastery_status: targetValue ? "learning" : "unstarted"
+        };
+
+        fetch(`${API_BASE}/workspace/${userId}/${videoId}/notes`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+            .then(result => {
+                if (result.status === "success") {
+                    console.log(`✅ Flashcard translation committed successfully for: ${character}`);
+
+                    // Dynamically shift visual classes to match standard production CSS mockups instant feedback
+                    inputElement.style.opacity = '1';
+                    if (targetValue) {
+                        cardElement.className = "vocab-input-card active";
+                        cardElement.querySelector('.vocab-character').className = "vocab-character active-text";
+                        inputElement.className = "w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 text-on-surface font-bold";
+                    } else {
+                        cardElement.className = "vocab-input-card group";
+                        cardElement.querySelector('.vocab-character').className = "vocab-character";
+                        inputElement.className = "w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline";
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("❌ Flashcard state alignment exception:", err);
+                inputElement.style.opacity = '1';
+                inputElement.classList.add('border-b', 'border-error'); // Paint a temporary error ring line boundary marker
+            });
+    });
+
+    // Run hydration processing immediately on boot lifecycle loops
+    loadVocabularyWorkspace();
 
     if (!notebook) return;
-
-    const userId = notebook.getAttribute('data-user-id');
-    const videoId = notebook.getAttribute('data-video-id');
-
-    // Track our live API root URL (running locally on port 8000)
-    const API_BASE = 'http://127.0.0.1:8000/api/v1';
     let debounceTimeout = null;
 
     // ==========================================
