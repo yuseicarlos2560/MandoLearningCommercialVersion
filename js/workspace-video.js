@@ -13,6 +13,119 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleZh = document.getElementById('toggle-zh');
     const togglePy = document.getElementById('toggle-py');
     const toggleEn = document.getElementById('toggle-en');
+    const notebook = document.getElementById('study-notebook');
+
+    if (!notebook) return;
+
+    const userId = notebook.getAttribute('data-user-id');
+    const videoId = notebook.getAttribute('data-video-id');
+
+    // Track our live API root URL (running locally on port 8000)
+    const API_BASE = 'http://127.0.0.1:8000/api/v1';
+    let debounceTimeout = null;
+
+    // ==========================================
+    // PHASE 1: Fetch and Populate Existing Data
+    // ==========================================
+    function loadInitialWorkspace() {
+        fetch(`${API_BASE}/workspace/load-page?user_id=${userId}&video_id=${videoId}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to extract data path.");
+                return response.json();
+            })
+            .then(data => {
+                // If a workspace exists, pull out long-form detailed_analysis notes if present
+                const workspace = data.workspace;
+
+                if (workspace && workspace.notes) {
+                    // Find the detailed analysis block within our polymorphic data structure array
+                    const longFormNote = workspace.notes.find(note => note.type === "detailed_analysis");
+                    if (longFormNote && longFormNote.content) {
+                        notebook.innerText = longFormNote.content;
+                        return;
+                    }
+                }
+
+                // Fallback layout template structure if workspace records are entirely blank
+                notebook.innerHTML = `Start typing your detailed analysis here...<br/><br/>• Key grammar points:<br/>• Cultural context:`;
+            })
+            .catch(err => {
+                console.error("Workspace recovery failure:", err);
+                notebook.innerText = "Error pulling cloud sync records. Local offline changes will cache.";
+            });
+    }
+
+    // ==========================================
+    // PHASE 2: Send Debounced Updates via Sync API
+    // ==========================================
+    function saveWorkspaceNotes(textContents) {
+        console.log("⚡ Debounce timer cleared. Instigating network background sync process...");
+
+        // 1. Fetch current document layout parameters to preserve progress variables
+        fetch(`${API_BASE}/workspace/load-page?user_id=${userId}&video_id=${videoId}`)
+            .then(res => res.json())
+            .then(currentData => {
+                const existingNotes = currentData.workspace?.notes || [];
+
+                // 2. Locate or structure our long-form document row map element within the array
+                const detailedNoteIndex = existingNotes.findIndex(n => n.type === "detailed_analysis");
+
+                const updatedNoteBlock = {
+                    "type": "detailed_analysis",
+                    "timestamp": "00:00", // Can hook into video.currentTime later
+                    "content": textContents
+                };
+
+                if (detailedNoteIndex !== -1) {
+                    // Update the content field of the existing note in-place
+                    existingNotes[detailedNoteIndex].content = textContents;
+                } else {
+                    // If the array doesn't have a detailed analysis note yet, push a new one
+                    existingNotes.push(updatedNoteBlock);
+                }
+
+                // 3. Compile full payload back to our standard workspace synchronization controller
+                const payload = {
+                    user_id: userId,
+                    video_id: videoId,
+                    progress_percent: currentData.workspace?.progress_percent || 0.0,
+                    playback_position_seconds: currentData.workspace?.playback_position_seconds || 0.0,
+                    notes: existingNotes
+                };
+
+                return fetch(`${API_BASE}/workspace/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === "success") {
+                    console.log("✅ Cloud Core synchronization complete. Workspace state locked.");
+                }
+            })
+            .catch(err => console.error("❌ Real-time synchronization failure:", err));
+    }
+
+    // ==========================================
+    // PHASE 3: Event Listeners & Debounce Logic
+    // ==========================================
+    notebook.addEventListener('input', (e) => {
+        // Clear any pending sync operations while the user continues typing
+        clearTimeout(debounceTimeout);
+
+        // Read the text content immediately
+        const textSnapshot = e.target.innerText;
+
+        // Reset timer: Will execute 1000ms after the user completely stops pressing keys
+        debounceTimeout = setTimeout(() => {
+            saveWorkspaceNotes(textSnapshot);
+        }, 1000);
+    });
+
+    // Run initial loading sequence immediately on boot
+    loadInitialWorkspace();
 
     let subtitlesVisible = false;
 
@@ -52,26 +165,29 @@ document.addEventListener('DOMContentLoaded', () => {
         videoScript.forEach((item, index) => {
             const row = document.createElement('div');
             row.id = `script-row-${index}`;
-            row.className = "p-md rounded-2xl hover:bg-surface-container-highest cursor-pointer transition-all border border-transparent transition-colors duration-200";
+            // Added 'flex gap-sm items-start' to separate the narrow controls column from the text content cleanly
+            row.className = "p-md rounded-2xl hover:bg-surface-container-highest cursor-pointer border border-transparent transition-all duration-200 flex gap-sm items-start";
 
-            // Auto calculate visible clock display representation text
             const displayTime = formatTime(item.start);
 
             row.innerHTML = `
-              <div class="flex gap-sm mb-xs">
-                <span class="breadcrumb-item text-primary font-mono">${displayTime}</span>
-                <div class="flex items-center gap-xs w-full">
-                  <button class="btn-tts-speak material-symbols-outlined text-sm text-primary hover:scale-120 transition-transform" data-text="${item.text}">play_circle</button>
-                  <p class="font-body-md text-on-surface script-zh font-medium">${item.text}</p>
-                </div>
+              <div class="flex flex-col items-center justify-center w-14 flex-shrink-0 gap-1 bg-surface-container rounded-lg py-1.5 border border-outline-variant/30 select-none">
+                <span class="text-[11px] font-mono font-bold text-primary leading-none">${displayTime}</span>
+                <button class="btn-tts-speak material-symbols-outlined text-[18px] text-on-surface-variant hover:text-primary hover:scale-110 transition-all p-0 m-0 leading-none" data-text="${item.text}" title="Slow Audio Response">
+                  volume_up
+                </button>
               </div>
-              <p class="text-xs text-on-surface-variant italic script-py mb-xs">${item.pinyin || ''}</p>
-              <p class="text-sm text-on-surface-variant script-en">${item.english || 'Translation unavailable'}</p>
+
+              <div class="flex-1 min-w-0 flex flex-col justify-center pt-0.5">
+                <p class="font-body-md text-on-surface script-zh font-medium text-base leading-relaxed break-words">${item.text}</p>
+                <p class="text-xs text-on-surface-variant italic script-py mt-0.5 break-words">${item.pinyin || ''}</p>
+                <p class="text-sm text-on-surface-variant script-en mt-1 break-words">${item.english || 'Translation unavailable'}</p>
+              </div>
             `;
 
             // Jump video timeline to position when clicking the text track row background
             row.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('btn-tts-speak')) {
+                if (!e.target.closest('.btn-tts-speak')) {
                     video.currentTime = item.start;
                 }
             });
@@ -79,10 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
             linesContainer.appendChild(row);
         });
 
-        // Attach Audio Slow Play Engine to individual rows
+        // Re-attach TTS slow audio listeners
         document.querySelectorAll('.btn-tts-speak').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Avoid triggering parent row video timeline jumps
+                e.stopPropagation();
                 speakSlowMandarin(btn.getAttribute('data-text'));
             });
         });
@@ -158,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadScriptData() {
         try {
             // Points to relative asset folder matching your local project directory structure
-            const response = await fetch('assets/captions/AAA000.json');
+            const response = await fetch('assets/captions/AAA000_script.json');
             if (!response.ok) throw new Error('Failed to retrieve script database.');
 
             videoScript = await response.json();

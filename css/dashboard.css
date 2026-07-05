@@ -229,9 +229,14 @@
 
 /* Timeline Line-by-Line Highlighting Active Block */
 .script-row-active {
-    background-color: rgba(175, 35, 48, 0.08) !important;
-    border-color: #dc9ca8 !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    background-color: rgba(175, 35, 48, 0.06) !important;
+    border-color: rgba(175, 35, 48, 0.25) !important;
+}
+
+.script-row-active .bg-surface-container {
+    /* Give the active row's small badge column a subtle highlighted border */
+    background-color: rgba(175, 35, 48, 0.1) !important;
+    border-color: rgba(175, 35, 48, 0.2) !important;
 }
 
 /* Custom smooth scroll layout controls for long transcript arrays */
