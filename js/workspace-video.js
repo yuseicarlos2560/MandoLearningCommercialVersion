@@ -56,24 +56,58 @@ document.addEventListener('DOMContentLoaded', () => {
         const isActive = vocab.user_custom_definition ? "active" : "group";
         const textClass = vocab.user_custom_definition ? "active-text" : "";
 
-        // Added 'relative' so the delete button can position itself in the top-right corner
-        card.className = `vocab-input-card ${isActive} relative group/card`;
+        card.className = `vocab-input-card ${isActive} relative group/card flex flex-col justify-between p-md min-h-[160px]`;
         card.setAttribute('data-note-id', vocab.note_id);
         card.setAttribute('data-character', vocab.character);
 
-        card.innerHTML = `
-      <button class="delete-vocab-btn absolute top-1 right-2 text-outline hover:text-error opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 font-bold text-sm cursor-pointer p-xs select-none" title="Delete word">
-        ✕
-      </button>
+        // Parse pre-existing children if they exist in the DB object row
+        let childrenHTML = '';
+        if (vocab.children_notes && vocab.children_notes.length > 0) {
+            vocab.children_notes.forEach(child => {
+                childrenHTML += createChildRowHTML(child.note_id, child.character, child.user_custom_definition);
+            });
+        }
 
-      <span class="vocab-character ${textClass}">${vocab.character}</span>
-      <span class="breadcrumb-item ${vocab.user_custom_definition ? 'text-on-secondary-fixed-variant' : 'text-on-surface-variant'}">${vocab.pinyin || '---'}</span>
-      <input class="w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline ${vocab.user_custom_definition ? 'text-on-surface font-bold' : ''}" 
-             placeholder="Meaning..." 
-             type="text" 
-             value="${vocab.user_custom_definition || ''}"/>
-    `;
+        card.innerHTML = `
+          <div class="absolute top-1 right-2 flex items-center gap-xs opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 z-10">
+            <button class="add-child-btn text-xs text-primary hover:underline font-bold cursor-pointer p-xs select-none" title="Add related word">
+              + Sub
+            </button>
+            <button class="delete-vocab-btn text-outline hover:text-error font-bold text-sm cursor-pointer p-xs select-none" title="Delete main word">
+              ✕
+            </button>
+          </div>
+
+          <div class="flex flex-col items-center w-full">
+            <span class="vocab-character ${textClass}">${vocab.character}</span>
+            <span class="breadcrumb-item ${vocab.user_custom_definition ? 'text-on-secondary-fixed-variant' : 'text-on-surface-variant'}">${vocab.pinyin || '---'}</span>
+            <input class="w-full text-center bg-transparent border-none focus:ring-0 font-body-md p-0 placeholder:text-outline ${vocab.user_custom_definition ? 'text-on-surface font-bold' : ''}" 
+                   placeholder="Meaning..." 
+                   type="text" 
+                   value="${vocab.user_custom_definition || ''}"/>
+          </div>
+
+          <div class="child-notes-container w-full border-t border-outline/30 mt-sm pt-sm flex flex-col gap-xs text-xs">
+            ${childrenHTML}
+          </div>
+        `;
         cardsContainer.appendChild(card);
+    }
+
+    function createChildRowHTML(childId, character = '', meaning = '', isDraft = false) {
+        return `
+          <div class="child-note-row flex items-center justify-between gap-xs w-full bg-surface-container-low px-xs py-[2px] rounded" 
+               data-child-id="${childId}" ${isDraft ? 'data-is-child-draft="true"' : ''}>
+            ${isDraft ? `
+              <input class="child-char-input font-bold bg-transparent border-b border-outline w-12 text-left p-0 focus:ring-0 text-xs" placeholder="Word" type="text" value="${character}"/>
+              <input class="child-meaning-input bg-transparent border-none w-full text-left p-0 focus:ring-0 text-xs text-on-surface-variant" placeholder="Meaning..." type="text" value="${meaning}"/>
+            ` : `
+              <span class="font-bold text-primary">${character}</span>
+              <input class="child-meaning-input bg-transparent border-none w-full text-left p-0 focus:ring-0 text-xs text-on-surface-variant" type="text" value="${meaning}" placeholder="Add sub meaning..."/>
+              <button class="delete-child-btn text-[10px] text-outline hover:text-error cursor-pointer px-xs select-none">✕</button>
+            `}
+          </div>
+        `;
     }
 
     // ==========================================
@@ -119,9 +153,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const inputElement = e.target;
         const cardElement = inputElement.closest('.vocab-input-card');
+        const childRow = inputElement.closest('.child-note-row');
+
+        const parentId = cardElement?.getAttribute('data-note-id');
         const isDraft = cardElement.getAttribute('data-is-draft') === 'true';
 
         let payload = {};
+
+        // ----------------------------------------------------
+        // BRANCH A: Handling Nested Sub-note Input Matrices
+        // ----------------------------------------------------
+        if (childRow) {
+            const isChildDraft = childRow.getAttribute('data-is-child-draft') === 'true';
+            const childMeaningInput = childRow.querySelector('.child-meaning-input');
+            const targetMeaning = childMeaningInput.value.trim();
+
+            if (isChildDraft) {
+                const childCharInput = childRow.querySelector('.child-char-input');
+                const targetChar = childCharInput.value.trim();
+                if (!targetChar) return;
+
+                const payload = {
+                    action: "ADD",
+                    parent_note_id: parentId, // Binds operation to parent document structure
+                    type: "single_word_vocab",
+                    character: targetChar,
+                    user_custom_definition: targetMeaning
+                };
+
+                fetch(`${API_BASE}/workspace/${userId}/${videoId}/notes`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                    .then(res => res.json())
+                    .then(resData => {
+                        if (resData.status === "success") {
+                            // Transform the child rows draft shell into normal operational rows live
+                            childRow.innerHTML = `
+                          <span class="font-bold text-primary">${targetChar}</span>
+                          <input class="child-meaning-input bg-transparent border-none w-full text-left p-0 focus:ring-0 text-xs text-on-surface-variant" type="text" value="${targetMeaning}" placeholder="Add sub meaning..."/>
+                          <button class="delete-child-btn text-[10px] text-outline hover:text-error cursor-pointer px-xs select-none">✕</button>
+                        `;
+                            childRow.setAttribute('data-child-id', resData.note_id);
+                            childRow.removeAttribute('data-is-child-draft');
+                        }
+                    });
+            } else {
+                // Regular inline UPDATE execution for an existing child node row field
+                const childId = childRow.getAttribute('data-child-id');
+                const payload = {
+                    action: "UPDATE",
+                    note_id: childId,
+                    parent_note_id: parentId,
+                    user_custom_definition: targetMeaning
+                };
+
+                inputElement.blur();
+                fetch(`${API_BASE}/workspace/${userId}/${videoId}/notes`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
+            return;
+        }
 
         if (isDraft) {
             // ==========================================
@@ -230,6 +326,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     cardsContainer.addEventListener('click', (e) => {
+        const addChildBtn = e.target.closest('.add-child-btn');
+        const deleteChildBtn = e.target.closest('.delete-child-btn');
+
+        // Handler Hook 1: Trigger Sub-term Inline Drafts Creation
+        if (addChildBtn) {
+            const card = addChildBtn.closest('.vocab-input-card');
+            const childContainer = card.querySelector('.child-notes-container');
+
+            // Create a randomized client key variable reference tag temporarily
+            const tempId = `TEMP_${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+            childContainer.insertAdjacentHTML('beforeend', createChildRowHTML(tempId, '', '', true));
+            childContainer.querySelector('.child-char-input').focus();
+            return;
+        }
+
+        // Handler Hook 2: Trigger Sub-term Atomic Purge Requests
+        if (deleteChildBtn) {
+            const card = deleteChildBtn.closest('.vocab-input-card');
+            const row = deleteChildBtn.closest('.child-note-row');
+
+            const parentId = card.getAttribute('data-note-id');
+            const childId = row.getAttribute('data-child-id');
+
+            row.style.opacity = '0.3';
+            fetch(`${API_BASE}/workspace/${userId}/${videoId}/notes`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "DELETE", note_id: childId, parent_note_id: parentId })
+            })
+                .then(res => res.json())
+                .then(() => row.remove());
+            return;
+        }
+
         // Target clicks that land on our custom delete button element
         const deleteBtn = e.target.closest('.delete-vocab-btn');
         if (!deleteBtn) return;
