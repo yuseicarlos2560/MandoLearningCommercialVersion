@@ -96,15 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createChildRowHTML(childId, character = '', meaning = '', isDraft = false) {
         return `
-          <div class="child-note-row flex items-center justify-between gap-xs w-full bg-surface-container-low px-xs py-[2px] rounded" 
-               data-child-id="${childId}" ${isDraft ? 'data-is-child-draft="true"' : ''}>
+          <div class="child-note-row" data-child-id="${childId}" ${isDraft ? 'data-is-child-draft="true"' : ''}>
             ${isDraft ? `
-              <input class="child-char-input font-bold bg-transparent border-b border-outline w-12 text-left p-0 focus:ring-0 text-xs" placeholder="Word" type="text" value="${character}"/>
-              <input class="child-meaning-input bg-transparent border-none w-full text-left p-0 focus:ring-0 text-xs text-on-surface-variant" placeholder="Meaning..." type="text" value="${meaning}"/>
+              <input class="child-char-input text-center bg-transparent border-b border-outline focus:ring-0 font-bold" 
+                     placeholder="字 / 词" type="text" value="${character}"/>
+              <input class="child-meaning-input text-center bg-transparent border-none focus:ring-0 font-body-md" 
+                     placeholder="Meaning..." type="text" value="${meaning}"/>
             ` : `
-              <span class="font-bold text-primary">${character}</span>
-              <input class="child-meaning-input bg-transparent border-none w-full text-left p-0 focus:ring-0 text-xs text-on-surface-variant" type="text" value="${meaning}" placeholder="Add sub meaning..."/>
-              <button class="delete-child-btn text-[10px] text-outline hover:text-error cursor-pointer px-xs select-none">✕</button>
+              <button class="delete-child-btn select-none">✕</button>
+              
+              <span class="child-char-label font-bold">${character}</span>
+              <input class="child-meaning-input bg-transparent border-none focus:ring-0 text-center" 
+                     type="text" value="${meaning}" placeholder="Add sub meaning..."/>
             `}
           </div>
         `;
@@ -190,10 +193,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     .then(resData => {
                         if (resData.status === "success") {
                             // Transform the child rows draft shell into normal operational rows live
+                            // Inside your keydown event handler under Branch A (isChildDraft success loop):
+                            // Inside your cardsContainer keydown event handler under Branch A (isChildDraft success loop):
                             childRow.innerHTML = `
-                          <span class="font-bold text-primary">${targetChar}</span>
-                          <input class="child-meaning-input bg-transparent border-none w-full text-left p-0 focus:ring-0 text-xs text-on-surface-variant" type="text" value="${targetMeaning}" placeholder="Add sub meaning..."/>
-                          <button class="delete-child-btn text-[10px] text-outline hover:text-error cursor-pointer px-xs select-none">✕</button>
+                          <button class="delete-child-btn select-none">✕</button>
+                          <span class="child-char-label font-bold">${targetChar}</span>
+                          <input class="child-meaning-input bg-transparent border-none focus:ring-0 text-center" 
+                                 type="text" value="${targetMeaning}" placeholder="Add sub meaning..."/>
                         `;
                             childRow.setAttribute('data-child-id', resData.note_id);
                             childRow.removeAttribute('data-is-child-draft');

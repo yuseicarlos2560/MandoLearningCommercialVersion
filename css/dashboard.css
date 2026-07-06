@@ -152,7 +152,7 @@
     border: 2px dashed #dc9ca8;
     display: flex;
     flex-direction: column;
-    items-align: center;
+    align-items: center;
     justify-content: center;
     gap: 12px;
     cursor: text;
@@ -176,6 +176,73 @@
 }
 .vocab-character.active-text {
     color: #af2330;
+}
+
+/* --- Refactored Nested Child Cards --- */
+.child-notes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;          /* Healthy breathing room between stacked children */
+    width: 100%;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.child-note-row {
+    position: relative;
+    display: flex;
+    flex-direction: column; /* Match parent's vertical stacking */
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1rem;         /* Generous internal spacing */
+    border-radius: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.4); /* Glassmorphism/layered effect */
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+/* Hover effect specifically for the child card */
+.child-note-row:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+/* --- Typographic Overrides for Child Text Elements --- */
+.child-note-row .child-char-label,
+.child-note-row .child-char-input {
+    width: 100% !important; /* Allow the text or input to wrap naturally */
+    font-size: 1.25rem;     /* Bold, clear Chinese text sizes (matching parent vibe) */
+    font-weight: 700;
+    text-align: center;
+    color: var(--md-sys-color-primary, #0061a4);
+    opacity: 0.85;          /* Subtle styling difference from parent */
+}
+
+.child-note-row .child-meaning-input {
+    width: 100%;
+    text-align: center;     /* Centered text style matching parent */
+    font-size: 0.95rem;     /* Comfortable reading scale */
+    color: #444;
+    margin-top: 0.25rem;
+}
+
+/* Absolute Positioned Delete Trigger Button for Child Card */
+.child-note-row .delete-child-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.75rem;
+    color: #888;
+    padding: 2px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.child-note-row:hover .delete-child-btn {
+    opacity: 1;
 }
 
 /* Layout Horizontal Carousels */
