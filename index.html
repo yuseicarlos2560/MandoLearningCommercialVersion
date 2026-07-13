@@ -1,431 +1,364 @@
 <!DOCTYPE html>
 
-<html class="scroll-smooth" lang="en"><head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>MandoLearning</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-  <script src="js/tailwind.config.js"></script>
-
-  <link href="css/style.css" rel="stylesheet">
-
-  <script src="js/workspace-video.js" defer></script>
-</head>
-<body class="bg-surface font-body-md text-on-surface">
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30">
-  <div class="flex justify-between items-center h-16 px-gutter max-w-max-width mx-auto">
-    <div class="font-headline-md text-headline-md font-bold text-primary">MandoLearning</div>
-    <div class="hidden md:flex items-center gap-md">
-      <a class="font-body-md text-body-md text-primary border-b-2 border-primary pb-1 transition-colors" href="#">Features</a>
-      <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/flashcards-study.html">Flashcards</a>
-      <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">HSK Levels</a>
-      <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Analytics</a>
-      <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a>
-    </div>
-    <div class="flex items-center gap-sm">
-      <button class="px-sm py-xs text-secondary font-semibold hover:opacity-80 transition-all">Login</button>
-      <button class="bg-primary text-on-primary px-md py-xs rounded-lg font-semibold hover:scale-95 transition-all duration-150 shadow-lg">Get Started</button>
-    </div>
-  </div>
+<html class="light" lang="en" style=""><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#4d1c85",
+                        "on-secondary-container": "#842141",
+                        "error-container": "#f95630",
+                        "primary-fixed": "#ff7576",
+                        "primary-container": "#ff7576",
+                        "secondary-fixed": "#ffc2cd",
+                        "on-surface-variant": "#814c58",
+                        "on-tertiary-fixed": "#25004b",
+                        "on-error-container": "#520c00",
+                        "on-primary": "#ffefee",
+                        "tertiary-fixed-dim": "#bd8df9",
+                        "error-dim": "#b92902",
+                        "surface": "#fff4f4",
+                        "on-primary-fixed-variant": "#60000f",
+                        "inverse-on-surface": "#ca8c98",
+                        "secondary-dim": "#8e2a49",
+                        "tertiary-fixed": "#c99dff",
+                        "surface-container-highest": "#ffd1d9",
+                        "surface-container": "#ffe1e5",
+                        "on-primary-container": "#4e000a",
+                        "inverse-primary": "#f9595f",
+                        "surface-tint": "#af2330",
+                        "on-tertiary-container": "#440e7c",
+                        "surface-variant": "#ffd1d9",
+                        "outline-variant": "#dc9ca8",
+                        "on-primary-fixed": "#000000",
+                        "tertiary-container": "#c99dff",
+                        "outline": "#a06773",
+                        "primary-fixed-dim": "#fc5c61",
+                        "surface-dim": "#ffc6d0",
+                        "secondary": "#9e3655",
+                        "on-secondary-fixed-variant": "#902b4a",
+                        "tertiary-dim": "#65379d",
+                        "primary-dim": "#9e1425",
+                        "on-secondary": "#ffeff0",
+                        "on-secondary-fixed": "#6a0a2f",
+                        "on-error": "#ffefec",
+                        "on-background": "#4c212c",
+                        "inverse-surface": "#24020c",
+                        "surface-container-high": "#ffd9df",
+                        "surface-container-low": "#ffecee",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fff4f4",
+                        "on-tertiary": "#faefff",
+                        "primary": "#af2330",
+                        "secondary-fixed-dim": "#ffadbe",
+                        "secondary-container": "#ffc2cd",
+                        "error": "#b02500",
+                        "on-surface": "#4c212c",
+                        "background": "#fff4f4",
+                        "tertiary": "#7144aa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "base": "8px",
+                        "max-width": "1200px",
+                        "md": "24px",
+                        "lg": "48px",
+                        "margin-desktop": "auto",
+                        "sm": "12px",
+                        "margin-mobile": "20px",
+                        "gutter": "16px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "character-display": ["Noto Serif SC"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "character-display": ["64px", {"lineHeight": "80px", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "38px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    }catch(_e){}</script></head><body class="text-on-surface overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 glass-nav bg-surface/90 border-b border-outline-variant">
+<div class="flex justify-between items-center w-full px-lg py-md max-w-max-width mx-auto">
+<div class="flex items-center gap-md">
+<span class="text-headline-md font-headline-md font-bold text-primary">MandoLearning</span>
+<nav class="hidden md:flex gap-md ml-lg">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Videos</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors font-body-md text-body-md" href="#">Scripts</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors font-body-md text-body-md" href="#">Documents</a>
 </nav>
-<!-- Hero Section -->
-<section class="pt-32 pb-xl px-gutter max-w-max-width mx-auto seigaiha-bg min-h-[819px] flex flex-col lg:flex-row items-center gap-xl">
-  <div class="flex-1 space-y-md">
-    <h1 class="font-headline-lg text-headline-lg text-on-surface max-w-xl">
-      Master <span class="text-primary">Mandarin</span> with the Content You Already Love.
-    </h1>
-    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
-      The ultimate browser extension and platform for learning Chinese by watching YouTube. AI-powered scripts, HSK tracking, and SRS flashcards.
-    </p>
-    <div class="flex gap-md pt-base">
-      <button class="bg-primary text-on-primary h-[48px] px-lg rounded-full font-bold text-body-md shadow-xl hover:shadow-2xl transition-all">Start Learning</button>
-      <button class="border-2 border-secondary text-secondary h-[48px] px-lg rounded-full font-bold text-body-md hover:bg-secondary/5 transition-all">Watch Demo</button>
-    </div>
-    <div class="flex items-center gap-sm pt-md">
-      <div class="flex -space-x-2">
-        <div class="w-8 h-8 rounded-full border-2 border-surface bg-slate-200"></div>
-        <div class="w-8 h-8 rounded-full border-2 border-surface bg-slate-300"></div>
-        <div class="w-8 h-8 rounded-full border-2 border-surface bg-slate-400"></div>
-      </div>
-      <span class="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">Join 15,000+ Students</span>
-    </div>
-  </div>
-  <div class="flex-1 relative">
-    <div class="rounded-xl overflow-hidden shadow-2xl border-4 border-white transform lg:rotate-2 hover:rotate-0 transition-transform duration-500">
-      <img class="w-full h-auto" data-alt="A cinematic, high-fidelity scene of a modern minimalist study space. A digital tablet rests on a light wood desk, displaying a vibrant YouTube video of a travel vlog in China with a side-by-side Mandarin script overlay. The lighting is warm and morning-like, filtering through a window with soft plants in the background. The aesthetic is clean, professional, and optimistic, matching a high-end educational SaaS product." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmA2ghieL66uH4LQONO7vAoWTaGw-Ghgf6RHTGr9SdUeusSTss7QqmSh6pkzC6mPpD-sQRDWWzPFFM12jcmxycpDMCgUJ_ZiZryau_BI4J9mWi4lQ3k7v64qKOAhzWd9Hqvb7qKLRc8R2kC6b_6T9jslz2lydK9vtLsu42wqznPMjdn21mCggUIUXxLfpm_58BfIN4zt86WoQECjOVEmjYxwcQ35LFlYigrYuKFUvw3nZZ-ooZShnpm2C9rC3jpjwxnty038uUDq4"/>
-    </div>
-    <div class="absolute -bottom-6 -left-6 glass-card p-md rounded-xl shadow-lg border border-outline-variant animate-bounce-slow">
-      <div class="flex items-center gap-sm">
-        <div class="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center text-secondary">
-          <span class="material-symbols-outlined">trending_up</span>
-        </div>
-        <div>
-          <p class="text-label-caps font-bold text-secondary">Daily Streak</p>
-          <p class="text-headline-md font-bold text-on-surface">14 Days</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- YouTube Interactive Player Section -->
-<section class="bg-surface-container-low py-xl px-gutter">
-  <div class="max-w-max-width mx-auto">
-    <div class="text-center mb-xl">
-      <span class="text-label-caps text-primary font-bold uppercase tracking-widest">Interactive Video</span>
-      <h2 class="font-headline-lg text-headline-lg mt-sm">Your Personal Language Laboratory</h2>
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
-      <!-- Video Player Mock -->
-      <div class="lg:col-span-2 space-y-md">
-        <div class="aspect-video bg-black rounded-xl overflow-hidden relative shadow-2xl group">
-          <div class="w-full h-full bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A high-resolution screenshot of a YouTube video player showing a cinematic shot of Beijing streets at dusk. The UI elements include a red progress bar and custom language learning controls overlaid on the bottom of the video. The lighting is atmospheric with neon signs reflecting on the street, and the overall quality is crisp and professional." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAeAv4GaA-duX4zFKPd_rWhyaZ53YTLLoKkna_xAMgpzyW7UpW3CsbHkTCmy4k8eqeZP68PuwgCSBL7yuzw0MihrtM2m-HBCv1GOCOfACfoivZxXzsOc9jubIwwnHMUFZcytJ2KOuWRxfXXfPhHRPKWSCWwMwA9znS7n7FFDXX3lHVNuaYU8Us_ekz3lh-9RcrXk_cxTmAQ6EQfQca3HCeEOb2srq-rGhDDUUlZ0yMXXQj8s8TEZYVfDY9xPErtBZC5St-wcvqCXnU')"></div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <button class="w-20 h-20 bg-primary/90 text-on-primary rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-xl">
-              <span class="material-symbols-outlined !text-4xl">play_arrow</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-xs text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">star</span>
+</button>
+<div class="flex items-center gap-sm">
+<button class="px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all">Previous</button>
+</div>
+<img alt="User Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
+</div>
+</div>
+</header>
+<!-- Side Navigation Bar -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high shadow-sm flex flex-col py-md px-base z-[60]">
+<div class="mb-lg px-base">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">MandoLearning</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-primary font-bold border-r-4 border-primary hover:bg-secondary-container transition-all" href="#">
+<span class="material-symbols-outlined">play_circle</span>
+<span class="font-body-md text-body-md">Videos</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-body-md text-body-md">Scripts</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-body-md text-body-md">Documents</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
+<span class="material-symbols-outlined">quiz</span>
+<span class="font-body-md text-body-md">Flashcards</span>
+</a>
+<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-body-md text-body-md">Stats</span>
+</a>
+</nav>
+<div class="mt-md px-base">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mb-sm uppercase">Video Library</h3>
+<div class="space-y-1">
+<div class="collapsible-category">
+<button class="w-full flex items-center justify-between px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all category-toggle">
+<span class="font-body-md text-body-md">HSK 1-6</span>
+<span class="material-symbols-outlined text-sm transition-transform chevron">chevron_right</span>
+</button>
+<div class="hidden pl-md space-y-1 mt-1 nested-list">
+<a class="block px-base py-1 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">HSK 3 - L58: Job Interview</a>
+<a class="block px-base py-1 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">HSK 3 - L57: Returning Home</a>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-auto px-base py-md">
+<button class="w-full bg-primary text-on-primary font-headline-md text-headline-md py-base rounded-xl hover:bg-primary-dim transition-all shadow-md active:scale-95">
+                Start Practice
             </button>
-          </div>
-        </div>
-        <div class="flex justify-between items-center bg-surface p-md rounded-xl shadow-sm border border-outline-variant">
-          <div class="flex gap-md">
-            <button class="flex items-center gap-xs text-secondary font-semibold hover:text-primary transition-colors">
-              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">speed</span>
-              Slow Down AI Audio
-            </button>
-            <button class="flex items-center gap-xs text-secondary font-semibold hover:text-primary transition-colors">
-              <span class="material-symbols-outlined">mic</span>
-              Practice Speaking
-            </button>
-          </div>
-          <div class="text-label-caps text-on-surface-variant font-medium">HSK Level 3 Content</div>
-        </div>
-      </div>
-      <!-- Interactive Script -->
-      <div class="bg-surface rounded-xl shadow-lg border border-outline-variant flex flex-col max-h-[600px]">
-        <div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest sticky top-0">
-          <h3 class="font-bold text-on-surface">Interactive Script</h3>
-          <div class="flex gap-xs">
-            <div class="w-3 h-3 rounded-full bg-primary"></div>
-            <div class="w-3 h-3 rounded-full bg-secondary"></div>
-          </div>
-        </div>
-        <div class="p-md overflow-y-auto space-y-md custom-scrollbar">
-          <div class="p-sm hover:bg-surface-container rounded-lg transition-colors cursor-pointer group">
-            <p class="text-label-caps text-on-surface-variant mb-xs">00:12</p>
-            <p class="font-character-display text-2xl leading-relaxed">
-              <span class="hsk-level-1">我</span> <span class="hsk-level-2">非常</span> <span class="hsk-level-1">喜欢</span> <span class="hsk-level-1">这</span><span class="hsk-level-1">个</span> <span class="hsk-level-2">地方</span>。
-            </p>
-            <p class="text-body-md text-on-surface-variant/70 mt-xs italic group-hover:text-on-surface transition-colors">"I really like this place."</p>
-          </div>
-          <div class="p-sm bg-primary/5 border-l-4 border-primary rounded-r-lg">
-            <p class="text-label-caps text-primary mb-xs">00:15 (Current)</p>
-            <p class="font-character-display text-2xl leading-relaxed">
-              <span class="hsk-level-1">你</span> <span class="hsk-level-1">也</span> <span class="hsk-level-2">准备</span> <span class="hsk-level-1">好</span> <span class="hsk-level-1">了</span> <span class="hsk-level-1">吗</span>？
-            </p>
-            <p class="text-body-md text-on-surface font-medium mt-xs">"Are you ready too?"</p>
-          </div>
-          <div class="p-sm hover:bg-surface-container rounded-lg transition-colors cursor-pointer group">
-            <p class="text-label-caps text-on-surface-variant mb-xs">00:18</p>
-            <p class="font-character-display text-2xl leading-relaxed">
-              <span class="hsk-level-1">我们</span> <span class="hsk-level-2">出发</span> <span class="hsk-level-1">吧</span>。
-            </p>
-            <p class="text-body-md text-on-surface-variant/70 mt-xs italic group-hover:text-on-surface transition-colors">"Let's go."</p>
-          </div>
-        </div>
-        <div class="p-md bg-surface-container-high rounded-b-xl">
-          <button class="w-full bg-secondary text-on-secondary py-sm rounded-lg font-bold flex items-center justify-center gap-sm hover:brightness-110 transition-all">
-            <span class="material-symbols-outlined">save</span>
-            Save all to Flashcards
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-[88px] min-h-screen md:ml-[280px] transition-all duration-300 overflow-visible">
+<div class="px-margin-desktop max-w-max-width py-md overflow-visible">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-xs mb-md text-on-surface-variant">
+<span class="font-label-caps text-label-caps">Dashboard</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="font-label-caps text-label-caps">HSK3</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="font-label-caps text-label-caps text-primary">Class Review</span>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-md w-full overflow-visible">
+<!-- Video Player Container (Column 1-8) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
+<div class="relative aspect-video rounded-3xl overflow-hidden shadow-xl bg-black group">
+<img alt="Video frame" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4eZ5ZuRAFIKQTjbn0hO4ruI2tn5fnyB0N4-5DIeKxdK50dSg73h64_MnY3n4r_tQKSlvbaww9aKXwayvS5-pLAARtxARNAqM_gcuRtPj5zL9OEYrVSJBs-brsmnGJpw6Zw-WJKSGcuWxyrAyuP1--vX66-UD0KcSJb-S2778lG92KRHPhAVI5js9CouA2xB4jgYpeuhzxNlvznmsUR_-bhxKOF_Ssl1T1ZgsRIfd6-GKmd0cdHgwzFCF-RJv_l6L9ErOetGJ5B6w"/>
+<div class="absolute bottom-md left-1/2 -translate-x-1/2 w-[90%] max-w-[90%] bg-surface/90 backdrop-blur-md px-md py-sm rounded-2xl border border-outline-variant shadow-lg text-center z-10"><p class="font-character-display text-[32px] leading-relaxed text-on-surface">是啊，你就说来我们公司面试的这几个吧……</p><p class="font-body-md text-on-surface-variant mt-xs italic">shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba...</p></div>
+<div class="absolute bottom-0 left-0 right-0 p-md bg-gradient-to-t from-black/60 to-transparent">
+<div class="w-full h-1.5 bg-white/30 rounded-full mb-md overflow-hidden relative">
+<div class="absolute h-full w-[40%] bg-primary"></div>
+</div>
+<div class="flex justify-between items-center text-white">
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined">play_arrow</button>
+<span class="font-label-caps text-label-caps">0:44 / 1:40</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined">settings</button>
+<button class="material-symbols-outlined">fullscreen</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Hierarchical Notes System -->
+<div class="bg-surface-container-lowest rounded-3xl p-lg card-elevation-1 overflow-visible relative">
+<div class="flex items-center justify-between mb-lg"><div class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary">sticky_note_2</span><h3 class="font-headline-md text-headline-md text-on-surface">Topic Notes</h3></div><div class="flex items-center gap-sm"><button class="flex items-center gap-xs px-md py-xs bg-surface-container-high text-on-surface rounded-lg font-body-md hover:bg-surface-dim transition-all border border-outline-variant"><span class="material-symbols-outlined text-sm">add</span> New Note</button><button class="flex items-center gap-xs px-md py-xs bg-primary text-on-primary rounded-lg font-body-md hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save (Ctrl+S)</button></div></div>
+<div class="space-y-md overflow-visible">
+<!-- Parent Note Item -->
+<div class="rounded-2xl border border-outline-variant overflow-visible group">
+<!-- Parent Header -->
+<div class="bg-surface p-lg flex justify-between items-center border-b border-outline-variant rounded-t-2xl overflow-visible relative"><div class="flex items-center gap-xs absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="p-xs hover:bg-error-container hover:text-on-error-container rounded-full transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button><button class="p-xs hover:bg-secondary-container hover:text-on-secondary-container rounded-full transition-colors"><span class="material-symbols-outlined text-sm">add_circle</span></button></div>
+<div class="flex flex-col">
+<span class="font-character-display text-headline-md text-on-surface">面试</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">miànshì • Job Interview</span>
+</div>
+<div class="relative group">
+<button class="px-md py-sm bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-label-caps text-label-caps transition-colors border border-outline-variant">Details</button>
+<!-- FIXED POPOVER: Removed overflow constraints from ancestors, used z-50 and positioning that stays on canvas -->
+<div class="absolute bottom-[calc(100%+12px)] right-0 w-[320px] bg-surface-container-lowest shadow-2xl rounded-2xl p-md border border-outline-variant z-50 hidden group-hover:block group-focus-within:block animate-in fade-in slide-in-from-bottom-2 backdrop-blur-sm bg-white/95">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex flex-col">
+<span class="font-character-display text-headline-md text-primary">面试</span>
+<span class="font-body-md text-on-surface-variant">miànshì</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container p-xs rounded-full">close</button>
+</div>
+<div class="space-y-sm">
+<div class="p-sm bg-surface-container-low rounded-lg border border-outline-variant text-sm">
+<p class="text-on-surface font-medium">面试官问了我很多问题。</p>
+<p class="text-xs text-on-surface-variant mt-1 italic">The interviewer asked me many questions.</p>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">"面试" (miànshì) means to interview or to have an interview. It can be used as both a noun and a verb. In HSK 3 context, it usually refers to job interviews.</p>
+<div class="flex justify-end gap-sm pt-sm border-t border-outline-variant mt-sm"><button class="flex items-center gap-xs text-xs text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span> Delete</button><button class="flex items-center gap-xs text-xs text-primary font-bold hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-sm">edit</span> Update</button></div></div>
+<div class="absolute -bottom-2 right-8 w-4 h-4 bg-surface-container-lowest border-r border-b border-outline-variant rotate-45"></div>
+</div>
+</div>
+</div>
+<!-- Children Notes -->
+<div class="bg-surface-container-low p-md space-y-sm rounded-b-2xl">
+<div class="flex items-center justify-between p-sm rounded-xl hover:bg-surface-container-high transition-colors group cursor-pointer">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline text-sm">subdirectory_arrow_right</span>
+<div>
+<span class="font-character-display text-lg text-on-surface">面试官</span>
+<span class="text-xs text-on-surface-variant ml-sm">miànshìguān • Interviewer</span>
+</div>
+</div>
+<button class="material-symbols-outlined text-outline hover:text-error transition-colors text-sm mr-xs">delete</button><button class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-sm">chevron_right</button>
+</div>
+<div class="flex items-center justify-between p-sm rounded-xl hover:bg-surface-container-high transition-colors group cursor-pointer">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline text-sm">subdirectory_arrow_right</span>
+<div>
+<span class="font-character-display text-lg text-on-surface">应聘者</span>
+<span class="text-xs text-on-surface-variant ml-sm">yìngpìnzhě • Candidate</span>
+</div>
+</div>
+<button class="material-symbols-outlined text-outline hover:text-error transition-colors text-sm mr-xs">delete</button><button class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-sm">chevron_right</button>
+</div>
+</div>
+</div>
+<!-- Parent Note Item 2 -->
+<div class="rounded-2xl border border-outline-variant overflow-visible group">
+<div class="bg-surface p-lg flex justify-between items-center border-b border-outline-variant rounded-t-2xl overflow-visible relative"><div class="flex items-center gap-xs absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="p-xs hover:bg-error-container hover:text-on-error-container rounded-full transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button><button class="p-xs hover:bg-secondary-container hover:text-on-secondary-container rounded-full transition-colors"><span class="material-symbols-outlined text-sm">add_circle</span></button></div>
+<div class="flex flex-col">
+<span class="font-character-display text-headline-md text-on-surface">公司</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">gōngsī • Company</span>
+</div>
+<div class="relative group">
+<button class="px-md py-sm bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-label-caps text-label-caps transition-colors border border-outline-variant">Details</button>
+<!-- FIXED POPOVER -->
+<div class="absolute bottom-[calc(100%+12px)] right-0 w-[320px] bg-surface-container-lowest shadow-2xl rounded-2xl p-md border border-outline-variant z-50 hidden group-hover:block group-focus-within:block animate-in fade-in slide-in-from-bottom-2 backdrop-blur-sm bg-white/95">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex flex-col">
+<span class="font-character-display text-headline-md text-primary">公司</span>
+<span class="font-body-md text-on-surface-variant">gōngsī</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container p-xs rounded-full">close</button>
+</div>
+<div class="space-y-sm">
+<div class="p-sm bg-surface-container-low rounded-lg border border-outline-variant text-sm">
+<p class="text-on-surface font-medium">这家公司很大。</p>
+<p class="text-xs text-on-surface-variant mt-1 italic">This company is very large.</p>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">A company or firm. Often used with classifier 家 (jiā). Common in business and professional contexts.</p>
+<div class="flex justify-end gap-sm pt-sm border-t border-outline-variant mt-sm"><button class="flex items-center gap-xs text-xs text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span> Delete</button><button class="flex items-center gap-xs text-xs text-primary font-bold hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-sm">edit</span> Update</button></div></div>
+<div class="absolute -bottom-2 right-8 w-4 h-4 bg-surface-container-lowest border-r border-b border-outline-variant rotate-45"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-md space-y-sm rounded-b-2xl">
+<div class="flex items-center justify-between p-sm rounded-xl hover:bg-surface-container-high transition-colors group cursor-pointer">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-outline text-sm">subdirectory_arrow_right</span>
+<div>
+<span class="font-character-display text-lg text-on-surface">同事</span>
+<span class="text-xs text-on-surface-variant ml-sm">tóngshì • Colleague</span>
+</div>
+</div>
+<button class="material-symbols-outlined text-outline hover:text-error transition-colors text-sm mr-xs">delete</button><button class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-sm">chevron_right</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Script (Column 9-12) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<div class="bg-surface-container-low rounded-3xl p-md h-full flex flex-col border border-outline-variant">
+<div class="flex items-center justify-between mb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Full Script</h3>
+<div class="flex gap-xs">
+<button class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">中</button>
+<button class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">ǎ</button>
+<button class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">EN</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pr-sm custom-scrollbar space-y-md">
+<div class="p-md rounded-2xl border relative overflow-hidden hover:bg-surface-container-highest border-transparent group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex gap-sm mb-xs"><span class="font-label-caps text-label-caps text-primary">00:44</span><div class="flex items-center gap-xs"><button class="material-symbols-outlined text-sm text-primary hover:scale-110">play_circle</button><p class="font-body-md font-bold text-on-secondary-container">B: 是啊，你就说来我们公司面试的这几个吧……</p></div></div>
+<p class="text-sm text-on-secondary-container italic opacity-80">Yeah, just look at these people coming to our company for interviews...</p>
+</div>
+</div>
+<div class="mt-md pt-md border-t border-outline-variant">
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full mt-xs overflow-hidden">
+<div class="h-full bg-primary w-[75%] transition-all duration-1000"></div>
+</div>
+<div class="mt-xs text-right"><span class="font-label-caps text-label-caps text-primary">75% Complete</span></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Related Content Sections -->
+<section class="mt-xl">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-lg">Related Lessons</h3>
+<div class="flex gap-md overflow-x-auto pb-md custom-scrollbar">
+<div class="min-w-[320px] bg-white rounded-3xl overflow-hidden card-elevation-1 hover:card-elevation-2 transition-all cursor-pointer group">
+<div class="relative h-40 bg-surface-container overflow-hidden">
+<img alt="Job interview" class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdN4BcN5cUD46Zr2yggA9VNZVgg70ka28pVUTMGWOID8CLO4qF36IH9nqRPhISQI7W65xOf2nuQDVooWjaQOQ2llLGhKbdG9G45xWTST1vmLrXzFV7Z6Wb3FwQdroqig8S0vjAkmk8zoPgiIhN0m-JuY3Y6W4Zy1r_39Pl9EZK5SUVXIQgpvIY4fe4wPMGSMyRb0r7W65WTulV4XBMblvil-3aGQvSokqoMqi4RKLIr-zTnda_eoElj4BppnDHgy93sIlu_fVz5zY"/>
+</div>
+<div class="p-md">
+<h4 class="font-headline-md text-[18px] leading-6 mb-xs">Introduce yourself during a job interview</h4>
+<p class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Story 1 • 12 mins</p>
+</div>
+</div>
+</div>
 </section>
-<!-- HSK Highlighting Section -->
-<section class="py-xl px-gutter max-w-max-width mx-auto">
-  <div class="flex flex-col lg:flex-row items-center gap-xl">
-    <div class="flex-1">
-      <span class="text-label-caps text-secondary font-bold uppercase tracking-widest">Progressive Decoding</span>
-      <h2 class="font-headline-lg text-headline-lg mt-sm mb-md">Know what you know. Learn what you don't.</h2>
-      <p class="text-body-lg text-on-surface-variant mb-xl">Our intelligent highlighting system color-codes every character based on its HSK level. This allows you to instantly visualize the difficulty of any content and focus your energy where it matters most.</p>
-      <div class="space-y-sm">
-        <div class="flex items-center gap-md p-md bg-white border border-outline-variant rounded-xl shadow-sm hover:translate-x-2 transition-transform">
-          <div class="w-4 h-12 bg-secondary rounded-full"></div>
-          <div>
-            <p class="font-bold text-secondary">HSK Level 1 (Beginner)</p>
-            <p class="text-body-md text-on-surface-variant">Essential words for basic daily communication.</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-md p-md bg-white border border-outline-variant rounded-xl shadow-sm hover:translate-x-2 transition-transform">
-          <div class="w-4 h-12 bg-tertiary rounded-full"></div>
-          <div>
-            <p class="font-bold text-tertiary">HSK Level 2 (Elementary)</p>
-            <p class="text-body-md text-on-surface-variant">Simple sentences and personal information.</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-md p-md bg-white border border-outline-variant rounded-xl shadow-sm hover:translate-x-2 transition-transform">
-          <div class="w-4 h-12 bg-primary rounded-full opacity-50"></div>
-          <div>
-            <p class="font-bold text-primary">HSK Level 3+ (Intermediate)</p>
-            <p class="text-body-md text-on-surface-variant">Complex topics and workplace discussion.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="flex-1 w-full">
-      <div class="glass-card p-xl rounded-3xl shadow-2xl relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-md opacity-10">
-          <span class="material-symbols-outlined !text-[120px]">translate</span>
-        </div>
-        <h3 class="font-label-caps text-on-surface-variant mb-md font-bold uppercase tracking-widest">Highlighting Preview</h3>
-        <div class="space-y-md">
-          <div class="font-character-display text-4xl lg:text-5xl">
-            <span class="hsk-level-1">今天</span>
-            <span class="hsk-level-1">天气</span>
-            <span class="hsk-level-2">非常</span>
-            <span class="hsk-level-1">好</span>，
-            <span class="hsk-level-1">我们</span>
-            <span class="hsk-level-1">去</span>
-            <span class="hsk-level-2">公园</span>
-            <span class="hsk-level-2">跑步</span>
-            <span class="hsk-level-1">吧</span>。
-          </div>
-          <div class="pt-md border-t border-outline-variant/30 text-body-lg text-on-surface-variant italic">
-            "The weather is very nice today, let's go running in the park."
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- Flashcard Management & Modes -->
-<section class="bg-surface-container py-xl px-gutter">
-  <div class="max-w-max-width mx-auto">
-    <div class="flex justify-between items-end mb-xl">
-      <div>
-        <span class="text-label-caps text-primary font-bold uppercase tracking-widest">Review System</span>
-        <h2 class="font-headline-lg text-headline-lg mt-sm">Your Digital Brain</h2>
-      </div>
-      <div class="flex gap-sm">
-        <button class="bg-surface h-[40px] px-md rounded-lg border border-outline-variant flex items-center gap-xs font-semibold hover:bg-surface-bright transition-all">
-          <span class="material-symbols-outlined">add</span> New Deck
-        </button>
-        <button class="bg-primary text-on-primary h-[40px] px-md rounded-lg font-semibold shadow-md hover:scale-95 transition-all">Study Now</button>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
-      <!-- Mode Selector Bento Item -->
-      <div class="lg:row-span-2 bg-surface p-lg rounded-2xl shadow-lg border border-outline-variant space-y-md">
-        <h3 class="font-headline-md text-on-surface">Practice Modes</h3>
-        <p class="text-on-surface-variant">Five specialized algorithms to ensure you never forget a word.</p>
-        <div class="space-y-sm pt-md">
-          <div class="flex justify-between items-center p-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border border-transparent hover:border-outline-variant">
-            <span class="flex items-center gap-md font-semibold"><span class="material-symbols-outlined text-secondary">shuffle</span> Random</span>
-            <span class="text-label-caps bg-surface-container-highest px-xs rounded">340 cards</span>
-          </div>
-          <div class="flex justify-between items-center p-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border border-transparent hover:border-outline-variant">
-            <span class="flex items-center gap-md font-semibold"><span class="material-symbols-outlined text-secondary">new_releases</span> New</span>
-            <span class="text-label-caps bg-secondary-container text-secondary px-xs rounded">45 cards</span>
-          </div>
-          <div class="flex justify-between items-center p-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border border-transparent hover:border-outline-variant">
-            <span class="flex items-center gap-md font-semibold"><span class="material-symbols-outlined text-secondary">school</span> Learning</span>
-            <span class="text-label-caps bg-surface-container-highest px-xs rounded">122 cards</span>
-          </div>
-          <div class="flex justify-between items-center p-sm bg-secondary/10 border-l-4 border-secondary rounded-r-lg">
-            <span class="flex items-center gap-md font-bold text-secondary"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span> Spaced</span>
-            <span class="text-label-caps bg-secondary text-on-secondary px-xs rounded font-bold">Recommended</span>
-          </div>
-          <div class="flex justify-between items-center p-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border border-transparent hover:border-outline-variant">
-            <span class="flex items-center gap-md font-semibold"><span class="material-symbols-outlined text-secondary">verified</span> Confidence</span>
-            <span class="text-label-caps bg-surface-container-highest px-xs rounded">890 cards</span>
-          </div>
-        </div>
-      </div>
-      <!-- Deck Cards -->
-      <div class="bg-surface-bright p-md rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
-        <div class="w-12 h-12 bg-secondary-container rounded-xl flex items-center justify-center text-secondary mb-md">
-          <span class="material-symbols-outlined">flight</span>
-        </div>
-        <h4 class="font-bold text-on-surface">Travel Essentials</h4>
-        <p class="text-label-caps text-on-surface-variant uppercase mt-xs">120 Cards • HSK 2-3</p>
-        <div class="mt-md h-2 bg-surface-container-highest rounded-full overflow-hidden">
-          <div class="h-full bg-secondary w-2/3"></div>
-        </div>
-      </div>
-      <div class="bg-surface-bright p-md rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
-        <div class="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center text-primary mb-md">
-          <span class="material-symbols-outlined">restaurant</span>
-        </div>
-        <h4 class="font-bold text-on-surface">Food &amp; Dining</h4>
-        <p class="text-label-caps text-on-surface-variant uppercase mt-xs">85 Cards • HSK 1-2</p>
-        <div class="mt-md h-2 bg-surface-container-highest rounded-full overflow-hidden">
-          <div class="h-full bg-primary w-1/4"></div>
-        </div>
-      </div>
-      <div class="bg-surface-bright p-md rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
-        <div class="w-12 h-12 bg-tertiary-fixed rounded-xl flex items-center justify-center text-tertiary mb-md">
-          <span class="material-symbols-outlined">business_center</span>
-        </div>
-        <h4 class="font-bold text-on-surface">Business Mandarin</h4>
-        <p class="text-label-caps text-on-surface-variant uppercase mt-xs">210 Cards • HSK 4-5</p>
-        <div class="mt-md h-2 bg-surface-container-highest rounded-full overflow-hidden">
-          <div class="h-full bg-tertiary w-1/2"></div>
-        </div>
-      </div>
-      <div class="bg-surface-bright p-md rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
-        <div class="w-12 h-12 bg-on-surface-variant rounded-xl flex items-center justify-center text-white mb-md">
-          <span class="material-symbols-outlined">psychology</span>
-        </div>
-        <h4 class="font-bold text-on-surface">Philosophical Terms</h4>
-        <p class="text-label-caps text-on-surface-variant uppercase mt-xs">45 Cards • HSK 6</p>
-        <div class="mt-md h-2 bg-surface-container-highest rounded-full overflow-hidden">
-          <div class="h-full bg-on-surface-variant w-[5%]"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- Analytics Journey Section -->
-<section class="py-xl px-gutter max-w-max-width mx-auto">
-  <div class="text-center mb-xl">
-    <span class="text-label-caps text-secondary font-bold uppercase tracking-widest">Performance Dashboard</span>
-    <h2 class="font-headline-lg text-headline-lg mt-sm">Your Journey to Fluency</h2>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
-    <div class="bg-surface p-lg rounded-2xl border border-outline-variant shadow-sm text-center space-y-sm">
-      <div class="w-16 h-16 bg-surface-container-high rounded-full mx-auto flex items-center justify-center text-on-surface-variant">
-        <span class="material-symbols-outlined !text-3xl">add_circle</span>
-      </div>
-      <p class="font-bold text-headline-md">2,450</p>
-      <p class="font-label-caps text-on-surface-variant uppercase tracking-wider">Words Added</p>
-      <div class="pt-md">
-        <div class="h-1 bg-surface-container-highest rounded-full w-full">
-          <div class="h-full bg-on-surface-variant w-full"></div>
-        </div>
-      </div>
-    </div>
-    <div class="bg-surface p-lg rounded-2xl border-2 border-secondary shadow-lg text-center space-y-sm relative transform scale-105">
-      <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-on-secondary px-sm py-xs rounded-full text-label-caps font-bold">MOST ACTIVE</div>
-      <div class="w-16 h-16 bg-secondary-container rounded-full mx-auto flex items-center justify-center text-secondary">
-        <span class="material-symbols-outlined !text-3xl" style="font-variation-settings: 'FILL' 1;">stars</span>
-      </div>
-      <p class="font-bold text-headline-md">1,120</p>
-      <p class="font-label-caps text-secondary uppercase tracking-wider">Words Memorized</p>
-      <div class="pt-md">
-        <div class="h-1 bg-surface-container-highest rounded-full w-full">
-          <div class="h-full bg-secondary w-1/2"></div>
-        </div>
-      </div>
-    </div>
-    <div class="bg-surface p-lg rounded-2xl border border-outline-variant shadow-sm text-center space-y-sm">
-      <div class="w-16 h-16 bg-tertiary-fixed rounded-full mx-auto flex items-center justify-center text-tertiary">
-        <span class="material-symbols-outlined !text-3xl">local_library</span>
-      </div>
-      <p class="font-bold text-headline-md">568</p>
-      <p class="font-label-caps text-on-surface-variant uppercase tracking-wider">Currently Learning</p>
-      <div class="pt-md">
-        <div class="h-1 bg-surface-container-highest rounded-full w-full">
-          <div class="h-full bg-tertiary w-1/3"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="mt-xl glass-card p-xl rounded-3xl border border-outline-variant">
-    <div class="flex justify-between items-center mb-md">
-      <h3 class="font-bold">Weekly Study Hours</h3>
-      <div class="flex items-center gap-sm">
-        <span class="flex items-center gap-xs text-label-caps"><div class="w-3 h-3 rounded-full bg-secondary"></div> Watch Time</span>
-        <span class="flex items-center gap-xs text-label-caps"><div class="w-3 h-3 rounded-full bg-primary"></div> Flashcards</span>
-      </div>
-    </div>
-    <!-- Mock Chart -->
-    <div class="flex items-end justify-between h-48 gap-xs">
-      <div class="flex-1 flex flex-col items-center gap-xs">
-        <div class="w-full bg-secondary/20 rounded-t h-20 relative"><div class="absolute bottom-0 w-full bg-secondary h-12 rounded-t"></div></div>
-        <span class="text-label-caps text-on-surface-variant">Mon</span>
-      </div>
-      <div class="flex-1 flex flex-col items-center gap-xs">
-        <div class="w-full bg-secondary/20 rounded-t h-32 relative"><div class="absolute bottom-0 w-full bg-secondary h-24 rounded-t"></div></div>
-        <span class="text-label-caps text-on-surface-variant">Tue</span>
-      </div>
-      <div class="flex-1 flex flex-col items-center gap-xs">
-        <div class="w-full bg-secondary/20 rounded-t h-16 relative"><div class="absolute bottom-0 w-full bg-secondary h-10 rounded-t"></div></div>
-        <span class="text-label-caps text-on-surface-variant">Wed</span>
-      </div>
-      <div class="flex-1 flex flex-col items-center gap-xs">
-        <div class="w-full bg-secondary/20 rounded-t h-40 relative"><div class="absolute bottom-0 w-full bg-secondary h-36 rounded-t"></div></div>
-        <span class="text-label-caps text-on-surface-variant">Thu</span>
-      </div>
-      <div class="flex-1 flex flex-col items-center gap-xs">
-        <div class="w-full bg-secondary/20 rounded-t h-24 relative"><div class="absolute bottom-0 w-full bg-secondary h-20 rounded-t"></div></div>
-        <span class="text-label-caps text-on-surface-variant">Fri</span>
-      </div>
-      <div class="flex-1 flex flex-col items-center gap-xs">
-        <div class="w-full bg-secondary/20 rounded-t h-12 relative"><div class="absolute bottom-0 w-full bg-secondary h-8 rounded-t"></div></div>
-        <span class="text-label-caps text-on-surface-variant">Sat</span>
-      </div>
-      <div class="flex-1 flex flex-col items-center gap-xs">
-        <div class="w-full bg-secondary/20 rounded-t h-8 relative"><div class="absolute bottom-0 w-full bg-secondary h-4 rounded-t"></div></div>
-        <span class="text-label-caps text-on-surface-variant">Sun</span>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- Footer -->
-<footer class="bg-surface-container dark:bg-surface-container-high w-full py-lg border-t border-outline-variant/30">
-  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-md px-gutter max-w-max-width mx-auto">
-    <div class="col-span-2 space-y-sm">
-      <div class="font-headline-md text-headline-md font-bold text-primary">MandoLearning</div>
-      <p class="text-body-md text-on-surface-variant max-w-xs">
-        Master Mandarin by watching what you love. Join thousands of students using our AI-powered learning platform.
-      </p>
-      <p class="text-label-caps text-on-surface-variant mt-md">© 2024 MandoLearning. Learn by watching.</p>
-    </div>
-    <div class="space-y-sm">
-      <h4 class="font-bold text-on-surface">Product</h4>
-      <ul class="space-y-xs text-on-surface-variant text-body-md">
-        <li><a class="hover:text-primary transition-colors" href="#">Features</a></li>
-        <li><a class="hover:text-primary transition-colors" href="#">YouTube Extension</a></li>
-        <li><a class="hover:text-primary transition-colors" href="#">HSK Levels</a></li>
-        <li><a class="hover:text-primary transition-colors" href="#">Pricing</a></li>
-      </ul>
-    </div>
-    <div class="space-y-sm">
-      <h4 class="font-bold text-on-surface">Support</h4>
-      <ul class="space-y-xs text-on-surface-variant text-body-md">
-        <li><a class="hover:text-primary transition-colors" href="#">Help Center</a></li>
-        <li><a class="hover:text-primary transition-colors" href="#">Contact Us</a></li>
-        <li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
-        <li><a class="hover:text-primary transition-colors" href="#">Terms of Service</a></li>
-      </ul>
-    </div>
-    <div class="col-span-2 lg:col-span-2 space-y-sm">
-      <h4 class="font-bold text-on-surface">Stay Connected</h4>
-      <div class="flex gap-sm">
-        <button class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all">
-          <span class="material-symbols-outlined">public</span>
-        </button>
-        <button class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all">
-          <span class="material-symbols-outlined">video_library</span>
-        </button>
-        <button class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all">
-          <span class="material-symbols-outlined">mail</span>
-        </button>
-      </div>
-      <div class="pt-sm">
-        <p class="text-label-caps font-bold text-on-surface-variant">Newsletter</p>
-        <div class="flex mt-xs">
-          <input class="bg-surface rounded-l-lg border-outline-variant border-r-0 focus:ring-primary focus:border-primary w-full text-body-md" placeholder="Email address" type="email"/>
-          <button class="bg-primary text-on-primary px-sm rounded-r-lg hover:brightness-110 transition-all">Join</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</footer>
+</div>
+</main>
+<script class="">
+    // Category Toggle Logic
+    document.querySelectorAll('.category-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const list = toggle.nextElementSibling;
+            const chevron = toggle.querySelector('.chevron');
+            list.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-90');
+        });
+    });
+</script>
 </body></html>
