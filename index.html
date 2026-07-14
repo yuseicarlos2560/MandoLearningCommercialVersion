@@ -1,364 +1,45 @@
 <!DOCTYPE html>
-
-<html class="light" lang="en" style=""><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-tertiary-fixed-variant": "#4d1c85",
-                        "on-secondary-container": "#842141",
-                        "error-container": "#f95630",
-                        "primary-fixed": "#ff7576",
-                        "primary-container": "#ff7576",
-                        "secondary-fixed": "#ffc2cd",
-                        "on-surface-variant": "#814c58",
-                        "on-tertiary-fixed": "#25004b",
-                        "on-error-container": "#520c00",
-                        "on-primary": "#ffefee",
-                        "tertiary-fixed-dim": "#bd8df9",
-                        "error-dim": "#b92902",
-                        "surface": "#fff4f4",
-                        "on-primary-fixed-variant": "#60000f",
-                        "inverse-on-surface": "#ca8c98",
-                        "secondary-dim": "#8e2a49",
-                        "tertiary-fixed": "#c99dff",
-                        "surface-container-highest": "#ffd1d9",
-                        "surface-container": "#ffe1e5",
-                        "on-primary-container": "#4e000a",
-                        "inverse-primary": "#f9595f",
-                        "surface-tint": "#af2330",
-                        "on-tertiary-container": "#440e7c",
-                        "surface-variant": "#ffd1d9",
-                        "outline-variant": "#dc9ca8",
-                        "on-primary-fixed": "#000000",
-                        "tertiary-container": "#c99dff",
-                        "outline": "#a06773",
-                        "primary-fixed-dim": "#fc5c61",
-                        "surface-dim": "#ffc6d0",
-                        "secondary": "#9e3655",
-                        "on-secondary-fixed-variant": "#902b4a",
-                        "tertiary-dim": "#65379d",
-                        "primary-dim": "#9e1425",
-                        "on-secondary": "#ffeff0",
-                        "on-secondary-fixed": "#6a0a2f",
-                        "on-error": "#ffefec",
-                        "on-background": "#4c212c",
-                        "inverse-surface": "#24020c",
-                        "surface-container-high": "#ffd9df",
-                        "surface-container-low": "#ffecee",
-                        "surface-container-lowest": "#ffffff",
-                        "surface-bright": "#fff4f4",
-                        "on-tertiary": "#faefff",
-                        "primary": "#af2330",
-                        "secondary-fixed-dim": "#ffadbe",
-                        "secondary-container": "#ffc2cd",
-                        "error": "#b02500",
-                        "on-surface": "#4c212c",
-                        "background": "#fff4f4",
-                        "tertiary": "#7144aa"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "xl": "80px",
-                        "base": "8px",
-                        "max-width": "1200px",
-                        "md": "24px",
-                        "lg": "48px",
-                        "margin-desktop": "auto",
-                        "sm": "12px",
-                        "margin-mobile": "20px",
-                        "gutter": "16px",
-                        "xs": "4px"
-                    },
-                    "fontFamily": {
-                        "label-caps": ["Plus Jakarta Sans"],
-                        "body-lg": ["Inter"],
-                        "headline-lg": ["Plus Jakarta Sans"],
-                        "character-display": ["Noto Serif SC"],
-                        "headline-md": ["Plus Jakarta Sans"],
-                        "body-md": ["Inter"],
-                        "headline-lg-mobile": ["Plus Jakarta Sans"]
-                    },
-                    "fontSize": {
-                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
-                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
-                        "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                        "character-display": ["64px", {"lineHeight": "80px", "fontWeight": "500"}],
-                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                        "headline-lg-mobile": ["32px", {"lineHeight": "38px", "fontWeight": "700"}]
-                    }
-                },
-            },
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MandoLearning</title>
+    <meta http-equiv="refresh" content="0; url=pages/video-session.html" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff4f4;
+            color: #4c212c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
         }
-    }catch(_e){}</script></head><body class="text-on-surface overflow-x-hidden">
-<!-- Top Navigation Bar -->
-<header class="fixed top-0 left-0 right-0 z-50 glass-nav bg-surface/90 border-b border-outline-variant">
-<div class="flex justify-between items-center w-full px-lg py-md max-w-max-width mx-auto">
-<div class="flex items-center gap-md">
-<span class="text-headline-md font-headline-md font-bold text-primary">MandoLearning</span>
-<nav class="hidden md:flex gap-md ml-lg">
-<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="#">Videos</a>
-<a class="text-on-surface-variant font-medium hover:text-primary transition-colors font-body-md text-body-md" href="#">Scripts</a>
-<a class="text-on-surface-variant font-medium hover:text-primary transition-colors font-body-md text-body-md" href="#">Documents</a>
-</nav>
-</div>
-<div class="flex items-center gap-md">
-<button class="flex items-center gap-xs text-on-surface-variant hover:text-primary transition-colors">
-<span class="material-symbols-outlined">star</span>
-</button>
-<div class="flex items-center gap-sm">
-<button class="px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all">Previous</button>
-</div>
-<img alt="User Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
-</div>
-</div>
-</header>
-<!-- Side Navigation Bar -->
-<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high shadow-sm flex flex-col py-md px-base z-[60]">
-<div class="mb-lg px-base">
-<h1 class="font-headline-md text-headline-md font-bold text-primary">MandoLearning</h1>
-<p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
-</div>
-<nav class="flex-1 space-y-1">
-<a class="flex items-center gap-sm px-base py-sm rounded-lg text-primary font-bold border-r-4 border-primary hover:bg-secondary-container transition-all" href="#">
-<span class="material-symbols-outlined">play_circle</span>
-<span class="font-body-md text-body-md">Videos</span>
-</a>
-<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
-<span class="material-symbols-outlined">description</span>
-<span class="font-body-md text-body-md">Scripts</span>
-</a>
-<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
-<span class="material-symbols-outlined">folder_open</span>
-<span class="font-body-md text-body-md">Documents</span>
-</a>
-<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
-<span class="material-symbols-outlined">quiz</span>
-<span class="font-body-md text-body-md">Flashcards</span>
-</a>
-<a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
-<span class="material-symbols-outlined">query_stats</span>
-<span class="font-body-md text-body-md">Stats</span>
-</a>
-</nav>
-<div class="mt-md px-base">
-<h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mb-sm uppercase">Video Library</h3>
-<div class="space-y-1">
-<div class="collapsible-category">
-<button class="w-full flex items-center justify-between px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all category-toggle">
-<span class="font-body-md text-body-md">HSK 1-6</span>
-<span class="material-symbols-outlined text-sm transition-transform chevron">chevron_right</span>
-</button>
-<div class="hidden pl-md space-y-1 mt-1 nested-list">
-<a class="block px-base py-1 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">HSK 3 - L58: Job Interview</a>
-<a class="block px-base py-1 text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">HSK 3 - L57: Returning Home</a>
-</div>
-</div>
-</div>
-</div>
-<div class="mt-auto px-base py-md">
-<button class="w-full bg-primary text-on-primary font-headline-md text-headline-md py-base rounded-xl hover:bg-primary-dim transition-all shadow-md active:scale-95">
-                Start Practice
-            </button>
-</div>
-</aside>
-<!-- Main Content Canvas -->
-<main class="pt-[88px] min-h-screen md:ml-[280px] transition-all duration-300 overflow-visible">
-<div class="px-margin-desktop max-w-max-width py-md overflow-visible">
-<!-- Breadcrumbs -->
-<div class="flex items-center gap-xs mb-md text-on-surface-variant">
-<span class="font-label-caps text-label-caps">Dashboard</span>
-<span class="material-symbols-outlined text-[14px]">chevron_right</span>
-<span class="font-label-caps text-label-caps">HSK3</span>
-<span class="material-symbols-outlined text-[14px]">chevron_right</span>
-<span class="font-label-caps text-label-caps text-primary">Class Review</span>
-</div>
-<!-- Bento Grid Layout -->
-<div class="grid grid-cols-12 gap-md w-full overflow-visible">
-<!-- Video Player Container (Column 1-8) -->
-<div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
-<div class="relative aspect-video rounded-3xl overflow-hidden shadow-xl bg-black group">
-<img alt="Video frame" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4eZ5ZuRAFIKQTjbn0hO4ruI2tn5fnyB0N4-5DIeKxdK50dSg73h64_MnY3n4r_tQKSlvbaww9aKXwayvS5-pLAARtxARNAqM_gcuRtPj5zL9OEYrVSJBs-brsmnGJpw6Zw-WJKSGcuWxyrAyuP1--vX66-UD0KcSJb-S2778lG92KRHPhAVI5js9CouA2xB4jgYpeuhzxNlvznmsUR_-bhxKOF_Ssl1T1ZgsRIfd6-GKmd0cdHgwzFCF-RJv_l6L9ErOetGJ5B6w"/>
-<div class="absolute bottom-md left-1/2 -translate-x-1/2 w-[90%] max-w-[90%] bg-surface/90 backdrop-blur-md px-md py-sm rounded-2xl border border-outline-variant shadow-lg text-center z-10"><p class="font-character-display text-[32px] leading-relaxed text-on-surface">是啊，你就说来我们公司面试的这几个吧……</p><p class="font-body-md text-on-surface-variant mt-xs italic">shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba...</p></div>
-<div class="absolute bottom-0 left-0 right-0 p-md bg-gradient-to-t from-black/60 to-transparent">
-<div class="w-full h-1.5 bg-white/30 rounded-full mb-md overflow-hidden relative">
-<div class="absolute h-full w-[40%] bg-primary"></div>
-</div>
-<div class="flex justify-between items-center text-white">
-<div class="flex items-center gap-md">
-<button class="material-symbols-outlined">play_arrow</button>
-<span class="font-label-caps text-label-caps">0:44 / 1:40</span>
-</div>
-<div class="flex items-center gap-md">
-<button class="material-symbols-outlined">settings</button>
-<button class="material-symbols-outlined">fullscreen</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Hierarchical Notes System -->
-<div class="bg-surface-container-lowest rounded-3xl p-lg card-elevation-1 overflow-visible relative">
-<div class="flex items-center justify-between mb-lg"><div class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary">sticky_note_2</span><h3 class="font-headline-md text-headline-md text-on-surface">Topic Notes</h3></div><div class="flex items-center gap-sm"><button class="flex items-center gap-xs px-md py-xs bg-surface-container-high text-on-surface rounded-lg font-body-md hover:bg-surface-dim transition-all border border-outline-variant"><span class="material-symbols-outlined text-sm">add</span> New Note</button><button class="flex items-center gap-xs px-md py-xs bg-primary text-on-primary rounded-lg font-body-md hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save (Ctrl+S)</button></div></div>
-<div class="space-y-md overflow-visible">
-<!-- Parent Note Item -->
-<div class="rounded-2xl border border-outline-variant overflow-visible group">
-<!-- Parent Header -->
-<div class="bg-surface p-lg flex justify-between items-center border-b border-outline-variant rounded-t-2xl overflow-visible relative"><div class="flex items-center gap-xs absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="p-xs hover:bg-error-container hover:text-on-error-container rounded-full transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button><button class="p-xs hover:bg-secondary-container hover:text-on-secondary-container rounded-full transition-colors"><span class="material-symbols-outlined text-sm">add_circle</span></button></div>
-<div class="flex flex-col">
-<span class="font-character-display text-headline-md text-on-surface">面试</span>
-<span class="font-label-caps text-label-caps text-on-surface-variant">miànshì • Job Interview</span>
-</div>
-<div class="relative group">
-<button class="px-md py-sm bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-label-caps text-label-caps transition-colors border border-outline-variant">Details</button>
-<!-- FIXED POPOVER: Removed overflow constraints from ancestors, used z-50 and positioning that stays on canvas -->
-<div class="absolute bottom-[calc(100%+12px)] right-0 w-[320px] bg-surface-container-lowest shadow-2xl rounded-2xl p-md border border-outline-variant z-50 hidden group-hover:block group-focus-within:block animate-in fade-in slide-in-from-bottom-2 backdrop-blur-sm bg-white/95">
-<div class="flex justify-between items-start mb-sm">
-<div class="flex flex-col">
-<span class="font-character-display text-headline-md text-primary">面试</span>
-<span class="font-body-md text-on-surface-variant">miànshì</span>
-</div>
-<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container p-xs rounded-full">close</button>
-</div>
-<div class="space-y-sm">
-<div class="p-sm bg-surface-container-low rounded-lg border border-outline-variant text-sm">
-<p class="text-on-surface font-medium">面试官问了我很多问题。</p>
-<p class="text-xs text-on-surface-variant mt-1 italic">The interviewer asked me many questions.</p>
-</div>
-<p class="text-xs text-on-surface-variant leading-relaxed">"面试" (miànshì) means to interview or to have an interview. It can be used as both a noun and a verb. In HSK 3 context, it usually refers to job interviews.</p>
-<div class="flex justify-end gap-sm pt-sm border-t border-outline-variant mt-sm"><button class="flex items-center gap-xs text-xs text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span> Delete</button><button class="flex items-center gap-xs text-xs text-primary font-bold hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-sm">edit</span> Update</button></div></div>
-<div class="absolute -bottom-2 right-8 w-4 h-4 bg-surface-container-lowest border-r border-b border-outline-variant rotate-45"></div>
-</div>
-</div>
-</div>
-<!-- Children Notes -->
-<div class="bg-surface-container-low p-md space-y-sm rounded-b-2xl">
-<div class="flex items-center justify-between p-sm rounded-xl hover:bg-surface-container-high transition-colors group cursor-pointer">
-<div class="flex items-center gap-md">
-<span class="material-symbols-outlined text-outline text-sm">subdirectory_arrow_right</span>
-<div>
-<span class="font-character-display text-lg text-on-surface">面试官</span>
-<span class="text-xs text-on-surface-variant ml-sm">miànshìguān • Interviewer</span>
-</div>
-</div>
-<button class="material-symbols-outlined text-outline hover:text-error transition-colors text-sm mr-xs">delete</button><button class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-sm">chevron_right</button>
-</div>
-<div class="flex items-center justify-between p-sm rounded-xl hover:bg-surface-container-high transition-colors group cursor-pointer">
-<div class="flex items-center gap-md">
-<span class="material-symbols-outlined text-outline text-sm">subdirectory_arrow_right</span>
-<div>
-<span class="font-character-display text-lg text-on-surface">应聘者</span>
-<span class="text-xs text-on-surface-variant ml-sm">yìngpìnzhě • Candidate</span>
-</div>
-</div>
-<button class="material-symbols-outlined text-outline hover:text-error transition-colors text-sm mr-xs">delete</button><button class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-sm">chevron_right</button>
-</div>
-</div>
-</div>
-<!-- Parent Note Item 2 -->
-<div class="rounded-2xl border border-outline-variant overflow-visible group">
-<div class="bg-surface p-lg flex justify-between items-center border-b border-outline-variant rounded-t-2xl overflow-visible relative"><div class="flex items-center gap-xs absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><button class="p-xs hover:bg-error-container hover:text-on-error-container rounded-full transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button><button class="p-xs hover:bg-secondary-container hover:text-on-secondary-container rounded-full transition-colors"><span class="material-symbols-outlined text-sm">add_circle</span></button></div>
-<div class="flex flex-col">
-<span class="font-character-display text-headline-md text-on-surface">公司</span>
-<span class="font-label-caps text-label-caps text-on-surface-variant">gōngsī • Company</span>
-</div>
-<div class="relative group">
-<button class="px-md py-sm bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-label-caps text-label-caps transition-colors border border-outline-variant">Details</button>
-<!-- FIXED POPOVER -->
-<div class="absolute bottom-[calc(100%+12px)] right-0 w-[320px] bg-surface-container-lowest shadow-2xl rounded-2xl p-md border border-outline-variant z-50 hidden group-hover:block group-focus-within:block animate-in fade-in slide-in-from-bottom-2 backdrop-blur-sm bg-white/95">
-<div class="flex justify-between items-start mb-sm">
-<div class="flex flex-col">
-<span class="font-character-display text-headline-md text-primary">公司</span>
-<span class="font-body-md text-on-surface-variant">gōngsī</span>
-</div>
-<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container p-xs rounded-full">close</button>
-</div>
-<div class="space-y-sm">
-<div class="p-sm bg-surface-container-low rounded-lg border border-outline-variant text-sm">
-<p class="text-on-surface font-medium">这家公司很大。</p>
-<p class="text-xs text-on-surface-variant mt-1 italic">This company is very large.</p>
-</div>
-<p class="text-xs text-on-surface-variant leading-relaxed">A company or firm. Often used with classifier 家 (jiā). Common in business and professional contexts.</p>
-<div class="flex justify-end gap-sm pt-sm border-t border-outline-variant mt-sm"><button class="flex items-center gap-xs text-xs text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">delete</span> Delete</button><button class="flex items-center gap-xs text-xs text-primary font-bold hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-sm">edit</span> Update</button></div></div>
-<div class="absolute -bottom-2 right-8 w-4 h-4 bg-surface-container-lowest border-r border-b border-outline-variant rotate-45"></div>
-</div>
-</div>
-</div>
-<div class="bg-surface-container-low p-md space-y-sm rounded-b-2xl">
-<div class="flex items-center justify-between p-sm rounded-xl hover:bg-surface-container-high transition-colors group cursor-pointer">
-<div class="flex items-center gap-md">
-<span class="material-symbols-outlined text-outline text-sm">subdirectory_arrow_right</span>
-<div>
-<span class="font-character-display text-lg text-on-surface">同事</span>
-<span class="text-xs text-on-surface-variant ml-sm">tóngshì • Colleague</span>
-</div>
-</div>
-<button class="material-symbols-outlined text-outline hover:text-error transition-colors text-sm mr-xs">delete</button><button class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-sm">chevron_right</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Interactive Script (Column 9-12) -->
-<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
-<div class="bg-surface-container-low rounded-3xl p-md h-full flex flex-col border border-outline-variant">
-<div class="flex items-center justify-between mb-md">
-<h3 class="font-headline-md text-headline-md text-on-surface">Full Script</h3>
-<div class="flex gap-xs">
-<button class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">中</button>
-<button class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">ǎ</button>
-<button class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">EN</button>
-</div>
-</div>
-<div class="flex-1 overflow-y-auto pr-sm custom-scrollbar space-y-md">
-<div class="p-md rounded-2xl border relative overflow-hidden hover:bg-surface-container-highest border-transparent group">
-<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
-<div class="flex gap-sm mb-xs"><span class="font-label-caps text-label-caps text-primary">00:44</span><div class="flex items-center gap-xs"><button class="material-symbols-outlined text-sm text-primary hover:scale-110">play_circle</button><p class="font-body-md font-bold text-on-secondary-container">B: 是啊，你就说来我们公司面试的这几个吧……</p></div></div>
-<p class="text-sm text-on-secondary-container italic opacity-80">Yeah, just look at these people coming to our company for interviews...</p>
-</div>
-</div>
-<div class="mt-md pt-md border-t border-outline-variant">
-<div class="w-full h-1.5 bg-surface-container-highest rounded-full mt-xs overflow-hidden">
-<div class="h-full bg-primary w-[75%] transition-all duration-1000"></div>
-</div>
-<div class="mt-xs text-right"><span class="font-label-caps text-label-caps text-primary">75% Complete</span></div>
-</div>
-</div>
-</div>
-</div>
-<!-- Related Content Sections -->
-<section class="mt-xl">
-<h3 class="font-headline-md text-headline-md text-on-surface mb-lg">Related Lessons</h3>
-<div class="flex gap-md overflow-x-auto pb-md custom-scrollbar">
-<div class="min-w-[320px] bg-white rounded-3xl overflow-hidden card-elevation-1 hover:card-elevation-2 transition-all cursor-pointer group">
-<div class="relative h-40 bg-surface-container overflow-hidden">
-<img alt="Job interview" class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdN4BcN5cUD46Zr2yggA9VNZVgg70ka28pVUTMGWOID8CLO4qF36IH9nqRPhISQI7W65xOf2nuQDVooWjaQOQ2llLGhKbdG9G45xWTST1vmLrXzFV7Z6Wb3FwQdroqig8S0vjAkmk8zoPgiIhN0m-JuY3Y6W4Zy1r_39Pl9EZK5SUVXIQgpvIY4fe4wPMGSMyRb0r7W65WTulV4XBMblvil-3aGQvSokqoMqi4RKLIr-zTnda_eoElj4BppnDHgy93sIlu_fVz5zY"/>
-</div>
-<div class="p-md">
-<h4 class="font-headline-md text-[18px] leading-6 mb-xs">Introduce yourself during a job interview</h4>
-<p class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Story 1 • 12 mins</p>
-</div>
-</div>
-</div>
-</section>
-</div>
-</main>
-<script class="">
-    // Category Toggle Logic
-    document.querySelectorAll('.category-toggle').forEach(toggle => {
-        toggle.addEventListener('click', () => {
-            const list = toggle.nextElementSibling;
-            const chevron = toggle.querySelector('.chevron');
-            list.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-90');
-        });
-    });
-</script>
-</body></html>
+        .loader {
+            text-align: center;
+        }
+        .loader h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #af2330;
+            margin-bottom: 8px;
+        }
+        .loader p {
+            color: #814c58;
+            font-size: 14px;
+        }
+        .loader a {
+            color: #af2330;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <h1>MandoLearning</h1>
+        <p>Redirecting to <a href="pages/video-session.html">Video Session</a>...</p>
+    </div>
+</body>
+</html>

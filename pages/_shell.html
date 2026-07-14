@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><!-- PAGE_TITLE --></title>
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@500;700&display=swap" />
+
+    <!-- Tailwind Config (must load BEFORE the CDN) -->
+    <script src="../js/tailwind-config.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Custom Design System CSS -->
+    <link rel="stylesheet" href="../css/design-system.css" />
+</head>
+<body class="text-on-surface overflow-x-hidden">
+
+    <!-- ============================================================ -->
+    <!-- TOP NAVIGATION BAR                                            -->
+    <!-- ============================================================ -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-nav bg-surface/90 border-b border-outline-variant">
+        <div class="flex justify-between items-center w-full px-lg py-md max-w-max-width mx-auto">
+            <div class="flex items-center gap-md">
+                <span class="text-headline-md font-headline-md font-bold text-primary">MandoLearning</span>
+                <nav class="hidden md:flex gap-md ml-lg">
+                    <a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="video-session.html">Videos</a>
+                    <a class="text-on-surface-variant font-medium hover:text-primary transition-colors font-body-md text-body-md" href="#">Scripts</a>
+                    <a class="text-on-surface-variant font-medium hover:text-primary transition-colors font-body-md text-body-md" href="#">Documents</a>
+                </nav>
+            </div>
+            <div class="flex items-center gap-md">
+                <button class="flex items-center gap-xs text-on-surface-variant hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">star</span>
+                </button>
+                <div class="flex items-center gap-sm">
+                    <button class="px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all">Previous</button>
+                </div>
+                <img alt="User Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU" />
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- SIDE NAVIGATION BAR                                           -->
+    <!-- ============================================================ -->
+    <aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high shadow-sm flex flex-col py-md px-base z-[60]">
+        <div class="mb-lg px-base">
+            <h1 class="font-headline-md text-headline-md font-bold text-primary">MandoLearning</h1>
+            <p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
+        </div>
+        <nav class="flex-1 space-y-1">
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="video-session.html">
+                <span class="material-symbols-outlined">play_circle</span>
+                <span class="font-body-md text-body-md">Videos</span>
+            </a>
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
+                <span class="material-symbols-outlined">description</span>
+                <span class="font-body-md text-body-md">Scripts</span>
+            </a>
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="#">
+                <span class="material-symbols-outlined">folder_open</span>
+                <span class="font-body-md text-body-md">Documents</span>
+            </a>
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="deck-browser.html">
+                <span class="material-symbols-outlined">quiz</span>
+                <span class="font-body-md text-body-md">Flashcards</span>
+            </a>
+            <a class="flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all" href="stats.html">
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md">Stats</span>
+            </a>
+        </nav>
+        <div class="mt-md px-base">
+            <h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mb-sm uppercase">Video Library</h3>
+            <div class="space-y-1">
+                <div class="collapsible-category">
+                    <button class="w-full flex items-center justify-between px-base py-sm rounded-lg text-on-surface-variant hover:bg-secondary-container transition-all category-toggle">
+                        <span class="font-body-md text-body-md">HSK 1-6</span>
+                        <span class="material-symbols-outlined text-sm transition-transform chevron">chevron_right</span>
+                    </button>
+                    <div class="hidden pl-md space-y-1 mt-1 nested-list">
+                        <a class="block px-base py-1 text-xs text-on-surface-variant hover:text-primary transition-colors" href="video-session.html?session=VID_HSK3_L58">HSK 3 - L58: Job Interview</a>
+                        <a class="block px-base py-1 text-xs text-on-surface-variant hover:text-primary transition-colors" href="video-session.html?session=VID_HSK3_L57">HSK 3 - L57: Returning Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-auto px-base py-md">
+            <button class="w-full bg-primary text-on-primary font-headline-md text-headline-md py-base rounded-xl hover:bg-primary-dim transition-all shadow-md active:scale-95" onclick="window.location.href='study-mode.html'">
+                Start Practice
+            </button>
+        </div>
+    </aside>
+
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT                                                  -->
+    <!-- ============================================================ -->
+    <main class="pt-[88px] min-h-screen md:ml-[280px] transition-all duration-300 overflow-visible">
+        <div class="px-margin-desktop max-w-max-width py-md overflow-visible">
+
+            <!-- Breadcrumbs -->
+            <div class="flex items-center gap-xs mb-md text-on-surface-variant">
+                <span class="font-label-caps text-label-caps">Dashboard</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="font-label-caps text-label-caps text-primary"><!-- PAGE_NAME --></span>
+            </div>
+
+            <!-- PAGE_CONTENT -->
+
+        </div>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS                                                       -->
+    <!-- ============================================================ -->
+    <script type="module" src="../js/main.js"></script>
+    <!-- PAGE_SCRIPT -->
+</body>
+</html>
