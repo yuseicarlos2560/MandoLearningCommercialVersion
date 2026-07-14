@@ -2,16 +2,17 @@
  * MandoLearning — Main Entry Point
  *
  * Shared functionality across all pages:
- *   - Sidebar collapsible category toggles
- *   - Global keyboard shortcuts (Ctrl+S for Save)
- *   - Mobile navigation toggle (future)
  *   - Auth initialization (userId from localStorage or URL)
+ *   - Daily stats tracking (USER_ACTIVE events)
+ *   - Sidebar collapsible category toggles (page-specific)
+ *   - Global keyboard shortcuts (Ctrl+S for Save)
  *
  * Usage: Include as the last script in every HTML page:
  *   <script type="module" src="js/main.js"></script>
  */
 
-import { setUserId, setSessionId, flushPendingChanges, hasPendingChanges } from './state.js';
+import { setUserId, setSessionId, flushPendingChanges, hasPendingChanges, getState } from './state.js';
+import { api } from './api-client.js';
 import { toast, spinner } from './ui-components.js';
 
 // =============================================================================
@@ -22,7 +23,6 @@ function init() {
     initAuth();
     initSidebarToggles();
     initKeyboardShortcuts();
-    initNavLinks();
 }
 
 // =============================================================================
@@ -46,6 +46,59 @@ function initAuth() {
     const sessionId = params.get('session');
     if (sessionId) {
         setSessionId(sessionId);
+    }
+
+    // Initialize stats tracking for known users
+    if (userId) {
+        trackUserActive(userId).catch((err) => {
+            console.warn('[Mando] Stats initialization failed:', err);
+        });
+    }
+}
+
+// =============================================================================
+// STATS TRACKING
+// =============================================================================
+
+const LAST_USER_ACTIVE_KEY = 'mando_last_user_active';
+
+/**
+ * Ensure the user has an aggregate stats record.
+ * The backend currently returns 500/404 for users with no activity, so we
+ * prime it by sending a USER_ACTIVE event when aggregate stats cannot be read.
+ */
+async function ensureStatsInitialized(userId) {
+    const result = await api.stats.getAggregate(userId);
+    if (result.ok) return true;
+
+    // Cold start: post a single USER_ACTIVE event to create the record.
+    const initResult = await api.stats.recordEvent(userId, {
+        eventId: `ua_init_${userId}_${Date.now()}`,
+        eventType: 'USER_ACTIVE',
+        timestamp: new Date().toISOString(),
+    });
+
+    return initResult.ok;
+}
+
+/**
+ * Send a USER_ACTIVE event once per calendar day.
+ * Also initializes the stats record for new users.
+ */
+async function trackUserActive(userId) {
+    await ensureStatsInitialized(userId);
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem(LAST_USER_ACTIVE_KEY) === today) return;
+
+    const result = await api.stats.recordEvent(userId, {
+        eventId: `ua_${userId}_${today}`,
+        eventType: 'USER_ACTIVE',
+        timestamp: new Date().toISOString(),
+    });
+
+    if (result.ok) {
+        localStorage.setItem(LAST_USER_ACTIVE_KEY, today);
     }
 }
 
@@ -128,39 +181,6 @@ async function handleSaveAll() {
 
 // Make handleSaveAll available globally for page-specific Save buttons
 window.__mandoHandleSaveAll__ = handleSaveAll;
-
-// =============================================================================
-// NAVIGATION LINKS
-// =============================================================================
-
-function initNavLinks() {
-    // Highlight current page in sidebar based on URL
-    const path = window.location.pathname;
-    const pageName = path.split('/').pop().replace('.html', '') || 'index';
-
-    const linkMap = {
-        'index': 'Videos',
-        'video-session': 'Videos',
-        'deck-browser': 'Flashcards',
-        'study-mode': 'Flashcards',
-        'flashcard-editor': 'Flashcards',
-        'stats': 'Stats',
-    };
-
-    const activeLabel = linkMap[pageName];
-    if (!activeLabel) return;
-
-    document.querySelectorAll('aside nav a').forEach((link) => {
-        const label = link.querySelector('span:last-child')?.textContent?.trim();
-        if (label === activeLabel) {
-            link.classList.add('text-primary', 'font-bold', 'border-r-4', 'border-primary');
-            link.classList.remove('text-on-surface-variant');
-        } else {
-            link.classList.remove('text-primary', 'font-bold', 'border-r-4', 'border-primary');
-            link.classList.add('text-on-surface-variant');
-        }
-    });
-}
 
 // =============================================================================
 // RUN

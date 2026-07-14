@@ -24,6 +24,11 @@ const API_BASE =
     localStorage.getItem('mando_api_base') ||
     'http://localhost:8080/api/textprocessing';
 
+const STATS_API_BASE =
+    window.__MANDO_STATS_API_BASE__ ||
+    localStorage.getItem('mando_stats_api_base') ||
+    'http://localhost:8080/api/stats';
+
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000, 4000]; // ms — exponential backoff
 
@@ -260,6 +265,71 @@ export const api = {
             method: 'POST',
             body: JSON.stringify(payload),
         });
+    },
+
+    // =========================================================================
+    // STATS API — separate base URL (/api/stats)
+    // =========================================================================
+
+    stats: {
+        /**
+         * Get aggregate stats for a user.
+         * Note: the backend currently returns 500 for users with no activity.
+         * Use ensureStatsInitialized() in main.js to prime new users.
+         *
+         * @param {string} userId
+         * @returns {Promise<ApiResult>}
+         */
+        async getAggregate(userId) {
+            const url = `${STATS_API_BASE}/${userId}`;
+            return _fetch(url, { method: 'GET' });
+        },
+
+        /**
+         * Get activity history for a user.
+         *
+         * @param {string} userId
+         * @param {{ granularity?: 'daily'|'weekly', start?: string, end?: string }} [opts]
+         * @returns {Promise<ApiResult>}
+         */
+        async getActivity(userId, opts = {}) {
+            const query = { granularity: opts.granularity || 'daily' };
+            if (opts.start) query.start = opts.start;
+            if (opts.end) query.end = opts.end;
+            const params = new URLSearchParams(query);
+            const url = `${STATS_API_BASE}/${userId}/activity?${params.toString()}`;
+            return _fetch(url, { method: 'GET' });
+        },
+
+        /**
+         * Record a single stats event.
+         *
+         * @param {string} userId
+         * @param {{ eventId?: string, eventType: string, timestamp?: string, payload?: Object }} event
+         * @returns {Promise<ApiResult>}
+         */
+        async recordEvent(userId, event) {
+            const url = `${STATS_API_BASE}/${userId}/events`;
+            return _fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(event),
+            });
+        },
+
+        /**
+         * Record multiple stats events in one request (max 25).
+         *
+         * @param {string} userId
+         * @param {Array<{ eventId?: string, eventType: string, timestamp?: string, payload?: Object }>} events
+         * @returns {Promise<ApiResult>}
+         */
+        async recordBatchEvents(userId, events) {
+            const url = `${STATS_API_BASE}/${userId}/batch-events`;
+            return _fetch(url, {
+                method: 'POST',
+                body: JSON.stringify({ events }),
+            });
+        },
     },
 };
 

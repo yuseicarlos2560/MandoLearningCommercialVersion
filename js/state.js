@@ -228,7 +228,58 @@ export function buildBatchPayload(defaultSessionId) {
 }
 
 /**
+ * Build a batch payload + result-index mapping from an arbitrary subset of
+ * pending changes. Used internally by flushPendingChanges for chunking.
+ */
+function _buildBatchPayloadForChunk(chunk, defaultSessionId) {
+    const payload = {
+        sessionId: defaultSessionId || store.currentSessionId || undefined,
+    };
+
+    const arrays = {
+        CREATE_NOTE: 'createNotes',
+        UPDATE_NOTE: 'updateNotes',
+        DELETE_NOTE: 'deleteNotes',
+        CREATE_FLASHCARD: 'createFlashCards',
+        UPDATE_FLASHCARD: 'updateFlashCards',
+        DELETE_FLASHCARD: 'deleteFlashCards',
+        CREATE_DETAIL: 'createDetails',
+        UPDATE_DETAIL: 'updateDetails',
+        DELETE_DETAIL: 'deleteDetails',
+    };
+
+    const resultIndexToChangeId = new Map();
+    const groups = {};
+
+    for (const change of chunk) {
+        const arrayKey = arrays[change.operation];
+        if (!arrayKey) {
+            console.warn(`Unknown operation: ${change.operation}`);
+            continue;
+        }
+        if (!groups[arrayKey]) groups[arrayKey] = [];
+
+        const index = groups[arrayKey].length;
+        resultIndexToChangeId.set(`${change.operation}_${index}`, change._id);
+        groups[arrayKey].push(change.data);
+    }
+
+    for (const [arrayKey, items] of Object.entries(groups)) {
+        if (items.length > 0) {
+            payload[arrayKey] = items;
+        }
+    }
+
+    return { payload, resultIndexToChangeId };
+}
+
+/**
  * Flush all pending changes to the API via the batch endpoint.
+ *
+ * The API enforces a maximum of 25 items per batch request, so this function
+ * automatically splits larger queues into multiple 25-item chunks and processes
+ * them sequentially. Succeeded changes are removed from the queue; failed or
+ * unprocessed changes remain for retry.
  *
  * @param {string} userId
  * @param {string} [defaultSessionId] — overrides store.currentSessionId
@@ -243,68 +294,70 @@ export async function flushPendingChanges(userId, defaultSessionId) {
         return { ok: false, error: { message: 'No user ID provided. Cannot save.' } };
     }
 
-    // Check batch size limit (25 items)
-    if (store.pendingChanges.length > 25) {
-        return {
-            ok: false,
-            error: {
-                code: 'TP_VAL_018',
-                message: `Batch exceeds maximum 25 items. You have ${store.pendingChanges.length} pending changes.`,
-            },
-        };
+    const BATCH_SIZE_LIMIT = 25;
+    const chunks = [];
+    for (let i = 0; i < store.pendingChanges.length; i += BATCH_SIZE_LIMIT) {
+        chunks.push(store.pendingChanges.slice(i, i + BATCH_SIZE_LIMIT));
     }
 
     setState('isSaving', true);
     setState('saveError', null);
 
-    const { payload, resultIndexToChangeId } = buildBatchPayload(defaultSessionId);
-    const response = await api.batch(userId, payload);
-
-    setState('isSaving', false);
-
-    if (!response.ok) {
-        // Complete request failure (network, 500 after retries, etc.)
-        setState('saveError', response.error);
-        return { ok: false, error: response.error };
-    }
-
-    const result = response.data;
-    const results = result.results || [];
-
-    // Without per-item results we cannot safely update the queue.
-    if (results.length === 0 && store.pendingChanges.length > 0) {
-        return {
-            ok: false,
-            result,
-            error: { message: result.statusMessage || 'Batch response missing per-item results.' },
-        };
-    }
-
     const succeededChangeIds = new Set();
     const failedChanges = [];
+    let lastResult = null;
+    let requestError = null;
 
-    for (const r of results) {
-        const changeId = resultIndexToChangeId.get(`${r.operation}_${r.index}`);
-        if (!changeId) continue;
+    for (const chunk of chunks) {
+        const { payload, resultIndexToChangeId } = _buildBatchPayloadForChunk(chunk, defaultSessionId);
+        const response = await api.batch(userId, payload);
 
-        if (r.status === 'SUCCESS') {
-            succeededChangeIds.add(changeId);
-        } else if (r.status === 'FAILED') {
-            const change = store.pendingChanges.find((c) => c._id === changeId);
-            if (change) failedChanges.push({ change, result: r });
+        if (!response.ok) {
+            // Complete request failure (network, 500 after retries, etc.)
+            // Stop processing further chunks; remaining changes stay in queue.
+            requestError = response.error;
+            break;
+        }
+
+        const result = response.data;
+        lastResult = result;
+        const results = result.results || [];
+
+        if (results.length === 0 && chunk.length > 0) {
+            requestError = { message: result.statusMessage || 'Batch response missing per-item results.' };
+            break;
+        }
+
+        for (const r of results) {
+            const changeId = resultIndexToChangeId.get(`${r.operation}_${r.index}`);
+            if (!changeId) continue;
+
+            if (r.status === 'SUCCESS') {
+                succeededChangeIds.add(changeId);
+            } else if (r.status === 'FAILED') {
+                const change = store.pendingChanges.find((c) => c._id === changeId);
+                if (change) failedChanges.push({ change, result: r });
+            }
         }
     }
 
-    // Remove only the changes we know succeeded. Failed or unmapped changes stay
-    // in the queue so the user can retry or fix them.
+    setState('isSaving', false);
+
+    // Remove only the changes we know succeeded. Failed, unmapped, or unprocessed
+    // changes stay in the queue so the user can retry or fix them.
     store.pendingChanges = store.pendingChanges.filter((c) => !succeededChangeIds.has(c._id));
     setState('pendingChanges', [...store.pendingChanges]);
 
-    if (failedChanges.length > 0) {
-        return { ok: false, result, failedChanges, error: { message: result.statusMessage } };
+    if (requestError) {
+        setState('saveError', requestError);
+        return { ok: false, error: requestError, failedChanges };
     }
 
-    return { ok: true, result };
+    if (failedChanges.length > 0) {
+        return { ok: false, result: lastResult, failedChanges, error: { message: lastResult?.statusMessage } };
+    }
+
+    return { ok: true, result: lastResult };
 }
 
 // =============================================================================

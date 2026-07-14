@@ -23,7 +23,15 @@ body {
 }
 
 /* ============================================
-   2. Glassmorphism Navigation
+   2. Layout Helpers (injected shell)
+   ============================================ */
+
+main {
+    min-height: 100vh;
+}
+
+/* ============================================
+   3. Glassmorphism Navigation
    ============================================ */
 
 .glass-nav {
@@ -114,7 +122,28 @@ body {
 }
 
 /* ============================================
-   6. Focus Ring (accessible, on-brand)
+   6. Card Interactions
+   ============================================ */
+
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -10px rgba(175, 35, 48, 0.15);
+}
+
+/* ============================================
+   7. Mobile Sidebar Backdrop
+   ============================================ */
+
+#mobile-sidebar-backdrop {
+    backdrop-filter: blur(2px);
+}
+
+/* ============================================
+   8. Focus Ring (accessible, on-brand)
    ============================================ */
 
 *:focus-visible {
@@ -124,7 +153,7 @@ body {
 }
 
 /* ============================================
-   7. Selection Color
+   9. Selection Color
    ============================================ */
 
 ::selection {

@@ -29,6 +29,7 @@ import {
     generateTempId,
     formatDuration,
 } from '../utils.js';
+import { initAutoPinyin, getPinyin } from '../pinyin-helper.js';
 
 // =============================================================================
 // DOM REFERENCES
@@ -266,7 +267,7 @@ async function loadSessionNotes() {
     spinner.hide();
 
     if (result.ok) {
-        setState('notes', result.data || []);
+        setState('notes', result.data?.notes || []);
     } else {
         toast.error('Failed to load notes: ' + (result.error?.message || 'Unknown error'));
         setState('notes', []);
@@ -523,6 +524,22 @@ function openNewNoteModal(prefill = {}) {
             return true;
         },
     });
+
+    // Auto-fill pinyin when the character field is blurred
+    const characterInput = document.getElementById('new-note-character');
+    const pinyinInput = document.getElementById('new-note-pinyin');
+    initAutoPinyin(characterInput, pinyinInput);
+
+    // If a character was pre-filled (e.g. from subtitle selection), try to fill pinyin immediately
+    if (prefill.character && pinyinInput && !pinyinInput.value.trim()) {
+        getPinyin(prefill.character).then((py) => {
+            if (py && pinyinInput && !pinyinInput.value.trim()) {
+                pinyinInput.value = py;
+            }
+        }).catch(() => {
+            // Non-blocking: user can still type pinyin manually.
+        });
+    }
 }
 
 /** Open edit modal for a note (used for child notes). */
@@ -564,6 +581,12 @@ function openEditNoteModal(note) {
             return true;
         },
     });
+
+    // Auto-fill pinyin if the user clears it and re-blurs the character field
+    initAutoPinyin(
+        document.getElementById('edit-note-character'),
+        document.getElementById('edit-note-pinyin')
+    );
 }
 
 /** Confirm and queue delete. */

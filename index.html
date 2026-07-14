@@ -1,45 +1,244 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MandoLearning</title>
-    <meta http-equiv="refresh" content="0; url=pages/video-session.html" />
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #fff4f4;
-            color: #4c212c;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .loader {
-            text-align: center;
-        }
-        .loader h1 {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 32px;
-            font-weight: 700;
-            color: #af2330;
-            margin-bottom: 8px;
-        }
-        .loader p {
-            color: #814c58;
-            font-size: 14px;
-        }
-        .loader a {
-            color: #af2330;
-            text-decoration: underline;
-        }
-    </style>
+    <title>MandoLearning | Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Noto+Serif:wght@500;700&display=swap" />
+
+    <!-- Tailwind Config (must load BEFORE the CDN) -->
+    <script src="js/tailwind-config.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Custom Design System CSS -->
+    <link rel="stylesheet" href="css/design-system.css" />
+
+    <!-- Shared Layout Shell (must load before main.js) -->
+    <script type="module" src="js/shell.js"></script>
 </head>
-<body>
-    <div class="loader">
-        <h1>MandoLearning</h1>
-        <p>Redirecting to <a href="pages/video-session.html">Video Session</a>...</p>
-    </div>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT                                                  -->
+    <!-- ============================================================ -->
+    <main class="min-h-screen">
+        <div class="max-w-max-width mx-auto">
+
+            <!-- Header Section -->
+            <div class="mb-lg">
+                <h2 class="font-headline-lg text-headline-lg text-primary">Welcome back, Li Wei!</h2>
+                <p class="text-body-lg text-on-surface-variant mt-xs">You're 3 days away from hitting your weekly streak goal. Keep it up!</p>
+            </div>
+
+            <!-- Bento Grid Layout -->
+            <div class="grid grid-cols-12 gap-md items-stretch">
+
+                <!-- Continue Learning - Hero Card -->
+                <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                    <div class="flex flex-col md:flex-row gap-md">
+                        <div class="w-full md:w-1/2 aspect-video rounded-lg overflow-hidden relative">
+                            <img class="w-full h-full object-cover" alt="Discussing Hobbies lesson thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALPPBwB1vBOKHzIbtsoVGBa_bum56PS9oqIh0oWUqiNM-KaS9sWtDhpXh5zA3uZqv865ojan5XYzDMepgcKPdE9OgY7CdPmdiTl19p7iM8P4Pc-UlnAjGp1prxbBkdWYpCJ60wWp3cwEhdqe9KS36LZX4xml9mQDSKvPEEzu60YJFUfv6GHbwyhZTg5NDM7SshzRNhw2fOC5bbfTUq9KL5hmPslBa1B1F_6PqGS4_vCXU4P9KjDOhL" />
+                            <div class="absolute inset-0 bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="material-symbols-outlined text-white text-5xl" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+                            </div>
+                            <div class="absolute bottom-2 right-2 bg-primary text-on-primary px-sm py-xs rounded text-xs font-bold">14:20</div>
+                        </div>
+                        <div class="w-full md:w-1/2 flex flex-col justify-center">
+                            <span class="text-primary font-label-caps text-label-caps uppercase mb-xs tracking-widest">Continue Learning</span>
+                            <h3 class="font-headline-md text-headline-md text-on-surface">Discussing Hobbies (爱好)</h3>
+                            <p class="text-body-md text-on-surface-variant mt-xs mb-md">Learn how to express your interests and ask others about their free time activities using common sentence patterns.</p>
+                            <div class="mt-auto">
+                                <div class="flex justify-between items-center mb-xs">
+                                    <span class="text-xs font-bold text-on-surface">Progress: 65%</span>
+                                    <span class="text-xs text-on-surface-variant">9 mins remaining</span>
+                                </div>
+                                <div class="w-full h-2 bg-tertiary-container/30 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary w-[65%] rounded-full shadow-[0_0_8px_rgba(175,35,48,0.3)]"></div>
+                                </div>
+                                <a href="pages/video-session.html?session=VID_HSK3_L58" class="mt-md w-full bg-primary text-on-primary py-sm rounded-lg font-bold hover:bg-primary-dim transition-colors flex items-center justify-center gap-sm">
+                                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">resume</span>
+                                    Resume Lesson
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Goals Widget -->
+                <div class="col-span-12 lg:col-span-4 flex flex-col gap-md">
+                    <div class="bg-primary text-on-primary rounded-xl p-md shadow-lg relative overflow-hidden flex-1">
+                        <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-md">
+                                <span class="font-label-caps text-label-caps tracking-widest uppercase opacity-80">Daily Goal Progress</span>
+                                <span class="material-symbols-outlined">workspace_premium</span>
+                            </div>
+                            <div class="flex items-center gap-md mb-lg">
+                                <div class="relative w-20 h-20 flex items-center justify-center">
+                                    <svg class="w-full h-full -rotate-90">
+                                        <circle cx="40" cy="40" fill="transparent" r="36" stroke="rgba(255,255,255,0.2)" stroke-width="6"></circle>
+                                        <circle cx="40" cy="40" fill="transparent" r="36" stroke="white" stroke-dasharray="226" stroke-dashoffset="34" stroke-linecap="round" stroke-width="6"></circle>
+                                    </svg>
+                                    <span class="absolute font-bold text-xl">85%</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-2xl font-bold leading-tight">12/15</h4>
+                                    <p class="text-sm opacity-90">Characters today</p>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-sm border border-white/20 flex items-center gap-md">
+                                <div class="p-2 bg-white/20 rounded-lg">
+                                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                                </div>
+                                <div>
+                                    <div class="text-lg font-bold" id="dash-streak">14 Day Streak</div>
+                                    <div class="text-xs opacity-80" id="dash-longest-streak">Personal record: 21 days</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Area -->
+                <div class="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md mt-md">
+                    <a href="pages/study-mode.html?mode=random&global=true" class="flex items-center gap-md p-md bg-white border border-secondary-fixed-dim rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                        <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                            <span class="material-symbols-outlined">quiz</span>
+                        </div>
+                        <div>
+                            <div class="font-bold text-on-surface">Start Flashcards</div>
+                            <div class="text-xs text-on-surface-variant">Review 42 due items</div>
+                        </div>
+                    </a>
+                    <a href="pages/document-study.html" class="flex items-center gap-md p-md bg-white border border-secondary-fixed-dim rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                        <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                            <span class="material-symbols-outlined">upload_file</span>
+                        </div>
+                        <div>
+                            <div class="font-bold text-on-surface">Upload Document</div>
+                            <div class="text-xs text-on-surface-variant">AI Scan &amp; Pinyin tagging</div>
+                        </div>
+                    </a>
+                    <button class="flex items-center gap-md p-md bg-white border border-secondary-fixed-dim rounded-xl hover:border-primary hover:shadow-md transition-all group text-left">
+                        <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                            <span class="material-symbols-outlined">translate</span>
+                        </div>
+                        <div>
+                            <div class="font-bold text-on-surface">Quick Dictionary</div>
+                            <div class="text-xs text-on-surface-variant">Instant lookups</div>
+                        </div>
+                    </button>
+                    <button class="flex items-center gap-md p-md bg-white border border-secondary-fixed-dim rounded-xl hover:border-primary hover:shadow-md transition-all group text-left">
+                        <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                            <span class="material-symbols-outlined">headset_mic</span>
+                        </div>
+                        <div>
+                            <div class="font-bold text-on-surface">Oral Practice</div>
+                            <div class="text-xs text-on-surface-variant">AI Speech Recognition</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Recommended for You Section -->
+                <div class="col-span-12 mt-lg">
+                    <div class="flex justify-between items-end mb-md">
+                        <div>
+                            <h3 class="font-headline-md text-headline-md text-on-surface">Recommended for You</h3>
+                            <p class="text-body-md text-on-surface-variant">Based on your HSK 4 progress and recent activity</p>
+                        </div>
+                        <a class="text-primary font-bold hover:underline flex items-center gap-xs" href="pages/video-session.html">
+                            View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+                        <!-- Recommendation Card 1 -->
+                        <a href="pages/video-session.html?session=VID_HSK4_L12" class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group block">
+                            <div class="aspect-video relative overflow-hidden">
+                                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Professional Emails lesson thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBe7z8onD2RVf4Vx7gU8UPSX-2jypiPSsnYxmbQbllG12Rx8n17SMQgrTRasaD8J0XcvRwPUMjaedaMgCIPcH3PrglsJsZvYiI34C29P_kB2ZAVDY3Rly7Dm_QJjZI2P0TwC-RsCZgY5iTOzUN81uRKi_1RSrSQxDn2siXZsW58rHX_0PhIGuiNTYjaxC8kY-FgV69rFLUHpMhJMYZ_4dqTZ4Dulp0bIO42AEi3CxpGQGAxtUr7vDy" />
+                                <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">HSK 4</div>
+                            </div>
+                            <div class="p-md">
+                                <h4 class="font-bold text-on-surface text-lg leading-tight group-hover:text-primary transition-colors">Professional Emails &amp; Etiquette</h4>
+                                <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">Master the art of formal correspondence in a Chinese business environment.</p>
+                                <div class="flex items-center gap-md mt-md text-xs text-on-surface-variant">
+                                    <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">schedule</span> 18m</span>
+                                    <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">bar_chart</span> Intermediate</span>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Recommendation Card 2 -->
+                        <a href="pages/video-session.html?session=VID_HSK3_L42" class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group block">
+                            <div class="aspect-video relative overflow-hidden">
+                                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Night Market lesson thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtsHkqvb0kreVEcLM37x6dZy_eZdxFbcsgAXx7750hKmpAqu0dpBf_dE9a6rCyk5VZXX1hYtZSbpgB6qOgfEYafyLwrZRnzTyhMJvC-Nw2_DiyMnYofW2E47m8TqxnEU0sUNStEj1_8hw4OrdQuQxhc7neG8Ieui6R7n-bqXdddaYGdimA_K29_j-fKrCHq_AKnzkNOi_BH1tVF9_f0LSw3uU8oa---59DRuZJsvDnjkSZHeWAszlm" />
+                                <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">HSK 3+</div>
+                            </div>
+                            <div class="p-md">
+                                <h4 class="font-bold text-on-surface text-lg leading-tight group-hover:text-primary transition-colors">Ordering at the Night Market</h4>
+                                <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">Survival Chinese for navigating the delicious world of street food and vendors.</p>
+                                <div class="flex items-center gap-md mt-md text-xs text-on-surface-variant">
+                                    <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">schedule</span> 12m</span>
+                                    <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">bar_chart</span> Lower-Int</span>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Recommendation Card 3 -->
+                        <a href="pages/video-session.html?session=VID_HSK4_L18" class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group block">
+                            <div class="aspect-video relative overflow-hidden">
+                                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="High-Speed Rail lesson thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTQer4pj3bvsWh3gnJ8fAsfw8Zidp2YBAcyz54Q0cEMvS2HFQ6T3jlzqAXIwyyIjmw9a_1lYMWJIbndS5WkEnQNMEs7lbyiH3pFNG0RKu1l-ms7XSWCuU7kxKIxSRvlukcIlswuSu8HLRrgLKknR5dBLYV21NLS06qW73rCv5A15rLxKI8v2SYnxGipVRqoz9TbJARQ6ov0oWXOpHt2uPBLcyfm6Xa2w5VVe2xVQMwimtxLGkfrDcc" />
+                                <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">HSK 4</div>
+                            </div>
+                            <div class="p-md">
+                                <h4 class="font-bold text-on-surface text-lg leading-tight group-hover:text-primary transition-colors">Traveling by High-Speed Rail</h4>
+                                <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">Learn vocabulary for booking tickets and navigating modern travel hubs in China.</p>
+                                <div class="flex items-center gap-md mt-md text-xs text-on-surface-variant">
+                                    <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">schedule</span> 22m</span>
+                                    <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">bar_chart</span> Intermediate</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Learning Statistics Small Widget -->
+                <div class="col-span-12 mt-lg flex flex-col md:flex-row gap-md">
+                    <div class="flex-1 bg-surface-container/50 rounded-xl p-md border border-outline-variant/30 backdrop-blur-sm">
+                        <h5 class="text-xs font-label-caps uppercase tracking-widest text-on-surface-variant mb-md">Character Mastery</h5>
+                        <div class="flex items-end gap-xs h-32" id="dash-weekly-activity">
+                            <div class="flex-1 bg-primary/20 rounded-t-sm h-[40%] transition-all hover:bg-primary/40 cursor-pointer" title="Mon: 12"></div>
+                            <div class="flex-1 bg-primary/20 rounded-t-sm h-[65%] transition-all hover:bg-primary/40 cursor-pointer" title="Tue: 18"></div>
+                            <div class="flex-1 bg-primary/20 rounded-t-sm h-[30%] transition-all hover:bg-primary/40 cursor-pointer" title="Wed: 8"></div>
+                            <div class="flex-1 bg-primary/20 rounded-t-sm h-[85%] transition-all hover:bg-primary/40 cursor-pointer" title="Thu: 24"></div>
+                            <div class="flex-1 bg-primary/20 rounded-t-sm h-[55%] transition-all hover:bg-primary/40 cursor-pointer" title="Fri: 15"></div>
+                            <div class="flex-1 bg-primary rounded-t-sm h-[95%] transition-all hover:bg-primary-dim cursor-pointer" title="Today: 28"></div>
+                            <div class="flex-1 bg-outline-variant/20 rounded-t-sm h-[10%] cursor-not-allowed" title="Sun: 0"></div>
+                        </div>
+                        <div class="flex justify-between mt-sm text-[10px] text-on-surface-variant uppercase font-bold px-1">
+                            <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span class="text-primary">S</span><span>S</span>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-[350px] bg-secondary-container/30 rounded-xl p-md border border-secondary-fixed-dim/30 backdrop-blur-sm relative overflow-hidden">
+                        <div class="absolute -bottom-4 -right-4 text-primary opacity-[0.03] rotate-12">
+                            <span class="material-symbols-outlined text-[160px]" style="font-variation-settings: 'FILL' 1;">translate</span>
+                        </div>
+                        <h5 class="text-xs font-label-caps uppercase tracking-widest text-on-secondary-fixed-variant mb-sm">Study Tip</h5>
+                        <p class="text-sm italic text-on-secondary-container leading-relaxed">"Focus on tone pairs today. The third tone can be tricky, but practicing the 'dip' will make your speech sound more natural and professional."</p>
+                        <button class="mt-md text-xs font-bold text-primary flex items-center gap-xs group">
+                            Read more tips <span class="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPTS                                                       -->
+    <!-- ============================================================ -->
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/pages/index.js"></script>
 </body>
 </html>
