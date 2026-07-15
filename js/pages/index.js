@@ -529,24 +529,28 @@
       safeLocalStorageSet('mando.userId', state.userId);
     }
 
-    initMicroInteractions();
-    renderQuickActions(state);
+    try {
+      initMicroInteractions();
+      renderQuickActions(state);
 
-    // Render with fallback data immediately for perceived performance.
-    renderIdentity(state);
-    renderContinueLearning(state);
-    renderDailyGoal(state);
-    renderRecommendations(state);
-    renderWeeklyChart(state);
+      // Render with fallback data immediately for perceived performance.
+      renderIdentity(state);
+      renderContinueLearning(state);
+      renderDailyGoal(state);
+      renderRecommendations(state);
+      renderWeeklyChart(state);
 
-    // Then load backend data and re-render.
-    await loadDashboardData(state);
+      // Then load backend data and re-render.
+      await loadDashboardData(state);
 
-    renderIdentity(state);
-    renderContinueLearning(state);
-    renderDailyGoal(state);
-    renderRecommendations(state);
-    renderWeeklyChart(state);
+      renderIdentity(state);
+      renderContinueLearning(state);
+      renderDailyGoal(state);
+      renderRecommendations(state);
+      renderWeeklyChart(state);
+    } catch (err) {
+      console.error('Dashboard init failed:', err);
+    }
   }
 
   if (document.readyState === 'loading') {

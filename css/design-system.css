@@ -25,3 +25,80 @@ body {
 ::-webkit-scrollbar-track { background: #fff4f4; }
 ::-webkit-scrollbar-thumb { background: #dc9ca8; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #a06773; }
+
+/* Sidebar enhancements - layered on top of Tailwind utilities */
+.sidebar {
+    background: linear-gradient(180deg, #ffe1e5 0%, #fff4f4 55%, #ffffff 100%);
+    box-shadow: 4px 0 28px rgba(78, 20, 30, 0.10);
+    border-right: 1px solid rgba(175, 35, 48, 0.12);
+}
+
+.sidebar-nav-link {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.sidebar-nav-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(175, 35, 48, 0.10), rgba(255, 117, 118, 0.04));
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.2s ease, transform 0.25s ease;
+    border-radius: 12px;
+    z-index: 0;
+}
+
+.sidebar-nav-link:hover::before {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.sidebar-nav-link:hover {
+    color: #af2330;
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(175, 35, 48, 0.06);
+}
+
+.sidebar-nav-link:active {
+    transform: scale(0.98);
+}
+
+.sidebar-nav-link .material-symbols-outlined,
+.sidebar-nav-link span:last-child {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-nav-link:hover .material-symbols-outlined {
+    transform: scale(1.1);
+}
+
+.sidebar-nav-link-active {
+    color: #af2330;
+    font-weight: 700;
+    background: linear-gradient(90deg, rgba(175, 35, 48, 0.12), rgba(255, 117, 118, 0.05));
+    border-right: 3px solid #af2330;
+}
+
+.sidebar-nav-link-active:hover {
+    background: linear-gradient(90deg, rgba(175, 35, 48, 0.16), rgba(255, 117, 118, 0.08));
+}
+
+.btn-gradient {
+    background: linear-gradient(135deg, #af2330 0%, #9e3655 100%);
+    box-shadow: 0 4px 14px rgba(175, 35, 48, 0.22);
+    transition: all 0.2s ease;
+}
+
+.btn-gradient:hover {
+    background: linear-gradient(135deg, #c42a3a 0%, #b03f60 100%);
+    box-shadow: 0 8px 24px rgba(175, 35, 48, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-gradient:active {
+    transform: translateY(0) scale(0.98);
+}
