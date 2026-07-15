@@ -1,148 +1,596 @@
 /**
- * MandoLearning — Dashboard Page Logic
+ * Dashboard page handler for index.html.
  *
- * Lightweight interactivity for the logged-in home dashboard:
- *   - search bar focus expansion
- *   - subtle card hover shadows
- *   - live stats widget (streak + weekly activity from Stats API)
+ * Wires the dashboard to:
+ * - MandoApi.stats   (aggregate, activity, events)
+ * - MandoApi.videos  (listReady)
+ *
+ * Keeps all markup intact; only dynamic text/attributes are updated via ids.
  */
 
-import { api } from '../api-client.js';
-import { getState } from '../state.js';
+(function () {
+  'use strict';
 
-// =============================================================================
-// INITIALIZATION
-// =============================================================================
+  // ---------------------------------------------------------------------------
+  // Constants
+  // ---------------------------------------------------------------------------
 
-function init() {
-    initSearchFocus();
-    initCardHover();
-    loadDashboardStats();
-}
+  const DAILY_GOAL_TARGET = 15;
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const STUDY_TIPS = [
+    "Focus on tone pairs today. The third tone can be tricky, but practicing the 'dip' will make your speech sound more natural and professional.",
+    "Try shadowing: listen to a sentence and repeat it immediately, matching speed and intonation.",
+    "Write five new characters by hand today. Muscle memory is just as important as recognition.",
+    "Review yesterday's flashcards before starting new content. Spaced repetition works best with consistency.",
+    "Pick one grammar pattern and use it in three original sentences about your own day.",
+  ];
 
-// =============================================================================
-// SEARCH / HOVER
-// =============================================================================
+  const FALLBACK_VIDEOS = [
+    {
+      videoId: 'DEMO_001',
+      title: 'Discussing Hobbies (爱好)',
+      description: 'Learn how to express your interests and ask others about their free time activities using common sentence patterns.',
+      durationSeconds: 860,
+      thumbnail: 'https://lh3.googleusercontent.com/aida-public/AB6AXuALPPBwB1vBOKHzIbtsoVGBa_bum56PS9oqIh0oWUqiNM-KaS9sWtDhpXh5zA3uZqv865ojan5XYzDMepgcKPdE9OgY7CdPmdiTl19p7iM8P4Pc-UlnAjGp1prxbBkdWYpCJ60wWp3cwEhdqe9KS36LZX4xml9mQDSKvPEEzu60YJFUfv6GHbwyhZTg5NDM7SshzRNhw2fOC5bbfTUq9KL5hmPslBa1B1F_6PqGS4_vCXU4P9KjDOhL',
+    },
+    {
+      videoId: 'DEMO_002',
+      title: 'Professional Emails & Etiquette',
+      description: 'Master the art of formal correspondence in a Chinese business environment.',
+      durationSeconds: 1080,
+      thumbnail: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDBe7z8onD2RVf4Vx7gU8UPSX-2jypiPSsnYxmbQbllG12Rx8n17SMQgrTRasaD8J0XcvRwPUMjaedaMgCIPcH3PrglsJsZvYiI34C29P_kB2ZAVDY3Rly7Dm_QJjZI2P0TwC-RsCZgY5iTOzUN81uRKi_1RSrSQxDn2siXZsW58rHX_0PhIGuiNTYjaxC8kY-FgV69rFLUHpMhJMYZ_4dqTZ4Dulp0bIO42AEi3CxpGQGAxtUr7vDy',
+    },
+    {
+      videoId: 'DEMO_003',
+      title: 'Ordering at the Night Market',
+      description: 'Survival Chinese for navigating the delicious world of street food and vendors.',
+      durationSeconds: 720,
+      thumbnail: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBtsHkqvb0kreVEcLM37x6dZy_eZdxFbcsgAXx7750hKmpAqu0dpBf_dE9a6rCyk5VZXX1hYtZSbpgB6qOgfEYafyLwrZRnzTyhMJvC-Nw2_DiyMnYofW2E47m8TqxnEU0sUNStEj1_8hw4OrdQuQxhc7neG8Ieui6R7n-bqXdddaYGdimA_K29_j-fKrCHq_AKnzkNOi_BH1tVF9_f0LSw3uU8oa---59DRuZJsvDnjkSZHeWAszlm',
+    },
+    {
+      videoId: 'DEMO_004',
+      title: 'Traveling by High-Speed Rail',
+      description: 'Learn vocabulary for booking tickets and navigating modern travel hubs in China.',
+      durationSeconds: 1320,
+      thumbnail: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCTQer4pj3bvsWh3gnJ8fAsfw8Zidp2YBAcyz54Q0cEMvS2HFQ6T3jlzqAXIwyyIjmw9a_1lYMWJIbndS5WkEnQNMEs7lbyiH3pFNG0RKu1l-ms7XSWCuU7kxKIxSRvlukcIlswuSu8HLRrgLKknR5dBLYV21NLS06qW73rCv5A15rLxKI8v2SYnxGipVRqoz9TbJARQ6ov0oWXOpHt2uPBLcyfm6Xa2w5VVe2xVQMwimtxLGkfrDcc',
+    },
+  ];
 
-function initSearchFocus() {
-    const searchWrapper = document.getElementById('search-wrapper');
-    const input = searchWrapper?.querySelector('input[type="text"]');
-    if (!input || !searchWrapper) return;
+  // ---------------------------------------------------------------------------
+  // Identity helpers
+  // ---------------------------------------------------------------------------
 
-    input.addEventListener('focus', () => {
-        searchWrapper.classList.add('lg:w-[500px]');
-    });
-    input.addEventListener('blur', () => {
-        searchWrapper.classList.remove('lg:w-[500px]');
-    });
-}
-
-function initCardHover() {
-    document.querySelectorAll('.rounded-xl').forEach((card) => {
-        if (card.classList.contains('bg-primary')) return;
-
-        card.addEventListener('mouseenter', () => {
-            card.classList.add('shadow-md');
-        });
-        card.addEventListener('mouseleave', () => {
-            card.classList.remove('shadow-md');
-        });
-    });
-}
-
-// =============================================================================
-// LIVE STATS WIDGET
-// =============================================================================
-
-async function loadDashboardStats() {
-    const userId = getState('userId');
-    if (!userId) return;
-
-    const result = await api.stats.getAggregate(userId);
-    if (!result.ok) return;
-
-    const stats = result.data?.stats;
-    if (!stats) return;
-
-    renderStreak(stats);
-    renderWeeklyActivity(userId);
-}
-
-function renderStreak(stats) {
-    const streakEl = document.getElementById('dash-streak');
-    const longestEl = document.getElementById('dash-longest-streak');
-
-    if (streakEl) {
-        streakEl.textContent = `${stats.currentStreakDays || 0} Day Streak`;
+  function safeLocalStorageGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      return null;
     }
-    if (longestEl) {
-        longestEl.textContent = `Personal record: ${stats.longestStreakDays || 0} days`;
+  }
+
+  function safeLocalStorageSet(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {
+      // Ignore (private browsing, quota exceeded, etc.)
     }
-}
+  }
 
-async function renderWeeklyActivity(userId) {
-    const container = document.getElementById('dash-weekly-activity');
-    if (!container) return;
+  function getUserId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('userId') || safeLocalStorageGet('mando.userId') || null;
+  }
 
-    const { start, end } = getLast7DaysRange();
-    const result = await api.stats.getActivity(userId, {
-        granularity: 'daily',
-        start,
-        end,
+  function getDisplayName() {
+    return (
+      safeLocalStorageGet('mando.displayName') ||
+      deriveNameFromUserId(getUserId()) ||
+      'Learner'
+    );
+  }
+
+  function deriveNameFromUserId(userId) {
+    if (!userId) return null;
+    const parts = userId.split('_');
+    if (parts.length > 1) {
+      return 'Learner ' + parts[parts.length - 1];
+    }
+    return userId;
+  }
+
+  function isAdmin() {
+    const role = safeLocalStorageGet('mando.userRole') || '';
+    return role === 'ADMIN' || role === 'MASTER';
+  }
+
+  function uuid() {
+    if (window.crypto && window.crypto.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
     });
+  }
 
-    const activity = result.data?.activity || [];
-    const byDate = new Map();
-    for (const record of activity) {
-        const dateKey = record.statKey.replace('DAILY#', '');
-        byDate.set(dateKey, record);
+  // ---------------------------------------------------------------------------
+  // Date helpers
+  // ---------------------------------------------------------------------------
+
+  function formatDate(d) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function today() {
+    return formatDate(new Date());
+  }
+
+  function daysAgo(n) {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return formatDate(d);
+  }
+
+  function dayOfYear() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now - start;
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Formatting helpers
+  // ---------------------------------------------------------------------------
+
+  function formatDuration(totalSeconds) {
+    if (!totalSeconds || totalSeconds <= 0) return '';
+    const m = Math.floor(totalSeconds / 60);
+    const s = Math.floor(totalSeconds % 60);
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  function formatRemaining(totalSeconds, percentWatched) {
+    if (!totalSeconds) return '9 mins remaining';
+    const remaining = Math.max(0, totalSeconds * (1 - percentWatched / 100));
+    const mins = Math.ceil(remaining / 60);
+    return `${mins} min${mins === 1 ? '' : 's'} remaining`;
+  }
+
+  function extractHsk(title) {
+    if (!title) return 'HSK 4';
+    const match = title.match(/HSK\s?(\d)/i);
+    if (match) return `HSK ${match[1]}`;
+    return 'HSK 4';
+  }
+
+  function difficultyFromHsk(hsk) {
+    const level = parseInt(hsk.replace(/\D/g, ''), 10) || 4;
+    if (level <= 2) return 'Beginner';
+    if (level <= 4) return 'Intermediate';
+    return 'Advanced';
+  }
+
+  function thumbnailUrl(video) {
+    // In Phase 2 the API only returns s3Bucket + s3Key; construct a public URL if possible.
+    if (video.thumbnail) return video.thumbnail;
+    if (video.s3Bucket && video.s3Key) {
+      return `https://${video.s3Bucket}.s3.amazonaws.com/${video.s3Key}`;
+    }
+    return FALLBACK_VIDEOS[0].thumbnail;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Local progress shim
+  // ---------------------------------------------------------------------------
+
+  function getStoredProgress(videoId) {
+    try {
+      const raw = window.localStorage.getItem(`mando.progress.${videoId}`);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // DOM helpers
+  // ---------------------------------------------------------------------------
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function setText(id, text) {
+    const el = $(id);
+    if (el) el.textContent = text;
+  }
+
+  function setAttr(id, attr, value) {
+    const el = $(id);
+    if (el) el.setAttribute(attr, value);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering: identity & streak motivation
+  // ---------------------------------------------------------------------------
+
+  function renderIdentity(state) {
+    if (state.userId) {
+      setText('user-name', state.displayName);
     }
 
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const dayMs = 24 * 60 * 60 * 1000;
+    const aggregate = state.stats.aggregate;
+    if (!aggregate) {
+      // Demo mode: keep the static fallback motivation text in the HTML.
+      return;
+    }
+
+    const daysToRecord = Math.max(0, (aggregate.longestStreakDays || 0) - (aggregate.currentStreakDays || 0));
+
+    let motivation;
+    if (daysToRecord > 0) {
+      motivation = `You're ${daysToRecord} day${daysToRecord === 1 ? '' : 's'} away from hitting your personal streak record. Keep it up!`;
+    } else if (aggregate.currentStreakDays > 0) {
+      motivation = `You're on a ${aggregate.currentStreakDays} day streak. Great consistency!`;
+    } else {
+      motivation = 'Start learning today to build your first streak!';
+    }
+    setText('streak-motivation', motivation);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering: continue learning
+  // ---------------------------------------------------------------------------
+
+  function renderContinueLearning(state) {
+    const video = state.videos.hero || FALLBACK_VIDEOS[0];
+    const stored = getStoredProgress(video.videoId);
+    const percent = stored && typeof stored.percent === 'number' ? stored.percent : 0;
+
+    setText('continue-learning-title', video.title || 'Continue Learning');
+    setText('continue-learning-description', video.description || '');
+    setAttr('continue-learning-image', 'src', thumbnailUrl(video));
+    setText('continue-learning-duration', formatDuration(video.durationSeconds));
+    setText('continue-learning-progress', `Progress: ${percent}%`);
+    setText('continue-learning-remaining', formatRemaining(video.durationSeconds, percent));
+
+    const bar = $('continue-learning-progress-bar');
+    if (bar) {
+      bar.style.width = `${percent}%`;
+      bar.className = `h-full bg-primary rounded-full shadow-[0_0_8px_rgba(175,35,48,0.3)]`;
+    }
+
+    const btn = $('resume-lesson-btn');
+    if (btn) {
+      btn.onclick = function () {
+        window.location.href = `pages/video-session.html?videoId=${encodeURIComponent(video.videoId)}`;
+      };
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering: daily goal + streaks
+  // ---------------------------------------------------------------------------
+
+  function renderDailyGoal(state) {
+    const aggregate = state.stats.aggregate;
+    const todayWords = state.stats.todayWordsAdded;
+    const hasData = aggregate !== null || todayWords > 0;
+
+    // In demo mode (no backend data), keep the static fallback values in the HTML.
+    if (!hasData) return;
+
+    const percent = Math.min(100, Math.round(((todayWords || 0) / DAILY_GOAL_TARGET) * 100));
+
+    setText('daily-goal-percent', `${percent}%`);
+    setText('daily-goal-ratio', `${todayWords || 0}/${DAILY_GOAL_TARGET}`);
+
+    const circle = $('daily-goal-circle');
+    if (circle) {
+      const radius = 36;
+      const circumference = 2 * Math.PI * radius; // ~226
+      const offset = circumference - (percent / 100) * circumference;
+      circle.setAttribute('stroke-dasharray', String(circumference));
+      circle.setAttribute('stroke-dashoffset', String(offset));
+    }
+
+    const streakDays = aggregate ? aggregate.currentStreakDays || 0 : 0;
+    const recordDays = aggregate ? aggregate.longestStreakDays || 0 : 0;
+
+    setText('streak-days', `${streakDays} Day Streak`);
+    setText('record-streak', `Personal record: ${recordDays} days`);
+
+    // Topnav mini version
+    setText('topnav-daily-goal-percent', `Daily Goal: ${percent}%`);
+    const topBar = $('topnav-daily-goal-bar');
+    if (topBar) topBar.style.width = `${percent}%`;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering: quick actions
+  // ---------------------------------------------------------------------------
+
+  function renderQuickActions(state) {
+    const flashBtn = $('action-flashcards');
+    if (flashBtn) {
+      flashBtn.onclick = function () {
+        window.location.href = 'pages/study-mode.html?mode=spaced&global=true';
+      };
+    }
+
+    const uploadBtn = $('action-upload');
+    if (uploadBtn) {
+      if (isAdmin()) {
+        uploadBtn.classList.remove('hidden');
+        uploadBtn.onclick = function () {
+          alert('Upload Document is only available in the admin interface.');
+        };
+      }
+    }
+
+    const dictBtn = $('action-dictionary');
+    if (dictBtn) {
+      dictBtn.onclick = function () {
+        alert('Quick Dictionary is coming soon.');
+      };
+    }
+
+    const oralBtn = $('action-oral');
+    if (oralBtn) {
+      oralBtn.onclick = function () {
+        alert('Oral Practice is coming soon.');
+      };
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering: recommendations
+  // ---------------------------------------------------------------------------
+
+  function createRecommendationCard(video) {
+    const hsk = extractHsk(video.title);
+    const difficulty = difficultyFromHsk(hsk);
+    const duration = formatDuration(video.durationSeconds);
+    const thumb = thumbnailUrl(video);
+
+    const card = document.createElement('div');
+    card.className = 'bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group';
+    card.innerHTML = `
+      <div class="aspect-video relative overflow-hidden cursor-pointer" data-video-id="${escapeHtml(video.videoId)}">
+        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${escapeHtml(thumb)}" alt="${escapeHtml(video.title)}">
+        <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">${escapeHtml(hsk)}</div>
+      </div>
+      <div class="p-md">
+        <h4 class="font-bold text-on-surface text-lg leading-tight group-hover:text-primary transition-colors">${escapeHtml(video.title)}</h4>
+        <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">${escapeHtml(video.description || '')}</p>
+        <div class="flex items-center gap-md mt-md text-xs text-on-surface-variant">
+          ${duration ? `<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span> ${escapeHtml(duration)}</span>` : ''}
+          <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm" data-icon="bar_chart">bar_chart</span> ${escapeHtml(difficulty)}</span>
+        </div>
+      </div>
+    `;
+
+    const thumbEl = card.querySelector('[data-video-id]');
+    if (thumbEl) {
+      thumbEl.onclick = function () {
+        window.location.href = `pages/video-session.html?videoId=${encodeURIComponent(video.videoId)}`;
+      };
+    }
+
+    return card;
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderRecommendations(state) {
+    const grid = $('recommended-grid');
+    if (!grid) return;
+
+    // Keep only the first static card as a template? No, replace all children.
+    grid.innerHTML = '';
+
+    const videos = state.videos.recommended.length > 0 ? state.videos.recommended : FALLBACK_VIDEOS.slice(1);
+    videos.slice(0, 3).forEach(function (video) {
+      grid.appendChild(createRecommendationCard(video));
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering: weekly chart
+  // ---------------------------------------------------------------------------
+
+  function renderWeeklyChart(state) {
+    const activity = state.stats.activity || [];
     const today = new Date();
-
-    container.innerHTML = '';
+    const data = [];
 
     for (let i = 6; i >= 0; i--) {
-        const d = new Date(today.getTime() - i * dayMs);
-        const dateKey = d.toISOString().slice(0, 10);
-        const record = byDate.get(dateKey);
-        const words = (record?.wordsAdded || 0) + (record?.wordsMastered || 0);
-        const maxWords = 30;
-        const heightPct = Math.min(100, Math.round((words / maxWords) * 100));
-        const isToday = i === 0;
-
-        const bar = document.createElement('div');
-        bar.className = 'flex-1 flex flex-col items-center gap-xs group';
-        bar.innerHTML = `
-            <div class="w-full flex-1 flex items-end">
-                <div class="w-full ${heightPct > 0 ? (isToday ? 'bg-primary' : 'bg-primary/60') : 'bg-outline-variant/20'} ${heightPct > 0 ? 'hover:bg-primary' : ''} rounded-t-sm transition-all cursor-pointer relative"
-                     style="height: ${Math.max(8, heightPct)}%"
-                     title="${days[d.getDay()]}: ${words} words">
-                </div>
-            </div>
-            <span class="text-[10px] text-on-surface-variant uppercase font-bold ${isToday ? 'text-primary' : ''}">${days[d.getDay()].charAt(0)}</span>
-        `;
-        container.appendChild(bar);
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = formatDate(d);
+      const dayName = DAYS[d.getDay()];
+      const record = activity.find(function (r) {
+        return r.statKey === `DAILY#${dateStr}`;
+      });
+      const count = record ? record.wordsAdded || 0 : 0;
+      data.push({ day: dayName, count: count });
     }
-}
 
-function getLast7DaysRange() {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - 6);
+    const maxCount = Math.max(1, ...data.map(function (d) { return d.count; }));
 
-    const fmt = (d) => d.toISOString().slice(0, 10);
-    return { start: fmt(start), end: fmt(end) };
-}
+    data.forEach(function (item) {
+      const id = `bar-${item.day.toLowerCase()}`;
+      const bar = $(id);
+      if (!bar) return;
 
-// =============================================================================
-// RUN
-// =============================================================================
+      const height = Math.round((item.count / maxCount) * 100);
+      bar.style.height = `${height}%`;
+      bar.title = `${item.day}: ${item.count}`;
 
-if (document.readyState === 'loading') {
+      // Highlight today if it is this day
+      const todayDayName = DAYS[today.getDay()];
+      if (item.day === todayDayName) {
+        bar.className = 'flex-1 bg-primary rounded-t-sm transition-all hover:bg-primary-dim cursor-pointer';
+      } else {
+        bar.className = 'flex-1 bg-primary/20 rounded-t-sm transition-all hover:bg-primary/40 cursor-pointer';
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering: study tip
+  // ---------------------------------------------------------------------------
+
+  function renderStudyTip() {
+    const tip = STUDY_TIPS[dayOfYear() % STUDY_TIPS.length];
+    setText('study-tip-text', `"${tip}"`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Data loading
+  // ---------------------------------------------------------------------------
+
+  async function loadDashboardData(state) {
+    if (!state.userId) {
+      // Demo mode: use fallback data everywhere.
+      return;
+    }
+
+    const todayStr = today();
+
+    try {
+      const [aggregateRes, activityRes, videosRes, activeRes] = await Promise.all([
+        window.MandoApi.stats.getAggregate(state.userId),
+        window.MandoApi.stats.getActivity(state.userId, {
+          granularity: 'daily',
+          start: daysAgo(6),
+          end: todayStr,
+        }),
+        window.MandoApi.videos.listReady({ pageSize: 4 }),
+        window.MandoApi.stats.recordEvent(state.userId, {
+          eventId: uuid(),
+          eventType: 'USER_ACTIVE',
+          timestamp: new Date().toISOString(),
+        }),
+      ]);
+
+      if (aggregateRes.ok && aggregateRes.data && aggregateRes.data.stats) {
+        state.stats.aggregate = aggregateRes.data.stats;
+      }
+
+      if (activityRes.ok && activityRes.data && Array.isArray(activityRes.data.activity)) {
+        state.stats.activity = activityRes.data.activity;
+        const todayRecord = activityRes.data.activity.find(function (r) {
+          return r.statKey === `DAILY#${todayStr}`;
+        });
+        state.stats.todayWordsAdded = todayRecord ? todayRecord.wordsAdded || 0 : 0;
+      }
+
+      if (videosRes.ok && videosRes.data && Array.isArray(videosRes.data.videos)) {
+        const videos = videosRes.data.videos;
+        state.videos.hero = videos[0] || null;
+        state.videos.recommended = videos.slice(1, 4);
+      }
+
+      if (!activeRes.ok) {
+        console.warn('USER_ACTIVE event failed', activeRes.error);
+      }
+    } catch (err) {
+      console.error('Dashboard load failed', err);
+      // Fallback data already in state via FALLBACK_VIDEOS during render.
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Micro-interactions (preserved from original template)
+  // ---------------------------------------------------------------------------
+
+  function initMicroInteractions() {
+    document.querySelectorAll('.rounded-xl').forEach(function (card) {
+      card.addEventListener('mouseenter', function () {
+        if (!card.classList.contains('bg-primary')) {
+          card.classList.add('shadow-md');
+        }
+      });
+      card.addEventListener('mouseleave', function () {
+        if (!card.classList.contains('bg-primary')) {
+          card.classList.remove('shadow-md');
+        }
+      });
+    });
+
+    const searchInput = document.querySelector('input[type="text"]');
+    if (searchInput) {
+      searchInput.addEventListener('focus', function () {
+        searchInput.parentElement.classList.add('w-[500px]');
+      });
+      searchInput.addEventListener('blur', function () {
+        searchInput.parentElement.classList.remove('w-[500px]');
+      });
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Main init
+  // ---------------------------------------------------------------------------
+
+  async function init() {
+    const state = {
+      userId: getUserId(),
+      displayName: getDisplayName(),
+      stats: {
+        aggregate: null,
+        activity: [],
+        todayWordsAdded: 0,
+      },
+      videos: {
+        hero: null,
+        recommended: [],
+      },
+    };
+
+    // Persist userId if it came from URL.
+    if (state.userId) {
+      safeLocalStorageSet('mando.userId', state.userId);
+    }
+
+    initMicroInteractions();
+    renderStudyTip();
+    renderQuickActions(state);
+
+    // Render with fallback data immediately for perceived performance.
+    renderIdentity(state);
+    renderContinueLearning(state);
+    renderDailyGoal(state);
+    renderRecommendations(state);
+    renderWeeklyChart(state);
+
+    // Then load backend data and re-render.
+    await loadDashboardData(state);
+
+    renderIdentity(state);
+    renderContinueLearning(state);
+    renderDailyGoal(state);
+    renderRecommendations(state);
+    renderWeeklyChart(state);
+  }
+
+  if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
-} else {
+  } else {
     init();
-}
+  }
+})();
