@@ -201,6 +201,23 @@
     return 'HSK 3';
   }
 
+  function inferHskLabel(title) {
+    return extractHsk(title).replace(' ', '').toUpperCase();
+  }
+
+  function generatePinyin(text) {
+    if (!text || !text.trim()) return '';
+    const lib = window.pinyinPro || window.pinyin;
+    if (lib && typeof lib.pinyin === 'function') {
+      try {
+        return lib.pinyin(text.trim(), { toneType: 'symbol' });
+      } catch (e) {
+        return '';
+      }
+    }
+    return '';
+  }
+
   function difficultyFromHsk(hsk) {
     const level = parseInt(hsk.replace(/\D/g, ''), 10) || 3;
     if (level <= 2) return 'Beginner';
@@ -210,6 +227,7 @@
 
   function thumbnailUrl(video) {
     if (video.thumbnail) return video.thumbnail;
+    if (video.thumbnailUrl) return video.thumbnailUrl;
     if (video.s3Bucket && video.s3Key) {
       return `https://${video.s3Bucket}.s3.amazonaws.com/${video.s3Key}`;
     }
@@ -217,10 +235,19 @@
   }
 
   function videoSourceUrl(video) {
+    if (video.sourceType === 'YOUTUBE') return null;
     if (video.s3Bucket && video.s3Key) {
       return `https://${video.s3Bucket}.s3.amazonaws.com/${video.s3Key}`;
     }
-    return '';
+    return null;
+  }
+
+  function isYouTubeVideo(video) {
+    return video && video.sourceType === 'YOUTUBE' && video.youtubeVideoId;
+  }
+
+  function isS3Video(video) {
+    return video && video.sourceType !== 'YOUTUBE' && videoSourceUrl(video);
   }
 
   // ---------------------------------------------------------------------------
@@ -242,6 +269,7 @@
     scriptMode: 'zh',
     activeScriptIndex: -1,
     demoMode: false,
+    scriptLines: [],
   };
 
   // Persist ids for subsequent visits / navigation.
@@ -281,6 +309,46 @@
     btn.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> ${escapeHtml(label)} (Ctrl+S)`;
   }
 
+  function validatePendingChanges() {
+    const errors = [];
+
+    if (state.pendingChanges.length > 25) {
+      errors.push(`You have ${state.pendingChanges.length} pending changes. Please save in groups of 25 or fewer.`);
+    }
+
+    state.pendingChanges.forEach(function (change) {
+      if (change.operation === 'CREATE_NOTE' || change.operation === 'UPDATE_NOTE') {
+        if (!change.data.character || !change.data.character.trim()) {
+          errors.push('Character cannot be empty.');
+        }
+      }
+      if (change.operation === 'CREATE_NOTE') {
+        if (!change.data.pinyin || !change.data.pinyin.trim()) {
+          errors.push('Pinyin cannot be empty for new notes.');
+        }
+      }
+      if (change.operation === 'CREATE_FLASHCARD') {
+        if (!change.data.character || !change.data.character.trim()) {
+          errors.push('Flashcard character cannot be empty.');
+        }
+        if (!change.data.pinyin || !change.data.pinyin.trim()) {
+          errors.push('Flashcard pinyin cannot be empty.');
+        }
+        if (!change.data.meaning || !change.data.meaning.trim()) {
+          errors.push('Flashcard meaning cannot be empty.');
+        }
+        if (!change.data.category || !change.data.category.trim()) {
+          errors.push('Flashcard category cannot be empty.');
+        }
+      }
+    });
+
+    // Deduplicate messages.
+    return errors.filter(function (value, index, self) {
+      return self.indexOf(value) === index;
+    });
+  }
+
   function buildBatchPayload() {
     const payload = { sessionId: state.sessionId };
     const mapping = []; // { changeId, operation, index }
@@ -315,6 +383,18 @@
           noteId: change.data.noteId,
         });
         mapping.push({ changeId: change._id, operation: 'DELETE_NOTE', index: index });
+      } else if (change.operation === 'CREATE_FLASHCARD') {
+        payload.createFlashCards = payload.createFlashCards || [];
+        const index = payload.createFlashCards.length;
+        payload.createFlashCards.push({
+          character: change.data.character,
+          pinyin: change.data.pinyin || '',
+          meaning: change.data.meaning || '',
+          hsk: change.data.hsk || inferHskLabel((state.video || FALLBACK_VIDEO).title),
+          category: change.data.category || 'MISCELLANEOUS',
+          sessionId: change.data.sessionId || state.sessionId,
+        });
+        mapping.push({ changeId: change._id, operation: 'CREATE_FLASHCARD', index: index });
       }
     });
 
@@ -323,6 +403,12 @@
 
   async function flushPendingChanges() {
     if (!state.userId || state.pendingChanges.length === 0) return;
+
+    const validationErrors = validatePendingChanges();
+    if (validationErrors.length > 0) {
+      showToast(validationErrors.join(' '), 'error');
+      return;
+    }
 
     state.isSaving = true;
     state.saveError = null;
@@ -454,6 +540,52 @@
     }
   }
 
+  async function loadScript() {
+    setHtml('script-container', renderScriptSkeleton());
+
+    if (state.demoMode) {
+      state.scriptLines = SCRIPT_FIXTURE.map(function (line) { return { ...line }; });
+      return;
+    }
+
+    try {
+      const res = await window.MandoApi.videos.getScript(state.videoId);
+      if (res.ok && res.data && Array.isArray(res.data.lines) && res.data.lines.length > 0) {
+        state.scriptLines = res.data.lines.map(function (line) {
+          return {
+            t: line.timestampSeconds,
+            zh: line.chinese,
+            py: line.pinyin,
+            en: line.english,
+          };
+        });
+      } else {
+        state.scriptLines = SCRIPT_FIXTURE.map(function (line) { return { ...line }; });
+      }
+    } catch (err) {
+      console.warn('Failed to load script, falling back to fixture:', err);
+      state.scriptLines = SCRIPT_FIXTURE.map(function (line) { return { ...line }; });
+    }
+  }
+
+  function renderScriptSkeleton() {
+    let html = '';
+    for (let i = 0; i < 6; i++) {
+      html += `
+        <div class="p-sm rounded-xl bg-surface-container animate-pulse">
+          <div class="flex items-start gap-sm">
+            <div class="w-4 h-4 mt-1 rounded-full bg-outline-variant/40"></div>
+            <div class="flex-1 space-y-xs">
+              <div class="h-4 bg-outline-variant/40 rounded w-3/4"></div>
+              <div class="h-3 bg-outline-variant/30 rounded w-1/2"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    return html;
+  }
+
   async function sendUserActive() {
     if (!state.userId) return;
     try {
@@ -485,10 +617,70 @@
   // ---------------------------------------------------------------------------
 
   function initVideoPlayer() {
-    const video = $('video-player');
-    if (!video) return;
+    renderPlayerForVideo();
+    if (isYouTubeVideo(state.video)) {
+      initYouTubePlayer();
+    } else {
+      initNativeVideoPlayer();
+    }
+  }
 
-    updateVideoSource(video);
+  function renderPlayerForVideo() {
+    const video = $('video-player');
+    const wrapper = $('video-player-wrapper');
+    const controls = $('video-custom-controls');
+    const unavailableOverlay = $('video-unavailable-overlay');
+    const unavailableThumbnail = $('video-unavailable-thumbnail');
+
+    if (!video || !wrapper) return;
+
+    // Remove any previously injected YouTube iframe.
+    const existingIframe = $('youtube-player');
+    if (existingIframe) existingIframe.remove();
+
+    // Remove any previously injected thumbnail overlay.
+    const existingThumb = wrapper.querySelector('.video-thumbnail-overlay');
+    if (existingThumb) existingThumb.remove();
+
+    video.classList.remove('hidden');
+    if (controls) controls.classList.remove('hidden');
+    if (unavailableOverlay) unavailableOverlay.classList.add('hidden');
+
+    const currentVideo = state.video || FALLBACK_VIDEO;
+
+    if (isS3Video(currentVideo)) {
+      updateVideoSource(video);
+      return;
+    }
+
+    if (isYouTubeVideo(currentVideo)) {
+      video.classList.add('hidden');
+      if (controls) controls.classList.add('hidden');
+
+      const iframe = document.createElement('iframe');
+      iframe.id = 'youtube-player';
+      iframe.className = 'w-full h-full';
+      iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(currentVideo.youtubeVideoId)}?enablejsapi=1&rel=0`;
+      iframe.title = currentVideo.title || 'YouTube video player';
+      iframe.setAttribute('frameborder', '0');
+      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+      iframe.setAttribute('allowfullscreen', 'true');
+      wrapper.appendChild(iframe);
+      return;
+    }
+
+    // Missing or unknown source: show thumbnail + unavailable overlay.
+    video.classList.add('hidden');
+    if (controls) controls.classList.add('hidden');
+    if (unavailableOverlay) {
+      unavailableOverlay.classList.remove('hidden');
+      if (unavailableThumbnail) unavailableThumbnail.src = thumbnailUrl(currentVideo);
+    }
+  }
+
+  function initNativeVideoPlayer() {
+    const video = $('video-player');
+    if (!video || video.classList.contains('hidden')) return;
 
     if (video._mandoPlayerSetup) return;
     video._mandoPlayerSetup = true;
@@ -566,6 +758,16 @@
     });
   }
 
+  function initYouTubePlayer() {
+    // YouTube playback is handled by the iframe's native controls.
+    // The subtitle overlay remains visible; script progress is based on video duration if known.
+    const currentVideo = state.video || FALLBACK_VIDEO;
+    const duration = currentVideo.durationSeconds || 0;
+    if (duration) {
+      updateScriptProgress();
+    }
+  }
+
   function updateVideoSource(video) {
     const src = videoSourceUrl(state.video || FALLBACK_VIDEO);
     if (!src) return;
@@ -602,20 +804,21 @@
     const pinyin = $('subtitle-pinyin');
     if (!hanzi || !pinyin) return;
 
-    // Find the line whose timestamp is closest without exceeding currentTime + 2s.
-    let active = SCRIPT_FIXTURE[0];
-    for (let i = 0; i < SCRIPT_FIXTURE.length; i++) {
-      if (currentTime >= SCRIPT_FIXTURE[i].t) {
-        active = SCRIPT_FIXTURE[i];
+    const lines = state.scriptLines.length > 0 ? state.scriptLines : SCRIPT_FIXTURE;
+    // Find the line whose timestamp is closest without exceeding currentTime.
+    let active = lines[0];
+    for (let i = 0; i < lines.length; i++) {
+      if (currentTime >= lines[i].t) {
+        active = lines[i];
       }
     }
 
-    hanzi.textContent = active.zh;
-    pinyin.textContent = active.py;
+    hanzi.textContent = active ? active.zh : '';
+    pinyin.textContent = active ? active.py : '';
   }
 
   // ---------------------------------------------------------------------------
-  // Rendering: notes tree
+  // Rendering: notes tree (real-time inline editing)
   // ---------------------------------------------------------------------------
 
   function buildNoteTree() {
@@ -641,20 +844,26 @@
 
     const { roots, childrenMap } = buildNoteTree();
 
+    container.innerHTML = '';
+
     if (roots.length === 0) {
-      container.innerHTML = `
-        <div class="text-center py-xl text-on-surface-variant">
-          <span class="material-symbols-outlined text-4xl mb-sm">notes</span>
-          <p class="font-body-md">No notes yet. Click "New Note" to capture vocabulary.</p>
-        </div>
-      `;
+      container.appendChild(createEmptyState());
       return;
     }
 
-    container.innerHTML = '';
     roots.forEach(function (note) {
       container.appendChild(createNoteNode(note, childrenMap, 0));
     });
+  }
+
+  function createEmptyState() {
+    const el = document.createElement('div');
+    el.className = 'text-center py-xl text-on-surface-variant';
+    el.innerHTML = `
+      <span class="material-symbols-outlined text-4xl mb-sm">notes</span>
+      <p class="font-body-md">No notes yet. Click "New Note" to capture vocabulary.</p>
+    `;
+    return el;
   }
 
   function createNoteNode(note, childrenMap, depth) {
@@ -663,6 +872,7 @@
     const detail = state.noteDetails[note.noteId];
     const hasDetail = detail && (detail.detailedNote || detail.exampleSentence);
     const isPending = note._pendingCreate || note._pendingUpdate || note._pendingDelete;
+    const safeId = note.noteId.replace(/[^a-zA-Z0-9_-]/g, '_');
 
     const wrapper = document.createElement('div');
     wrapper.className = `note-node rounded-2xl border transition-all ${
@@ -672,36 +882,38 @@
     } ${depth > 0 ? 'ml-lg mt-sm' : ''}`;
 
     const content = document.createElement('div');
-    content.className = 'p-md flex items-start gap-md';
-
-    const indent = depth > 0
-      ? `<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-xs font-bold shrink-0">${depth}</div>`
-      : `<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center text-lg font-bold shrink-0">${escapeHtml(note.character ? note.character.charAt(0) : '·')}</div>`;
+    content.className = 'p-md';
 
     const detailIcon = hasDetail ? 'sticky_note' : 'sticky_note_2';
+    const autoPinyin = generatePinyin(note.character || '');
 
     content.innerHTML = `
-      ${indent}
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-sm flex-wrap">
-          <span class="note-character font-character-display text-2xl text-on-surface cursor-pointer hover:text-primary transition-colors" data-note-id="${escapeHtml(note.noteId)}">${escapeHtml(note.character)}</span>
-          <span class="font-body-md text-on-surface-variant">${escapeHtml(note.pinyin || '')}</span>
-          ${note.hsk ? `<span class="font-label-caps text-label-caps bg-surface-container-high text-primary px-sm py-xs rounded-md border border-outline-variant/30">${escapeHtml(note.hsk)}</span>` : ''}
+      <div class="flex items-start gap-sm">
+        <div class="flex-1 min-w-0">
+          <input id="note-char-${safeId}" type="text" value="${escapeHtml(note.character || '')}" placeholder="Character" maxlength="25" class="w-full bg-surface-container-high text-on-surface rounded-lg px-sm py-xs border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none font-character-display text-2xl">
+          <div class="mt-xs flex items-center gap-sm">
+            <input id="note-py-${safeId}" type="text" value="${escapeHtml(note.pinyin || '')}" placeholder="Pinyin" maxlength="250" class="flex-1 bg-surface-container-high text-on-surface-variant rounded-lg px-sm py-xs border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-sm">
+            ${autoPinyin && autoPinyin !== (note.pinyin || '').trim() ? `<span class="text-xs text-on-surface-variant whitespace-nowrap">↳ ${escapeHtml(autoPinyin)}</span>` : ''}
+          </div>
         </div>
-        ${hasDetail && detail.detailedNote ? `<p class="text-sm text-on-surface-variant mt-xs line-clamp-2">${escapeHtml(detail.detailedNote)}</p>` : ''}
-        ${hasDetail && detail.exampleSentence ? `<p class="text-sm text-primary mt-xs italic">${escapeHtml(detail.exampleSentence)}</p>` : ''}
+        <div class="flex items-start gap-xs pt-1 shrink-0">
+          ${!isChild ? `<button class="note-detail-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" title="Details"><span class="material-symbols-outlined text-sm">${detailIcon}</span></button>` : ''}
+          ${!isChild && !note._pendingCreate ? `<button class="note-add-child-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" title="Add child note"><span class="material-symbols-outlined text-sm">add</span></button>` : ''}
+          <button class="note-delete-btn p-xs rounded-lg hover:bg-error-container transition-colors text-on-surface-variant hover:text-error" title="Delete"><span class="material-symbols-outlined text-sm">delete</span></button>
+        </div>
       </div>
-      <div class="flex items-center gap-xs shrink-0">
-        ${!isChild ? `<button class="note-detail-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" data-note-id="${escapeHtml(note.noteId)}" title="Details"><span class="material-symbols-outlined text-sm">${detailIcon}</span></button>` : ''}
-        ${!isChild ? `<button class="note-add-child-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" data-note-id="${escapeHtml(note.noteId)}" title="Add child note"><span class="material-symbols-outlined text-sm">add</span></button>` : ''}
-        <button class="note-delete-btn p-xs rounded-lg hover:bg-error-container transition-colors text-on-surface-variant hover:text-error" data-note-id="${escapeHtml(note.noteId)}" title="Delete"><span class="material-symbols-outlined text-sm">delete</span></button>
-      </div>
+      ${hasDetail && (detail.detailedNote || detail.exampleSentence) ? `
+        <div class="mt-sm text-sm">
+          ${detail.detailedNote ? `<p class="text-on-surface-variant line-clamp-2">${escapeHtml(detail.detailedNote)}</p>` : ''}
+          ${detail.exampleSentence ? `<p class="text-primary italic mt-xs">${escapeHtml(detail.exampleSentence)}</p>` : ''}
+        </div>
+      ` : ''}
     `;
 
     wrapper.appendChild(content);
 
     // Children
-    if (children.length > 0) {
+    if (children.length > 0 || !isChild) {
       const childWrap = document.createElement('div');
       childWrap.className = 'pb-sm pr-sm';
       children.forEach(function (child) {
@@ -710,14 +922,29 @@
       wrapper.appendChild(childWrap);
     }
 
-    // Event bindings
-    const charEl = content.querySelector('.note-character');
-    if (charEl) {
-      charEl.addEventListener('click', function () {
-        startInlineEdit(note.noteId, 'character');
+    // Bind inputs
+    const charInput = content.querySelector(`#note-char-${safeId}`);
+    const pyInput = content.querySelector(`#note-py-${safeId}`);
+
+    if (charInput) {
+      charInput.addEventListener('input', function () {
+        updateNoteField(note.noteId, 'character', charInput.value);
+        // Auto-fill pinyin if the user hasn't manually edited it yet.
+        const generated = generatePinyin(charInput.value);
+        if (generated && !note._pinyinEdited) {
+          pyInput.value = generated;
+          updateNoteField(note.noteId, 'pinyin', generated);
+        }
+      });
+    }
+    if (pyInput) {
+      pyInput.addEventListener('input', function () {
+        note._pinyinEdited = true;
+        updateNoteField(note.noteId, 'pinyin', pyInput.value);
       });
     }
 
+    // Bind actions
     const detailBtn = content.querySelector('.note-detail-btn');
     if (detailBtn) {
       detailBtn.addEventListener('click', function () {
@@ -728,90 +955,71 @@
     const addChildBtn = content.querySelector('.note-add-child-btn');
     if (addChildBtn) {
       addChildBtn.addEventListener('click', function () {
-        openNoteModal({ parentNoteId: note.noteId });
+        createEmptyNote(note.noteId);
       });
     }
 
     const deleteBtn = content.querySelector('.note-delete-btn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', function () {
-        deleteNote(note.noteId);
+        promptDeleteNote(note.noteId);
       });
     }
 
     return wrapper;
   }
 
-  function startInlineEdit(noteId, field) {
+  function updateNoteField(noteId, field, value) {
     const note = state.notes.find(function (n) {
       return n.noteId === noteId;
     });
     if (!note) return;
 
-    const oldValue = note[field] || '';
-    const newValue = window.prompt(field === 'character' ? 'Edit character:' : 'Edit pinyin:', oldValue);
-    if (newValue === null || newValue === oldValue) return;
+    note[field] = value.trim();
 
-    note[field] = newValue.trim();
-    note._pendingUpdate = true;
-    queueChange('UPDATE_NOTE', {
-      sessionId: state.sessionId,
-      noteId: note.noteId,
-      character: note.character,
-      pinyin: note.pinyin,
-    });
-    renderNotes();
-  }
-
-  function deleteNote(noteId) {
-    const note = state.notes.find(function (n) {
-      return n.noteId === noteId;
-    });
-    if (!note) return;
-
-    if (!window.confirm(`Delete "${note.character}"?`)) return;
-
-    note._pendingDelete = true;
-
-    // Also mark children for deletion.
-    state.notes.forEach(function (n) {
-      if (n.parentNoteId === noteId) {
-        n._pendingDelete = true;
+    if (note._pendingCreate) {
+      const createChange = state.pendingChanges.find(function (c) {
+        return c.operation === 'CREATE_NOTE' && c.data._tempId === noteId;
+      });
+      if (createChange) {
+        createChange.data[field] = note[field];
       }
-    });
+    } else {
+      note._pendingUpdate = true;
+      const updateChange = state.pendingChanges.find(function (c) {
+        return c.operation === 'UPDATE_NOTE' && c.data.noteId === noteId;
+      });
+      if (updateChange) {
+        updateChange.data[field] = note[field];
+      } else {
+        queueChange('UPDATE_NOTE', {
+          sessionId: state.sessionId,
+          noteId: note.noteId,
+          character: note.character,
+          pinyin: note.pinyin,
+        });
+      }
+    }
 
-    queueChange('DELETE_NOTE', { sessionId: state.sessionId, noteId: note.noteId });
-    renderNotes();
+    updateSaveButtonState();
   }
 
-  // ---------------------------------------------------------------------------
-  // Note create / edit modal
-  // ---------------------------------------------------------------------------
-
-  function openNoteModal({ parentNoteId = null } = {}) {
-    const isChild = !!parentNoteId;
-    const title = isChild ? 'Add Child Note' : 'New Note';
-
-    const character = window.prompt(`${title}\nCharacter(s):`);
-    if (!character || !character.trim()) return;
-
-    const pinyin = window.prompt('Pinyin (optional):') || '';
-    const hsk = window.prompt('HSK level (e.g. HSK3):') || extractHsk((state.video || FALLBACK_VIDEO).title);
-
+  function createEmptyNote(parentNoteId) {
     const tempId = 'TEMP_' + uuid();
     const newNote = {
       noteId: tempId,
       sessionId: state.sessionId,
-      character: character.trim(),
-      pinyin: pinyin.trim(),
-      hsk: hsk.trim().toUpperCase(),
-      parentNoteId: parentNoteId,
+      character: '',
+      pinyin: '',
+      hsk: inferHskLabel((state.video || FALLBACK_VIDEO).title),
+      parentNoteId: parentNoteId || null,
       timestamp: new Date().toISOString(),
       _pendingCreate: true,
     };
 
     state.notes.push(newNote);
     queueChange('CREATE_NOTE', {
+      _tempId: tempId,
       sessionId: state.sessionId,
       character: newNote.character,
       pinyin: newNote.pinyin,
@@ -819,6 +1027,107 @@
       parentNoteId: newNote.parentNoteId,
     });
     renderNotes();
+    updateSaveButtonState();
+
+    const safeId = tempId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const input = $('note-char-' + safeId);
+    if (input) input.focus();
+  }
+
+  function promptDeleteNote(noteId) {
+    const note = state.notes.find(function (n) {
+      return n.noteId === noteId;
+    });
+    if (!note) return;
+
+    openConfirmModal(
+      `Delete "${note.character || 'this note'}"?`,
+      'This will also remove any child notes. You can undo by clicking away until you save.',
+      function () {
+        confirmDeleteNote(noteId);
+      }
+    );
+  }
+
+  function confirmDeleteNote(noteId) {
+    const note = state.notes.find(function (n) {
+      return n.noteId === noteId;
+    });
+    if (!note) return;
+
+    const children = state.notes.filter(function (n) {
+      return n.parentNoteId === noteId;
+    });
+
+    // Helper to remove a single note and its pending changes.
+    function removeNoteAndChanges(id, isExisting) {
+      state.notes = state.notes.filter(function (n) {
+        return n.noteId !== id;
+      });
+      state.pendingChanges = state.pendingChanges.filter(function (c) {
+        return !((c.operation === 'CREATE_NOTE' && c.data._tempId === id) ||
+                 (c.operation === 'UPDATE_NOTE' && c.data.noteId === id));
+      });
+      if (isExisting) {
+        queueChange('DELETE_NOTE', { sessionId: state.sessionId, noteId: id });
+      }
+    }
+
+    if (note._pendingCreate) {
+      removeNoteAndChanges(note.noteId, false);
+    } else {
+      note._pendingDelete = true;
+      removeNoteAndChanges(note.noteId, true);
+    }
+
+    children.forEach(function (child) {
+      if (child._pendingCreate) {
+        removeNoteAndChanges(child.noteId, false);
+      } else {
+        child._pendingDelete = true;
+        removeNoteAndChanges(child.noteId, true);
+      }
+    });
+
+    renderNotes();
+    updateSaveButtonState();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shared modal helpers
+  // ---------------------------------------------------------------------------
+
+  function openConfirmModal(title, message, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-md';
+    overlay.innerHTML = `
+      <div class="bg-surface rounded-3xl shadow-2xl w-full max-w-sm p-lg border border-outline-variant">
+        <div class="flex items-center gap-sm mb-md">
+          <span class="material-symbols-outlined text-error text-2xl">warning</span>
+          <h3 class="font-headline-md text-headline-md text-on-surface">${escapeHtml(title)}</h3>
+        </div>
+        <p class="font-body-md text-on-surface-variant mb-lg">${escapeHtml(message)}</p>
+        <div class="flex justify-end gap-sm">
+          <button class="confirm-cancel px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">Cancel</button>
+          <button class="confirm-ok px-md py-xs rounded-lg bg-error text-on-error font-body-md hover:bg-error-dim transition-all shadow-md">Delete</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    function close() {
+      overlay.remove();
+    }
+
+    overlay.querySelector('.confirm-cancel').addEventListener('click', close);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) close();
+    });
+    overlay.querySelector('.confirm-ok').addEventListener('click', function () {
+      close();
+      onConfirm();
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -844,11 +1153,11 @@
         <div class="space-y-md">
           <div>
             <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase">Explanation</label>
-            <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-md border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface" rows="4" placeholder="Add a longer explanation...">${escapeHtml(existing.detailedNote || '')}</textarea>
+            <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-md border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface" rows="4" maxlength="1000" placeholder="Add a longer explanation...">${escapeHtml(existing.detailedNote || '')}</textarea>
           </div>
           <div>
             <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase">Example Sentence</label>
-            <textarea class="detail-example w-full bg-surface-container-lowest rounded-xl p-md border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface" rows="2" placeholder="Add an example sentence...">${escapeHtml(existing.exampleSentence || '')}</textarea>
+            <textarea class="detail-example w-full bg-surface-container-lowest rounded-xl p-md border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface" rows="2" maxlength="100" placeholder="Add an example sentence...">${escapeHtml(existing.exampleSentence || '')}</textarea>
           </div>
           <div class="detail-error text-error text-sm hidden"></div>
           <div class="flex justify-end gap-sm pt-sm">
@@ -927,8 +1236,9 @@
     const container = $('script-container');
     if (!container) return;
 
+    const lines = state.scriptLines.length > 0 ? state.scriptLines : SCRIPT_FIXTURE;
     container.innerHTML = '';
-    SCRIPT_FIXTURE.forEach(function (line, index) {
+    lines.forEach(function (line, index) {
       const el = document.createElement('div');
       el.className = `script-line p-sm rounded-xl cursor-pointer transition-colors hover:bg-surface-container ${index === state.activeScriptIndex ? 'bg-primary-container/30 border border-primary/20' : ''}`;
       el.dataset.index = index;
@@ -940,7 +1250,10 @@
 
       el.innerHTML = `
         <div class="flex items-start gap-sm">
-          <span class="material-symbols-outlined text-primary mt-1 text-sm">play_arrow</span>
+          <div class="flex flex-col items-center shrink-0 pt-1">
+            <span class="material-symbols-outlined text-primary text-sm">play_arrow</span>
+            <span class="text-[10px] text-on-surface-variant font-medium mt-xs">${escapeHtml(formatTime(line.t))}</span>
+          </div>
           <div class="flex-1">
             <p class="script-zh font-body-md text-on-surface ${zhDisplay}">${escapeHtml(line.zh)}</p>
             <p class="script-py font-body-md text-on-surface-variant italic mt-xs ${pyDisplay}">${escapeHtml(line.py)}</p>
@@ -960,9 +1273,10 @@
   }
 
   function updateScriptHighlight(currentTime) {
+    const lines = state.scriptLines.length > 0 ? state.scriptLines : SCRIPT_FIXTURE;
     let index = -1;
-    for (let i = 0; i < SCRIPT_FIXTURE.length; i++) {
-      if (currentTime >= SCRIPT_FIXTURE[i].t) {
+    for (let i = 0; i < lines.length; i++) {
+      if (currentTime >= lines[i].t) {
         index = i;
       }
     }
@@ -988,7 +1302,9 @@
     const video = $('video-player');
     if (!bar || !text) return;
 
-    const duration = video && video.duration ? video.duration : SCRIPT_FIXTURE[SCRIPT_FIXTURE.length - 1].t + 5;
+    const lines = state.scriptLines.length > 0 ? state.scriptLines : SCRIPT_FIXTURE;
+    const fallbackDuration = lines.length > 0 ? lines[lines.length - 1].t + 5 : 0;
+    const duration = video && video.duration ? video.duration : fallbackDuration;
     const current = video && video.currentTime ? video.currentTime : 0;
     const percent = duration ? Math.min(100, Math.round((current / duration) * 100)) : 0;
 
@@ -998,9 +1314,25 @@
 
   function seekTo(seconds) {
     const video = $('video-player');
-    if (!video) return;
-    video.currentTime = seconds;
-    video.play().catch(function () {});
+    const iframe = $('youtube-player');
+
+    if (video && !video.classList.contains('hidden')) {
+      video.currentTime = seconds;
+      video.play().catch(function () {});
+      return;
+    }
+
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage(JSON.stringify({
+          event: 'command',
+          func: 'seekTo',
+          args: [seconds, true],
+        }), '*');
+      } catch (err) {
+        console.warn('YouTube seek failed', err);
+      }
+    }
   }
 
   function initScriptToggles() {
@@ -1190,7 +1522,7 @@
     const newNoteBtn = $('new-note-btn');
     if (newNoteBtn) {
       newNoteBtn.addEventListener('click', function () {
-        openNoteModal();
+        createEmptyNote(null);
       });
     }
 

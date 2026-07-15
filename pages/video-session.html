@@ -12,6 +12,8 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="../js/tailwind-config.js"></script>
 <link rel="stylesheet" href="../css/design-system.css" />
+<!-- Pinyin generation -->
+<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
 <!-- API clients -->
 <script src="../js/api/client.js"></script>
 <script src="../js/api/videos.js"></script>
@@ -71,6 +73,15 @@
 <!-- Populated dynamically from api.videos.listReady -->
 </div>
 </div>
+<div id="sidebar-profile-snippet" class="mt-md mx-base p-md rounded-2xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div class="min-w-0">
+<p id="sidebar-user-name" class="font-body-md text-body-md text-on-surface font-semibold truncate">Learner</p>
+<p id="sidebar-user-role" class="font-label-caps text-label-caps text-on-surface-variant truncate">HSK 4 Learner</p>
+</div>
+</div>
 <div class="mt-auto px-base py-md border-t border-outline-variant/30">
 <button class="w-full btn-gradient text-on-primary font-headline-md text-headline-md py-base rounded-xl shadow-md active:scale-95">
                 Start Practice
@@ -93,14 +104,23 @@
 <!-- Video Player Container (Column 1-8) -->
 <div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
 <div class="relative aspect-video rounded-3xl overflow-hidden shadow-xl bg-black group">
+<div id="video-player-wrapper" class="w-full h-full">
 <video id="video-player" class="w-full h-full object-cover" poster="https://lh3.googleusercontent.com/aida-public/AB6AXuC4eZ5ZuRAFIKQTjbn0hO4ruI2tn5fnyB0N4-5DIeKxdK50dSg73h64_MnY3n4r_tQKSlvbaww9aKXwayvS5-pLAARtxARNAqM_gcuRtPj5zL9OEYrVSJBs-brsmnGJpw6Zw-WJKSGcuWxyrAyuP1--vX66-UD0KcSJb-S2778lG92KRHPhAVI5js9CouA2xB4jgYpeuhzxNlvznmsUR_-bhxKOF_Ssl1T1ZgsRIfd6-GKmd0cdHgwzFCF-RJv_l6L9ErOetGJ5B6w" preload="metadata">
                         Your browser does not support the video tag.
                     </video>
+</div>
 <div id="video-subtitle-overlay" class="absolute bottom-md left-1/2 -translate-x-1/2 w-[90%] max-w-[90%] bg-surface/90 backdrop-blur-md px-md py-sm rounded-2xl border border-outline-variant shadow-lg text-center z-10">
 <p id="subtitle-hanzi" class="font-character-display text-[32px] leading-relaxed text-on-surface">是啊，你就说来我们公司面试的这几个吧……</p>
 <p id="subtitle-pinyin" class="font-body-md text-on-surface-variant mt-xs italic">shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba...</p>
 </div>
-<div class="absolute bottom-0 left-0 right-0 p-md bg-gradient-to-t from-black/60 to-transparent">
+<div id="video-unavailable-overlay" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-surface text-on-surface z-10 p-lg text-center">
+<img id="video-unavailable-thumbnail" class="absolute inset-0 w-full h-full object-cover opacity-40" src="" alt="">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-5xl text-on-surface-variant">videocam_off</span>
+<p class="mt-sm font-headline-md text-headline-md">Video unavailable</p>
+</div>
+</div>
+<div id="video-custom-controls" class="absolute bottom-0 left-0 right-0 p-md bg-gradient-to-t from-black/60 to-transparent">
 <div class="w-full h-1.5 bg-white/30 rounded-full mb-md overflow-hidden relative cursor-pointer" id="video-progress-container">
 <div id="video-progress-bar" class="absolute h-full w-[0%] bg-primary transition-all duration-100"></div>
 </div>

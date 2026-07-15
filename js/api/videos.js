@@ -24,6 +24,10 @@
     return window.MandoApi.get(`${BASE}/${encodeURIComponent(videoId)}`);
   }
 
+  async function getScript(videoId) {
+    return window.MandoApi.get(`${BASE}/${encodeURIComponent(videoId)}/script`);
+  }
+
   window.MandoApi = window.MandoApi || {};
-  window.MandoApi.videos = { listReady, getReady };
+  window.MandoApi.videos = { listReady, getReady, getScript };
 })(window);
