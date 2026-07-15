@@ -77,7 +77,7 @@ tailwind.config = {
         "headline-md": ["Plus Jakarta Sans"],
         "body-md": ["Inter"],
         "body-lg": ["Inter"],
-        "character-display": ["Noto Serif"],
+        "character-display": ["Noto Serif SC", "Noto Serif", "serif"],
         "headline-lg-mobile": ["Plus Jakarta Sans"],
         "label-caps": ["Plus Jakarta Sans"],
         "headline-lg": ["Plus Jakarta Sans"]

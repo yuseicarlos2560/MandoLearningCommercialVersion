@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MandoLearning | Video Session</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../js/tailwind-config.js"></script>
+<link rel="stylesheet" href="../css/design-system.css" />
+<!-- API clients -->
+<script src="../js/api/client.js"></script>
+<script src="../js/api/videos.js"></script>
+<script src="../js/api/stats.js"></script>
+<script src="../js/api/notes.js"></script>
+<script src="../js/api/batch.js"></script>
+</head>
+<body class="text-on-surface overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 z-40 glass-nav bg-surface/90 border-b border-outline-variant">
+<div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
+<div class="flex items-center gap-md">
+<a id="topnav-brand" class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
+</div>
+<div class="flex items-center gap-md">
+<button id="topnav-previous" class="px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all">
+                Previous
+            </button>
+<div class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Side Navigation Bar -->
+<aside class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-50">
+<div class="mb-lg px-base">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active: Videos -->
+<a class="sidebar-nav-link sidebar-nav-link-active flex items-center gap-sm px-base py-sm rounded-lg" href="../index.html">
+<span class="material-symbols-outlined" data-icon="play_circle">play_circle</span>
+<span class="font-body-md text-body-md">Videos</span>
+</a>
+<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="script-reader.html">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-body-md text-body-md">Scripts</span>
+</a>
+<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="document-study.html">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span class="font-body-md text-body-md">Documents</span>
+</a>
+<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="flashcards.html">
+<span class="material-symbols-outlined" data-icon="quiz">quiz</span>
+<span class="font-body-md text-body-md">Flashcards</span>
+</a>
+<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="stats.html">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="font-body-md text-body-md">Stats</span>
+</a>
+</nav>
+<div class="mt-md px-base">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mb-sm uppercase">Video Library</h3>
+<div id="video-library-container" class="space-y-1">
+<!-- Populated dynamically from api.videos.listReady -->
+</div>
+</div>
+<div class="mt-auto px-base py-md border-t border-outline-variant/30">
+<button class="w-full btn-gradient text-on-primary font-headline-md text-headline-md py-base rounded-xl shadow-md active:scale-95">
+                Start Practice
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-[88px] min-h-screen md:ml-[280px] transition-all duration-300 overflow-visible">
+<div class="px-lg max-w-[1200px] mx-auto py-md overflow-visible">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-xs mb-md text-on-surface-variant">
+<a class="font-label-caps text-label-caps hover:text-primary transition-colors" href="../index.html">Dashboard</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span id="breadcrumb-hsk" class="font-label-caps text-label-caps">HSK3</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span id="breadcrumb-lesson" class="font-label-caps text-label-caps text-primary">Class Review</span>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-md w-full overflow-visible">
+<!-- Video Player Container (Column 1-8) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
+<div class="relative aspect-video rounded-3xl overflow-hidden shadow-xl bg-black group">
+<video id="video-player" class="w-full h-full object-cover" poster="https://lh3.googleusercontent.com/aida-public/AB6AXuC4eZ5ZuRAFIKQTjbn0hO4ruI2tn5fnyB0N4-5DIeKxdK50dSg73h64_MnY3n4r_tQKSlvbaww9aKXwayvS5-pLAARtxARNAqM_gcuRtPj5zL9OEYrVSJBs-brsmnGJpw6Zw-WJKSGcuWxyrAyuP1--vX66-UD0KcSJb-S2778lG92KRHPhAVI5js9CouA2xB4jgYpeuhzxNlvznmsUR_-bhxKOF_Ssl1T1ZgsRIfd6-GKmd0cdHgwzFCF-RJv_l6L9ErOetGJ5B6w" preload="metadata">
+                        Your browser does not support the video tag.
+                    </video>
+<div id="video-subtitle-overlay" class="absolute bottom-md left-1/2 -translate-x-1/2 w-[90%] max-w-[90%] bg-surface/90 backdrop-blur-md px-md py-sm rounded-2xl border border-outline-variant shadow-lg text-center z-10">
+<p id="subtitle-hanzi" class="font-character-display text-[32px] leading-relaxed text-on-surface">是啊，你就说来我们公司面试的这几个吧……</p>
+<p id="subtitle-pinyin" class="font-body-md text-on-surface-variant mt-xs italic">shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba...</p>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-md bg-gradient-to-t from-black/60 to-transparent">
+<div class="w-full h-1.5 bg-white/30 rounded-full mb-md overflow-hidden relative cursor-pointer" id="video-progress-container">
+<div id="video-progress-bar" class="absolute h-full w-[0%] bg-primary transition-all duration-100"></div>
+</div>
+<div class="flex justify-between items-center text-white">
+<div class="flex items-center gap-md">
+<button id="video-play-btn" class="material-symbols-outlined hover:scale-110 transition-transform">play_arrow</button>
+<span id="video-time" class="font-label-caps text-label-caps">0:00 / 0:00</span>
+</div>
+<div class="flex items-center gap-md">
+<button id="video-settings-btn" class="material-symbols-outlined hover:scale-110 transition-transform">settings</button>
+<button id="video-fullscreen-btn" class="material-symbols-outlined hover:scale-110 transition-transform">fullscreen</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Hierarchical Notes System -->
+<div class="bg-surface-container-lowest rounded-3xl p-lg card-elevation-1 overflow-visible relative">
+<div class="flex items-center justify-between mb-lg">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">sticky_note_2</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Topic Notes</h3>
+</div>
+<div class="flex items-center gap-sm">
+<button id="new-note-btn" class="flex items-center gap-xs px-md py-xs bg-surface-container-high text-on-surface rounded-lg font-body-md hover:bg-surface-dim transition-all border border-outline-variant">
+<span class="material-symbols-outlined text-sm">add</span> New Note
+                            </button>
+<button id="save-notes-btn" class="flex items-center gap-xs px-md py-xs bg-primary text-on-primary rounded-lg font-body-md hover:bg-primary-dim transition-all shadow-md">
+<span class="material-symbols-outlined text-sm">save</span> Save (Ctrl+S)
+                            </button>
+</div>
+</div>
+<div id="notes-container" class="space-y-md overflow-visible">
+<!-- Notes rendered dynamically -->
+</div>
+</div>
+</div>
+<!-- Interactive Script (Column 9-12) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<div class="bg-surface-container-low rounded-3xl p-md h-full flex flex-col border border-outline-variant">
+<div class="flex items-center justify-between mb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Full Script</h3>
+<div class="flex gap-xs">
+<button id="script-toggle-zh" class="script-toggle w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs" data-mode="zh">中</button>
+<button id="script-toggle-py" class="script-toggle w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="py">ǎ</button>
+<button id="script-toggle-en" class="script-toggle w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="en">EN</button>
+</div>
+</div>
+<div id="script-container" class="flex-1 overflow-y-auto pr-sm custom-scrollbar space-y-md">
+<!-- Script lines rendered dynamically -->
+</div>
+<div class="mt-md pt-md border-t border-outline-variant">
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full mt-xs overflow-hidden">
+<div id="script-progress-bar" class="h-full bg-primary w-[0%] transition-all duration-1000"></div>
+</div>
+<div class="mt-xs text-right"><span id="script-completion-text" class="font-label-caps text-label-caps text-primary">0% Complete</span></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Related Content Sections -->
+<section class="mt-xl">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-lg">Related Lessons</h3>
+<div id="related-lessons-container" class="flex gap-md overflow-x-auto pb-md custom-scrollbar">
+<!-- Related lessons rendered dynamically -->
+</div>
+</section>
+</div>
+</main>
+<script src="../js/pages/video-session.js"></script>
+</body>
+</html>
