@@ -17,14 +17,6 @@
 
   const DAILY_GOAL_TARGET = 15;
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const STUDY_TIPS = [
-    "Focus on tone pairs today. The third tone can be tricky, but practicing the 'dip' will make your speech sound more natural and professional.",
-    "Try shadowing: listen to a sentence and repeat it immediately, matching speed and intonation.",
-    "Write five new characters by hand today. Muscle memory is just as important as recognition.",
-    "Review yesterday's flashcards before starting new content. Spaced repetition works best with consistency.",
-    "Pick one grammar pattern and use it in three original sentences about your own day.",
-  ];
-
   const FALLBACK_VIDEOS = [
     {
       videoId: 'DEMO_001',
@@ -133,13 +125,6 @@
     const d = new Date();
     d.setDate(d.getDate() - n);
     return formatDate(d);
-  }
-
-  function dayOfYear() {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 0);
-    const diff = now - start;
-    return Math.floor(diff / (1000 * 60 * 60 * 24));
   }
 
   // ---------------------------------------------------------------------------
@@ -332,20 +317,6 @@
         };
       }
     }
-
-    const dictBtn = $('action-dictionary');
-    if (dictBtn) {
-      dictBtn.onclick = function () {
-        alert('Quick Dictionary is coming soon.');
-      };
-    }
-
-    const oralBtn = $('action-oral');
-    if (oralBtn) {
-      oralBtn.onclick = function () {
-        alert('Oral Practice is coming soon.');
-      };
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -448,15 +419,6 @@
         bar.className = 'flex-1 bg-primary/20 rounded-t-sm transition-all hover:bg-primary/40 cursor-pointer';
       }
     });
-  }
-
-  // ---------------------------------------------------------------------------
-  // Rendering: study tip
-  // ---------------------------------------------------------------------------
-
-  function renderStudyTip() {
-    const tip = STUDY_TIPS[dayOfYear() % STUDY_TIPS.length];
-    setText('study-tip-text', `"${tip}"`);
   }
 
   // ---------------------------------------------------------------------------
@@ -568,7 +530,6 @@
     }
 
     initMicroInteractions();
-    renderStudyTip();
     renderQuickActions(state);
 
     // Render with fallback data immediately for perceived performance.
