@@ -26,12 +26,65 @@
     border: 1px solid rgba(220, 156, 168, 0.3);
   }
   .heatmap-cell {
+    width: 10px;
+    height: 10px;
     aspect-ratio: 1/1;
-    border-radius: 4px;
+    border-radius: 2px;
+  }
+  .heatmap-scroll {
+    scrollbar-width: none;
+  }
+  .heatmap-scroll::-webkit-scrollbar {
+    height: 0;
+  }
+  .heatmap-scroll:hover {
+    scrollbar-width: thin;
+  }
+  .heatmap-scroll:hover::-webkit-scrollbar {
+    height: 4px;
+  }
+  .heatmap-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .heatmap-scroll::-webkit-scrollbar-thumb {
+    background: rgba(175, 35, 48, 0.35);
+    border-radius: 2px;
+  }
+  .heatmap-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(175, 35, 48, 0.65);
   }
   .custom-scrollbar::-webkit-scrollbar { width: 4px; }
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #dc9ca8; border-radius: 10px; }
+
+  .study-bar:hover {
+    filter: brightness(1.25);
+  }
+  .mando-bar-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    background: rgba(76, 33, 44, 0.95);
+    color: #fff4f4;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+    z-index: 50;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .mando-bar-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(76, 33, 44, 0.95);
+  }
 </style>
 </head>
 <body class="bg-background text-on-background font-body-md overflow-x-hidden">
@@ -78,7 +131,7 @@
 </div>
 </div>
 <!-- Bento Grid Dashboard -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-md auto-rows-fr">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-md items-start">
 <!-- Total Study Time -->
 <div class="xl:col-span-7 glass-card p-md rounded-xl flex flex-col gap-md">
 <div class="flex justify-between items-start">
@@ -93,7 +146,7 @@
 <span class="material-symbols-outlined">schedule</span>
 </div>
 </div>
-<div id="study-time-chart" class="flex-1 flex items-end gap-xs h-40 min-h-[160px]">
+<div id="study-time-chart" class="flex items-end gap-xs h-24 min-h-[96px]">
 <!-- Bars rendered dynamically -->
 </div>
 </div>
@@ -146,11 +199,21 @@
 <span>More</span>
 </div>
 </div>
-<div id="activity-heatmap" class="grid grid-flow-col grid-rows-7 gap-1">
+<div class="heatmap-scroll overflow-x-auto overflow-y-hidden -mx-md px-md md:mx-0 md:px-0">
+<div class="flex gap-sm items-start min-w-min">
+<div class="grid grid-rows-[repeat(7,10px)] gap-[2px] text-[9px] text-on-surface-variant">
+<span class="h-full w-full flex items-center justify-center">M</span>
+<span class="h-full w-full flex items-center justify-center">T</span>
+<span class="h-full w-full flex items-center justify-center">W</span>
+<span class="h-full w-full flex items-center justify-center">T</span>
+<span class="h-full w-full flex items-center justify-center">F</span>
+<span class="h-full w-full flex items-center justify-center">S</span>
+<span class="h-full w-full flex items-center justify-center">S</span>
+</div>
+<div id="activity-heatmap" class="grid grid-flow-col grid-rows-7 gap-[2px]">
 <!-- Cells rendered dynamically -->
 </div>
-<div id="heatmap-months" class="flex justify-between mt-sm text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">
-<!-- Month labels rendered dynamically -->
+</div>
 </div>
 </div>
 <!-- Top Categories -->

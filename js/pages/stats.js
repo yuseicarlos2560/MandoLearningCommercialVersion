@@ -16,6 +16,7 @@
   // ---------------------------------------------------------------------------
 
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const HEATMAP_DAYS = 365;
 
   const HSK_TOTALS = {
     1: 150,
@@ -125,6 +126,29 @@
     return { start, end };
   }
 
+  function localDate(dateStr) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  function getMonday(d) {
+    const date = new Date(d);
+    date.setHours(0, 0, 0, 0);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    date.setDate(diff);
+    return date;
+  }
+
+  function getSunday(d) {
+    const date = new Date(d);
+    date.setHours(0, 0, 0, 0);
+    const day = date.getDay();
+    const diff = date.getDate() + ((7 - day) % 7);
+    date.setDate(diff);
+    return date;
+  }
+
   function parseActivityDate(statKey) {
     if (!statKey || typeof statKey !== 'string') return null;
     const match = statKey.match(/(\d{4}-\d{2}-\d{2})/);
@@ -132,7 +156,8 @@
   }
 
   function activityValue(record) {
-    // Prefer minutes, fall back to wordsAdded, then 0.
+    // Prefer study time, fall back to wordsAdded, then 0.
+    if (record && typeof record.studyTimeMinutes === 'number') return record.studyTimeMinutes;
     if (record && typeof record.studyMinutes === 'number') return record.studyMinutes;
     if (record && typeof record.minutes === 'number') return record.minutes;
     if (record && typeof record.wordsAdded === 'number') return record.wordsAdded;
@@ -161,7 +186,7 @@
 
   function renderHeatmapSkeleton() {
     let html = '';
-    for (let i = 0; i < 105; i++) {
+    for (let i = 0; i < 371; i++) {
       html += `<div class="heatmap-cell w-full bg-outline-variant/30 animate-pulse"></div>`;
     }
     return html;
@@ -235,14 +260,14 @@
 
   async function loadActivity() {
     if (state.demoMode) {
-      state.activity = generateDemoActivity(state.periodDays);
+      state.activity = generateDemoActivity(HEATMAP_DAYS);
       return true;
     }
 
     state.loading.activity = true;
     state.errors.activity = false;
 
-    const { start, end } = periodRange(state.periodDays);
+    const { start, end } = periodRange(HEATMAP_DAYS);
     const res = await window.MandoApi.stats.getActivity(state.userId, {
       granularity: 'daily',
       start,
@@ -436,13 +461,32 @@
       buckets.forEach(function (b, index) {
         const height = Math.max(4, Math.round((b.value / max) * 100));
         const bar = document.createElement('div');
-        bar.className = 'flex-1 rounded-t-sm transition-all duration-500 hover:opacity-80';
+        bar.className = 'study-bar relative flex-1 rounded-t-sm origin-bottom transition-all duration-200 cursor-pointer hover:scale-y-110';
         bar.style.height = `${height}%`;
         bar.style.backgroundColor = index === buckets.length - 1 ? '#af2330' : `rgba(175, 35, 48, ${0.2 + (height / 100) * 0.6})`;
-        bar.title = `${b.label}: ${b.value} activity`;
+        bar.addEventListener('click', function (e) {
+          e.stopPropagation();
+          showBarTooltip(bar, b.date, b.value);
+        });
         chartEl.appendChild(bar);
       });
     }
+  }
+
+  function showBarTooltip(bar, date, minutes) {
+    const existing = document.querySelector('.mando-bar-tooltip');
+    if (existing) existing.remove();
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'mando-bar-tooltip';
+    const dateObj = new Date(date + 'T00:00:00');
+    const dateStr = dateObj.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = minutes === 1 ? '1 minute' : `${minutes} minutes`;
+    tooltip.innerHTML = `
+      <div class="font-semibold">${escapeHtml(dateStr)}</div>
+      <div>${escapeHtml(timeStr)}</div>
+    `;
+    bar.appendChild(tooltip);
   }
 
   function sumActivityInRange(activity, start, end) {
@@ -466,6 +510,7 @@
         return parseActivityDate(r.statKey) === key;
       });
       buckets.push({
+        date: key,
         label: DAYS[d.getDay()],
         value: record ? activityValue(record) : 0,
       });
@@ -510,24 +555,19 @@
 
   function renderHeatmap() {
     const container = $('activity-heatmap');
-    const monthsEl = $('heatmap-months');
-    if (!container || !monthsEl) return;
+    if (!container) return;
 
     if (state.loading.activity) {
       container.innerHTML = renderHeatmapSkeleton();
-      monthsEl.innerHTML = '';
       return;
     }
 
     if (state.errors.activity && state.activity.length === 0) {
       renderErrorState(container, 'Could not load activity.', loadActivityAndRender);
-      monthsEl.innerHTML = '';
       return;
     }
 
-    const { start, end } = periodRange(state.periodDays);
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const { start, end } = periodRange(HEATMAP_DAYS);
 
     // Build a map of date -> value.
     const valueMap = {};
@@ -542,15 +582,23 @@
     const values = Object.values(valueMap);
     const max = Math.max(1, ...values);
 
-    container.innerHTML = '';
-    monthsEl.innerHTML = '';
+    // Align the heatmap to calendar weeks (Mon-Sun) so each column is a week
+    // and each row is a day of the week, matching the GitHub activity map.
+    const calendarStart = getMonday(localDate(start));
+    const calendarEnd = getSunday(localDate(end));
 
-    // Generate cells for every day in the range.
-    const current = new Date(startDate);
-    while (current <= endDate) {
+    container.innerHTML = '';
+
+    // Generate cells for every day in the calendar grid, padding out-of-range
+    // days with transparent placeholders.
+    const current = new Date(calendarStart);
+    while (current <= calendarEnd) {
       const key = formatDate(current);
-      const value = valueMap[key] || 0;
-      const level = max === 0 ? 0 : Math.min(4, Math.floor((value / max) * 4));
+      const inRange = key >= start && key <= end;
+      const value = inRange ? (valueMap[key] || 0) : 0;
+      // Log-scaled intensity so low-value days are still visible and high-value
+      // days don't saturate the entire color range.
+      const level = max === 0 ? 0 : Math.min(4, Math.floor((Math.log(1 + value) / Math.log(1 + max)) * 4));
       const intensity = [
         'bg-surface-container-highest',
         'bg-primary/20',
@@ -560,32 +608,14 @@
       ][level];
 
       const cell = document.createElement('div');
-      cell.className = `heatmap-cell w-full ${intensity}`;
-      cell.title = `${key}: ${Math.round(value)} activity`;
+      cell.className = `heatmap-cell ${inRange ? intensity : 'bg-transparent'}`;
+      if (inRange) {
+        cell.title = `${key}: ${Math.round(value)} activity`;
+      }
       container.appendChild(cell);
 
       current.setDate(current.getDate() + 1);
     }
-
-    // Month labels.
-    const monthLabels = [];
-    const labelCurrent = new Date(startDate);
-    while (labelCurrent <= endDate) {
-      const label = labelCurrent.toLocaleString('default', { month: 'short' });
-      monthLabels.push(label);
-      labelCurrent.setMonth(labelCurrent.getMonth() + 1);
-      labelCurrent.setDate(1);
-    }
-    // Deduplicate while preserving order.
-    const seen = new Set();
-    monthsEl.innerHTML = monthLabels
-      .filter(function (m) {
-        if (seen.has(m)) return false;
-        seen.add(m);
-        return true;
-      })
-      .map(function (m) { return `<span>${escapeHtml(m)}</span>`; })
-      .join('');
   }
 
   // ---------------------------------------------------------------------------
@@ -705,7 +735,7 @@
         if (!isNaN(days) && days > 0) {
           state.periodDays = days;
           updatePeriodTabStyles();
-          loadActivityAndRender();
+          renderTotalStudyTime();
         }
       });
     });
@@ -763,7 +793,7 @@
     // never completely blank.
     if (!state.aggregate && !state.demoMode) {
       state.aggregate = { ...FALLBACK_AGGREGATE };
-      state.activity = generateDemoActivity(state.periodDays);
+      state.activity = generateDemoActivity(HEATMAP_DAYS);
       console.info('Using demo stats fallback.');
     }
 
@@ -788,6 +818,12 @@
       window.MandoShell.renderSidebarProfile();
       window.MandoShell.initMobileDrawer({ sidebarId: 'sidebar', overlayId: 'sidebar-overlay', toggleId: 'mobile-menu-toggle' });
     }
+
+    // Close any open bar tooltip when clicking outside the chart.
+    document.addEventListener('click', function () {
+      const existing = document.querySelector('.mando-bar-tooltip');
+      if (existing) existing.remove();
+    });
 
     initPeriodTabs();
     loadDataAndRender();
