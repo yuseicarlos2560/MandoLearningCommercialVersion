@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Learning Journey | MandoLearning Stats</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../js/tailwind-config.js"></script>
+<link rel="stylesheet" href="../css/design-system.css" />
+<!-- Shared utilities, shell, and UI components -->
+<script src="../js/utils.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/ui-components.js"></script>
+<!-- API clients -->
+<script src="../js/api/client.js"></script>
+<script src="../js/api/stats.js"></script>
+<script src="../js/api/flashcards.js"></script>
+<style>
+  .glass-card {
+    background: rgba(255, 244, 244, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(220, 156, 168, 0.3);
+  }
+  .heatmap-cell {
+    aspect-ratio: 1/1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #dc9ca8; border-radius: 10px; }
+</style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+<!-- Cultural Background Pattern -->
+<div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 md:left-[280px] z-50 glass-nav bg-surface/90 border-b border-outline-variant">
+<div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
+<div class="flex items-center gap-md">
+<button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<a class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Mobile drawer overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
+<!-- Side Navigation Bar -->
+<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
+<script>
+  if (window.MandoShell) {
+    window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'stats', includeVideoLibrary: false });
+  }
+</script>
+<!-- Main Content Area -->
+<main class="pt-[88px] min-h-screen md:ml-[280px] transition-all duration-300 relative z-10">
+<div class="px-lg py-md max-w-[1200px] mx-auto">
+<!-- Header & Filter -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary mb-xs">Learning Journey</h1>
+<p class="text-on-surface-variant text-body-md">Visualize your path to Mandarin fluency.</p>
+</div>
+<div id="period-tabs" class="inline-flex p-1 bg-surface-container rounded-xl">
+<button data-days="15" class="period-tab px-md py-xs rounded-lg text-body-md transition-all hover:text-primary font-medium">Last 15 Days</button>
+<button data-days="30" class="period-tab px-md py-xs rounded-lg text-body-md transition-all bg-surface-bright text-primary font-bold shadow-sm">Last 30 Days</button>
+<button data-days="90" class="period-tab px-md py-xs rounded-lg text-body-md transition-all hover:text-primary font-medium">Last 90 Days</button>
+</div>
+</div>
+<!-- Bento Grid Dashboard -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-md auto-rows-fr">
+<!-- Total Study Time -->
+<div class="xl:col-span-7 glass-card p-md rounded-xl flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-caps text-on-surface-variant mb-xs">TOTAL STUDY TIME</p>
+<h3 id="total-study-time" class="font-headline-md text-headline-md text-on-surface">--</h3>
+<span id="study-time-trend" class="text-[14px] text-primary font-bold flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">trending_up</span> --
+</span>
+</div>
+<div class="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+</div>
+<div id="study-time-chart" class="flex-1 flex items-end gap-xs h-40 min-h-[160px]">
+<!-- Bars rendered dynamically -->
+</div>
+</div>
+<!-- Vocabulary Mastery -->
+<div class="xl:col-span-5 glass-card p-md rounded-xl">
+<p class="font-label-caps text-on-surface-variant mb-md">VOCABULARY MASTERY</p>
+<div class="flex flex-col gap-md">
+<div class="flex items-center gap-md">
+<div class="relative w-16 h-16 shrink-0">
+<svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+<circle class="stroke-surface-container-highest" cx="18" cy="18" fill="none" r="16" stroke-width="3"></circle>
+<circle id="vocab-mastery-circle" class="stroke-primary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="0, 100" stroke-linecap="round" stroke-width="3"></circle>
+</svg>
+<div id="vocab-mastery-percent" class="absolute inset-0 flex items-center justify-center font-bold text-on-surface text-sm">--%</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between mb-xs">
+<span class="font-body-md font-semibold text-on-surface">Words Memorized</span>
+<span id="vocab-memorized" class="text-on-surface-variant">--</span>
+</div>
+<div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div id="vocab-memorized-bar" class="w-0 h-full bg-primary transition-all duration-500"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-base mt-base">
+<div class="p-sm bg-surface-container-low rounded-lg">
+<p class="text-[12px] text-on-surface-variant font-medium">WORDS ADDED</p>
+<p id="vocab-added" class="text-headline-md font-bold text-primary">--</p>
+</div>
+<div class="p-sm bg-surface-container-low rounded-lg">
+<p class="text-[12px] text-on-surface-variant font-medium">STILL LEARNING</p>
+<p id="vocab-learning" class="text-headline-md font-bold text-secondary">--</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Activity Heatmap -->
+<div class="xl:col-span-8 glass-card p-md rounded-xl">
+<div class="flex justify-between items-center mb-md">
+<p class="font-label-caps text-on-surface-variant">ACTIVITY HEATMAP</p>
+<div class="flex items-center gap-xs text-[12px] text-on-surface-variant">
+<span>Less</span>
+<div class="flex gap-[2px]">
+<div class="w-3 h-3 bg-surface-container-highest rounded-sm"></div>
+<div class="w-3 h-3 bg-primary/30 rounded-sm"></div>
+<div class="w-3 h-3 bg-primary/60 rounded-sm"></div>
+<div class="w-3 h-3 bg-primary rounded-sm"></div>
+</div>
+<span>More</span>
+</div>
+</div>
+<div id="activity-heatmap" class="grid grid-flow-col grid-rows-7 gap-1">
+<!-- Cells rendered dynamically -->
+</div>
+<div id="heatmap-months" class="flex justify-between mt-sm text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">
+<!-- Month labels rendered dynamically -->
+</div>
+</div>
+<!-- Top Categories -->
+<div class="xl:col-span-4 glass-card p-md rounded-xl flex flex-col">
+<p class="font-label-caps text-on-surface-variant mb-md">TOP CATEGORIES</p>
+<div id="top-categories-list" class="flex flex-col gap-sm overflow-y-auto custom-scrollbar pr-xs">
+<!-- Categories rendered dynamically -->
+</div>
+</div>
+<!-- HSK Level Progress -->
+<div class="xl:col-span-12 glass-card p-md lg:p-lg rounded-xl">
+<p class="font-label-caps text-on-surface-variant mb-lg">HSK LEVEL PROGRESS</p>
+<div id="hsk-progress-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+<!-- HSK bars rendered dynamically -->
+</div>
+</div>
+</div>
+</div>
+</main>
+<script src="../js/pages/stats.js"></script>
+</body>
+</html>

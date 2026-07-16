@@ -63,22 +63,13 @@
     formatRemaining,
     extractHsk,
     difficultyFromHsk,
+    thumbnailUrl,
     escapeHtml,
     $,
     setText,
     setAttr,
     getStoredProgress,
   } = window.MandoUtils;
-
-  function thumbnailUrl(video) {
-    // Prefer backend thumbnailUrl, then S3 construction, then fallback.
-    if (video.thumbnail) return video.thumbnail;
-    if (video.thumbnailUrl) return video.thumbnailUrl;
-    if (video.s3Bucket && video.s3Key) {
-      return `https://${video.s3Bucket}.s3.amazonaws.com/${video.s3Key}`;
-    }
-    return FALLBACK_VIDEOS[0].thumbnail;
-  }
 
   // ---------------------------------------------------------------------------
   // Rendering: identity & streak motivation
@@ -119,7 +110,7 @@
 
     setText('continue-learning-title', video.title || 'Continue Learning');
     setText('continue-learning-description', video.description || '');
-    setAttr('continue-learning-image', 'src', thumbnailUrl(video));
+    setAttr('continue-learning-image', 'src', thumbnailUrl(video, FALLBACK_VIDEOS[0].thumbnail));
     setText('continue-learning-duration', formatDuration(video.durationSeconds));
     setText('continue-learning-progress', `Progress: ${percent}%`);
     setText('continue-learning-remaining', formatRemaining(video.durationSeconds, percent));
@@ -207,7 +198,7 @@
     const hsk = extractHsk(video.title);
     const difficulty = difficultyFromHsk(hsk);
     const duration = formatDuration(video.durationSeconds);
-    const thumb = thumbnailUrl(video);
+    const thumb = thumbnailUrl(video, FALLBACK_VIDEOS[0].thumbnail);
 
     const card = document.createElement('div');
     card.className = 'bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group';

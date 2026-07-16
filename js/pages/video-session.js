@@ -135,8 +135,11 @@
     extractHsk,
     inferHskLabel,
     difficultyFromHsk,
+    thumbnailUrl,
     getStoredProgress,
   } = window.MandoUtils;
+
+  const MandoUi = window.MandoUi;
 
   // ---------------------------------------------------------------------------
   // Page-specific helpers
@@ -158,15 +161,6 @@
       }
     }
     return '';
-  }
-
-  function thumbnailUrl(video) {
-    if (video.thumbnail) return video.thumbnail;
-    if (video.thumbnailUrl) return video.thumbnailUrl;
-    if (video.s3Bucket && video.s3Key) {
-      return `https://${video.s3Bucket}.s3.amazonaws.com/${video.s3Key}`;
-    }
-    return FALLBACK_VIDEO.thumbnail;
   }
 
   function videoSourceUrl(video) {
@@ -347,7 +341,7 @@
 
     const validationErrors = validatePendingChanges();
     if (validationErrors.length > 0) {
-      showToast(validationErrors.join(' '), 'error');
+      MandoUi.toast(validationErrors.join(' '), 'error');
       return;
     }
 
@@ -362,7 +356,7 @@
 
     if (!res.ok) {
       state.saveError = res.error || { message: 'Save failed' };
-      showToast(state.saveError.message || 'Save failed. Please retry.', 'error');
+      MandoUi.toast(state.saveError.message || 'Save failed. Please retry.', 'error');
       updateSaveButtonState();
       return;
     }
@@ -385,9 +379,9 @@
     });
 
     if (failedCount > 0) {
-      showToast(`${failedCount} change(s) could not be saved.`, 'error');
+      MandoUi.toast(`${failedCount} change(s) could not be saved.`, 'error');
     } else {
-      showToast('Notes saved successfully.', 'success');
+      MandoUi.toast('Notes saved successfully.', 'success');
     }
 
     updateSaveButtonState();
@@ -398,31 +392,6 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Toast (non-blocking feedback)
-  // ---------------------------------------------------------------------------
-
-  function showToast(message, type) {
-    const existing = document.querySelector('.mando-toast');
-    if (existing) existing.remove();
-
-    const el = document.createElement('div');
-    el.className =
-      'mando-toast fixed bottom-lg right-lg z-[100] px-md py-sm rounded-xl shadow-lg text-body-md font-medium transition-opacity duration-300 ' +
-      (type === 'error'
-        ? 'bg-error text-on-error'
-        : 'bg-primary text-on-primary');
-    el.textContent = message;
-    document.body.appendChild(el);
-
-    setTimeout(function () {
-      el.style.opacity = '0';
-      setTimeout(function () {
-        el.remove();
-      }, 300);
-    }, 3000);
-  }
-
-  // ---------------------------------------------------------------------------
   // Data loading
   // ---------------------------------------------------------------------------
 
@@ -430,42 +399,45 @@
     const res = await window.MandoApi.videos.getReady(state.videoId);
     if (res.ok && res.data && res.data.video) {
       state.video = res.data.video;
-    } else {
-      state.video = { ...FALLBACK_VIDEO, videoId: state.videoId };
+      return true;
     }
+    state.video = { ...FALLBACK_VIDEO, videoId: state.videoId };
+    return false;
   }
 
   async function loadNotes() {
     if (!state.userId) {
       state.notes = FALLBACK_NOTES.map(function (n) { return { ...n }; });
       state.noteDetails = { ...FALLBACK_NOTE_DETAILS };
-      return;
+      return true; // Expected fallback in demo mode.
     }
 
     const res = await window.MandoApi.notes.listSession(state.userId, state.sessionId, true);
     if (res.ok && res.data) {
       state.notes = Array.isArray(res.data.notes) ? res.data.notes : [];
       state.noteDetails = res.data.noteDetails || {};
-    } else {
-      state.notes = FALLBACK_NOTES.map(function (n) { return { ...n }; });
-      state.noteDetails = { ...FALLBACK_NOTE_DETAILS };
+      return true;
     }
+    state.notes = FALLBACK_NOTES.map(function (n) { return { ...n }; });
+    state.noteDetails = { ...FALLBACK_NOTE_DETAILS };
+    return false;
   }
 
   async function loadVideoLibrary() {
     const res = await window.MandoApi.videos.listReady({ pageSize: 50 });
     if (res.ok && res.data && Array.isArray(res.data.videos)) {
       state.allVideos = res.data.videos;
-    } else {
-      state.allVideos = [
-        { videoId: 'DEMO_LIB_001', title: 'HSK1 Greetings', durationSeconds: 300 },
-        { videoId: 'DEMO_LIB_002', title: 'HSK2 Shopping', durationSeconds: 420 },
-        { videoId: 'DEMO_LIB_003', title: 'HSK3 Class Review', durationSeconds: 540 },
-        { videoId: 'DEMO_LIB_004', title: 'HSK4 Workplace', durationSeconds: 600 },
-        { videoId: 'DEMO_LIB_005', title: 'HSK5 Debate', durationSeconds: 720 },
-        { videoId: 'DEMO_LIB_006', title: 'HSK6 Media', durationSeconds: 900 },
-      ];
+      return true;
     }
+    state.allVideos = [
+      { videoId: 'DEMO_LIB_001', title: 'HSK1 Greetings', durationSeconds: 300 },
+      { videoId: 'DEMO_LIB_002', title: 'HSK2 Shopping', durationSeconds: 420 },
+      { videoId: 'DEMO_LIB_003', title: 'HSK3 Class Review', durationSeconds: 540 },
+      { videoId: 'DEMO_LIB_004', title: 'HSK4 Workplace', durationSeconds: 600 },
+      { videoId: 'DEMO_LIB_005', title: 'HSK5 Debate', durationSeconds: 720 },
+      { videoId: 'DEMO_LIB_006', title: 'HSK6 Media', durationSeconds: 900 },
+    ];
+    return false;
   }
 
   async function loadRelatedVideos() {
@@ -476,9 +448,10 @@
           return v.videoId !== state.videoId;
         })
         .slice(0, 5);
-    } else {
-      state.relatedVideos = FALLBACK_RELATED.map(function (v) { return { ...v }; });
+      return true;
     }
+    state.relatedVideos = FALLBACK_RELATED.map(function (v) { return { ...v }; });
+    return false;
   }
 
   async function loadScript() {
@@ -486,7 +459,7 @@
 
     if (state.demoMode) {
       state.scriptLines = SCRIPT_FIXTURE.map(function (line) { return { ...line }; });
-      return;
+      return true;
     }
 
     try {
@@ -500,12 +473,14 @@
             en: line.english,
           };
         });
-      } else {
-        state.scriptLines = SCRIPT_FIXTURE.map(function (line) { return { ...line }; });
+        return true;
       }
+      state.scriptLines = SCRIPT_FIXTURE.map(function (line) { return { ...line }; });
+      return false;
     } catch (err) {
       console.warn('Failed to load script, falling back to fixture:', err);
       state.scriptLines = SCRIPT_FIXTURE.map(function (line) { return { ...line }; });
+      return false;
     }
   }
 
@@ -525,6 +500,68 @@
       `;
     }
     return html;
+  }
+
+  function renderNotesSkeleton() {
+    let html = '';
+    for (let i = 0; i < 3; i++) {
+      html += `
+        <div class="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-md animate-pulse">
+          <div class="flex items-start gap-sm">
+            <div class="flex-1 space-y-xs">
+              <div class="h-8 bg-outline-variant/40 rounded w-1/3"></div>
+              <div class="h-4 bg-outline-variant/30 rounded w-2/3"></div>
+            </div>
+            <div class="flex gap-xs">
+              <div class="w-8 h-8 rounded-lg bg-outline-variant/30"></div>
+              <div class="w-8 h-8 rounded-lg bg-outline-variant/30"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    return html;
+  }
+
+  function renderRelatedSkeleton() {
+    let html = '';
+    for (let i = 0; i < 3; i++) {
+      html += `
+        <div class="min-w-[260px] max-w-[260px] bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant animate-pulse">
+          <div class="aspect-video bg-outline-variant/30"></div>
+          <div class="p-md space-y-xs">
+            <div class="h-5 bg-outline-variant/40 rounded w-3/4"></div>
+            <div class="h-3 bg-outline-variant/30 rounded w-full"></div>
+            <div class="h-3 bg-outline-variant/30 rounded w-2/3"></div>
+            <div class="flex gap-md pt-md">
+              <div class="h-3 bg-outline-variant/30 rounded w-1/3"></div>
+              <div class="h-3 bg-outline-variant/30 rounded w-1/3"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    return html;
+  }
+
+  function renderErrorState(containerId, message, retryFn) {
+    const container = $(containerId);
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="text-center py-xl text-on-surface-variant">
+        <span class="material-symbols-outlined text-4xl mb-sm">error</span>
+        <p class="font-body-md mb-sm">${escapeHtml(message)}</p>
+        <button class="mando-error-retry px-md py-xs rounded-lg bg-primary text-on-primary font-body-md hover:bg-primary-dim transition-all shadow-md">
+          Retry
+        </button>
+      </div>
+    `;
+
+    const retryBtn = container.querySelector('.mando-error-retry');
+    if (retryBtn && retryFn) {
+      retryBtn.addEventListener('click', retryFn);
+    }
   }
 
   async function sendUserActive() {
@@ -625,7 +662,7 @@
     if (controls) controls.classList.add('hidden');
     if (unavailableOverlay) {
       unavailableOverlay.classList.remove('hidden');
-      if (unavailableThumbnail) unavailableThumbnail.src = thumbnailUrl(currentVideo);
+      if (unavailableThumbnail) unavailableThumbnail.src = thumbnailUrl(currentVideo, FALLBACK_VIDEO.thumbnail);
     }
   }
 
@@ -664,10 +701,10 @@
     });
     video.addEventListener('error', function () {
       console.error('Native video load error', video.error);
-      showToast('Unable to play this video. Please try again later.', 'error');
+      MandoUi.toast('Unable to play this video. Please try again later.', 'error');
       if (unavailableOverlay) {
         unavailableOverlay.classList.remove('hidden');
-        if (unavailableThumbnail) unavailableThumbnail.src = thumbnailUrl(state.video || FALLBACK_VIDEO);
+        if (unavailableThumbnail) unavailableThumbnail.src = thumbnailUrl(state.video || FALLBACK_VIDEO, FALLBACK_VIDEO.thumbnail);
       }
     });
     video.addEventListener('play', function () {
@@ -710,18 +747,169 @@
       });
     }
 
-    if (settingsBtn) {
-      settingsBtn.addEventListener('click', function () {
-        // Phase 2: native controls only. Future phase can add a settings panel here.
-        showToast('Playback settings will be available in a future update.', 'info');
-      });
-    }
-
     window.addEventListener('beforeunload', function () {
       saveProgress(video.currentTime, video.duration);
     });
 
     resumeStoredProgress();
+  }
+
+  function initPlaybackSpeedMenu() {
+    const settingsBtn = $('video-settings-btn');
+    const menu = $('playback-speed-menu');
+    if (!settingsBtn || !menu) return;
+
+    function setActiveRate(rate) {
+      menu.querySelectorAll('.speed-option').forEach(function (btn) {
+        if (btn.dataset.rate === String(rate)) {
+          btn.classList.add('font-semibold', 'bg-surface-container');
+        } else {
+          btn.classList.remove('font-semibold', 'bg-surface-container');
+        }
+      });
+    }
+
+    function applyRate(rate) {
+      const video = $('video-player');
+      if (video && !video.classList.contains('hidden')) {
+        video.playbackRate = rate;
+      }
+      if (youtubePlayer && typeof youtubePlayer.setPlaybackRate === 'function') {
+        try {
+          youtubePlayer.setPlaybackRate(rate);
+        } catch (err) {
+          console.warn('YouTube setPlaybackRate failed', err);
+        }
+      }
+      setActiveRate(rate);
+    }
+
+    settingsBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      menu.classList.toggle('hidden');
+    });
+
+    menu.querySelectorAll('.speed-option').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const rate = parseFloat(btn.dataset.rate);
+        if (!isNaN(rate) && rate > 0) {
+          applyRate(rate);
+        }
+        menu.classList.add('hidden');
+      });
+    });
+
+    document.addEventListener('click', function () {
+      menu.classList.add('hidden');
+    });
+
+    // Apply default rate on init.
+    applyRate(1);
+  }
+
+  function initSubtitleControls() {
+    const toggleBtn = $('subtitle-toggle-btn');
+    const sizeBtn = $('subtitle-size-btn');
+    const sizeMenu = $('subtitle-size-menu');
+    const pinyinBtn = $('subtitle-pinyin-btn');
+    const overlay = $('video-subtitle-overlay');
+    if (!overlay) return;
+
+    const SIZES = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl'];
+
+    function getStoredSubtitlePrefs() {
+      try {
+        const visible = safeLocalStorageGet('mando.subtitles.visible');
+        const size = safeLocalStorageGet('mando.subtitles.size');
+        const pinyin = safeLocalStorageGet('mando.subtitles.pinyin');
+        return {
+          visible: visible !== 'false',
+          size: SIZES.includes(size) ? size : 'md',
+          pinyin: pinyin !== 'false',
+        };
+      } catch (e) {
+        return { visible: true, size: 'md', pinyin: true };
+      }
+    }
+
+    function saveSubtitlePrefs(prefs) {
+      safeLocalStorageSet('mando.subtitles.visible', prefs.visible ? 'true' : 'false');
+      safeLocalStorageSet('mando.subtitles.size', prefs.size);
+      safeLocalStorageSet('mando.subtitles.pinyin', prefs.pinyin ? 'true' : 'false');
+    }
+
+    function applyPrefs(prefs) {
+      overlay.classList.toggle('hidden', !prefs.visible);
+      if (toggleBtn) {
+        const icon = toggleBtn.querySelector('.material-symbols-outlined');
+        if (icon) icon.textContent = prefs.visible ? 'subtitles' : 'subtitles_off';
+      }
+
+      SIZES.forEach(function (size) {
+        overlay.classList.remove('subtitle-size-' + size);
+      });
+      overlay.classList.add('subtitle-size-' + prefs.size);
+
+      overlay.classList.toggle('subtitle-pinyin-hidden', !prefs.pinyin);
+      if (pinyinBtn) {
+        pinyinBtn.classList.toggle('bg-white/20', prefs.pinyin);
+        pinyinBtn.classList.toggle('opacity-50', !prefs.pinyin);
+      }
+
+      if (sizeMenu) {
+        sizeMenu.querySelectorAll('.subtitle-size-option').forEach(function (btn) {
+          if (btn.dataset.size === prefs.size) {
+            btn.classList.add('font-semibold', 'bg-surface-container');
+          } else {
+            btn.classList.remove('font-semibold', 'bg-surface-container');
+          }
+        });
+      }
+    }
+
+    let prefs = getStoredSubtitlePrefs();
+    applyPrefs(prefs);
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function () {
+        prefs.visible = !prefs.visible;
+        applyPrefs(prefs);
+        saveSubtitlePrefs(prefs);
+      });
+    }
+
+    if (sizeBtn && sizeMenu) {
+      sizeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        sizeMenu.classList.toggle('hidden');
+      });
+
+      sizeMenu.querySelectorAll('.subtitle-size-option').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const size = btn.dataset.size;
+          if (SIZES.includes(size)) {
+            prefs.size = size;
+            applyPrefs(prefs);
+            saveSubtitlePrefs(prefs);
+          }
+          sizeMenu.classList.add('hidden');
+        });
+      });
+
+      document.addEventListener('click', function () {
+        sizeMenu.classList.add('hidden');
+      });
+    }
+
+    if (pinyinBtn) {
+      pinyinBtn.addEventListener('click', function () {
+        prefs.pinyin = !prefs.pinyin;
+        applyPrefs(prefs);
+        saveSubtitlePrefs(prefs);
+      });
+    }
   }
 
   function initYouTubePlayer() {
@@ -776,7 +964,7 @@
       pendingYouTubeVideoId = null;
     } catch (err) {
       console.error('Failed to create YouTube player', err);
-      showToast('YouTube player could not be loaded. Some features may be limited.', 'error');
+      MandoUi.toast('YouTube player could not be loaded. Some features may be limited.', 'error');
     }
   }
 
@@ -800,7 +988,7 @@
 
   function onYouTubePlayerError(event) {
     console.error('YouTube player error', event.data);
-    showToast('YouTube playback failed. Please try again later.', 'error');
+    MandoUi.toast('YouTube playback failed. Please try again later.', 'error');
     stopYouTubeSync();
   }
 
@@ -970,21 +1158,22 @@
       isPending
         ? 'border-primary/40 bg-primary-container/10'
         : 'border-outline-variant/40 bg-surface-container-lowest'
-    } ${depth > 0 ? 'ml-lg mt-sm' : ''}`;
+    } ${depth > 0 ? 'ml-md mt-xs' : ''}`;
 
     const content = document.createElement('div');
-    content.className = 'p-md';
+    content.className = 'p-sm';
 
     const detailIcon = hasDetail ? 'sticky_note' : 'sticky_note_2';
     const autoPinyin = generatePinyin(note.character || '');
 
     content.innerHTML = `
       <div class="flex items-start gap-sm">
-        <div class="flex-1 min-w-0">
-          <input id="note-char-${safeId}" type="text" value="${escapeHtml(note.character || '')}" placeholder="Character" maxlength="25" class="w-full bg-surface-container-high text-on-surface rounded-lg px-sm py-xs border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none font-character-display text-2xl">
-          <div class="mt-xs flex items-center gap-sm">
-            <input id="note-py-${safeId}" type="text" value="${escapeHtml(note.pinyin || '')}" placeholder="Pinyin" maxlength="250" class="flex-1 bg-surface-container-high text-on-surface-variant rounded-lg px-sm py-xs border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-sm">
-            ${autoPinyin && autoPinyin !== (note.pinyin || '').trim() ? `<span class="text-xs text-on-surface-variant whitespace-nowrap">↳ ${escapeHtml(autoPinyin)}</span>` : ''}
+        <div class="flex-1 min-w-0 bg-surface-container-high rounded-xl border border-outline-variant overflow-hidden">
+          <input id="note-char-${safeId}" type="text" value="${escapeHtml(note.character || '')}" placeholder="Character" maxlength="25" class="w-full bg-transparent text-on-surface px-sm py-sm outline-none focus:ring-0 border-0 font-character-display text-3xl">
+          <div class="h-px bg-outline-variant/40 mx-sm"></div>
+          <div class="flex items-center gap-sm px-sm py-1">
+            <input id="note-py-${safeId}" type="text" value="${escapeHtml(note.pinyin || '')}" placeholder="Pinyin" maxlength="250" class="flex-1 bg-transparent text-on-surface-variant font-body-md text-xs outline-none focus:ring-0 border-0">
+            ${autoPinyin && autoPinyin !== (note.pinyin || '').trim() ? `<span class="text-[10px] text-on-surface-variant whitespace-nowrap">↳ ${escapeHtml(autoPinyin)}</span>` : ''}
           </div>
         </div>
         <div class="flex items-start gap-xs pt-1 shrink-0">
@@ -994,7 +1183,7 @@
         </div>
       </div>
       ${hasDetail && (detail.detailedNote || detail.exampleSentence) ? `
-        <div class="mt-sm text-sm">
+        <div class="mt-xs text-xs">
           ${detail.detailedNote ? `<p class="text-on-surface-variant line-clamp-2">${escapeHtml(detail.detailedNote)}</p>` : ''}
           ${detail.exampleSentence ? `<p class="text-primary italic mt-xs">${escapeHtml(detail.exampleSentence)}</p>` : ''}
         </div>
@@ -1039,7 +1228,7 @@
     const detailBtn = content.querySelector('.note-detail-btn');
     if (detailBtn) {
       detailBtn.addEventListener('click', function () {
-        openDetailModal(note.noteId);
+        openDetailPopover(note.noteId, detailBtn);
       });
     }
 
@@ -1131,13 +1320,12 @@
     });
     if (!note) return;
 
-    openConfirmModal(
+    MandoUi.confirm(
       `Delete "${note.character || 'this note'}"?`,
-      'This will also remove any child notes. You can undo by clicking away until you save.',
-      function () {
-        confirmDeleteNote(noteId);
-      }
-    );
+      'This will also remove any child notes. You can undo by clicking away until you save.'
+    ).then(function (confirmed) {
+      if (confirmed) confirmDeleteNote(noteId);
+    });
   }
 
   function confirmDeleteNote(noteId) {
@@ -1185,96 +1373,94 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Shared modal helpers
-  // ---------------------------------------------------------------------------
-
-  function openConfirmModal(title, message, onConfirm) {
-    const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-md';
-    overlay.innerHTML = `
-      <div class="bg-surface rounded-3xl shadow-2xl w-full max-w-sm p-lg border border-outline-variant">
-        <div class="flex items-center gap-sm mb-md">
-          <span class="material-symbols-outlined text-error text-2xl">warning</span>
-          <h3 class="font-headline-md text-headline-md text-on-surface">${escapeHtml(title)}</h3>
-        </div>
-        <p class="font-body-md text-on-surface-variant mb-lg">${escapeHtml(message)}</p>
-        <div class="flex justify-end gap-sm">
-          <button class="confirm-cancel px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">Cancel</button>
-          <button class="confirm-ok px-md py-xs rounded-lg bg-error text-on-error font-body-md hover:bg-error-dim transition-all shadow-md">Delete</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    function close() {
-      overlay.remove();
-    }
-
-    overlay.querySelector('.confirm-cancel').addEventListener('click', close);
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) close();
-    });
-    overlay.querySelector('.confirm-ok').addEventListener('click', function () {
-      close();
-      onConfirm();
-    });
-  }
-
-  // ---------------------------------------------------------------------------
   // Note detail modal
   // ---------------------------------------------------------------------------
 
-  function openDetailModal(noteId) {
+  function openDetailPopover(noteId, anchorBtn) {
     const note = state.notes.find(function (n) {
       return n.noteId === noteId;
     });
-    if (!note) return;
+    if (!note || !anchorBtn) return;
 
     const existing = state.noteDetails[noteId] || {};
 
-    const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-md';
-    overlay.innerHTML = `
-      <div class="bg-surface rounded-3xl shadow-2xl w-full max-w-lg p-lg border border-outline-variant">
-        <div class="flex items-center justify-between mb-md">
-          <h3 class="font-headline-md text-headline-md text-on-surface">Note Details: ${escapeHtml(note.character)}</h3>
-          <button class="detail-close p-xs rounded-lg hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">close</span></button>
+    // Remove any existing popover first.
+    const existingPopover = document.querySelector('.mando-detail-popover');
+    if (existingPopover) existingPopover.remove();
+
+    const popover = document.createElement('div');
+    popover.className = 'mando-detail-popover fixed z-[70] bg-surface rounded-2xl shadow-2xl w-80 p-md border border-outline-variant';
+    popover.innerHTML = `
+      <div class="flex items-center justify-between mb-sm">
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">${escapeHtml(note.character || 'Note')} Details</h3>
+        <button class="detail-close p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">close</span></button>
+      </div>
+      <div class="space-y-sm">
+        <div>
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Explanation</label>
+          <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="3" maxlength="1000" placeholder="Add a longer explanation...">${escapeHtml(existing.detailedNote || '')}</textarea>
         </div>
-        <div class="space-y-md">
-          <div>
-            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase">Explanation</label>
-            <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-md border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface" rows="4" maxlength="1000" placeholder="Add a longer explanation...">${escapeHtml(existing.detailedNote || '')}</textarea>
-          </div>
-          <div>
-            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase">Example Sentence</label>
-            <textarea class="detail-example w-full bg-surface-container-lowest rounded-xl p-md border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface" rows="2" maxlength="100" placeholder="Add an example sentence...">${escapeHtml(existing.exampleSentence || '')}</textarea>
-          </div>
-          <div class="detail-error text-error text-sm hidden"></div>
-          <div class="flex justify-end gap-sm pt-sm">
-            <button class="detail-cancel px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">Cancel</button>
-            <button class="detail-save px-md py-xs rounded-lg bg-primary text-on-primary font-body-md hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save Detail</button>
-          </div>
+        <div>
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Example Sentence</label>
+          <textarea class="detail-example w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="2" maxlength="100" placeholder="Add an example sentence...">${escapeHtml(existing.exampleSentence || '')}</textarea>
+        </div>
+        <div class="detail-error text-error text-sm hidden"></div>
+        <div class="flex justify-end gap-sm pt-xs">
+          <button class="detail-cancel px-sm py-xs rounded-lg border border-outline-variant text-on-surface font-body-md text-sm hover:bg-surface-container transition-all">Cancel</button>
+          <button class="detail-save px-sm py-xs rounded-lg bg-primary text-on-primary font-body-md text-sm hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save</button>
         </div>
       </div>
     `;
 
-    document.body.appendChild(overlay);
+    document.body.appendChild(popover);
 
-    function close() {
-      overlay.remove();
+    function positionPopover() {
+      const rect = anchorBtn.getBoundingClientRect();
+      const popoverRect = popover.getBoundingClientRect();
+      let top = rect.bottom + 8;
+      let left = rect.left;
+
+      // Keep inside viewport horizontally.
+      if (left + popoverRect.width > window.innerWidth - 16) {
+        left = window.innerWidth - popoverRect.width - 16;
+      }
+      if (left < 16) left = 16;
+
+      // If too close to bottom, show above the button.
+      if (top + popoverRect.height > window.innerHeight - 16) {
+        top = rect.top - popoverRect.height - 8;
+      }
+
+      popover.style.top = `${top}px`;
+      popover.style.left = `${left}px`;
     }
 
-    overlay.querySelector('.detail-close').addEventListener('click', close);
-    overlay.querySelector('.detail-cancel').addEventListener('click', close);
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) close();
-    });
+    // Position after render.
+    requestAnimationFrame(positionPopover);
 
-    overlay.querySelector('.detail-save').addEventListener('click', async function () {
-      const explanation = overlay.querySelector('.detail-explanation').value.trim();
-      const example = overlay.querySelector('.detail-example').value.trim();
-      const errorEl = overlay.querySelector('.detail-error');
+    function close() {
+      popover.remove();
+      document.removeEventListener('click', outsideClickHandler);
+    }
+
+    function outsideClickHandler(e) {
+      if (!popover.contains(e.target) && e.target !== anchorBtn) {
+        close();
+      }
+    }
+
+    popover.querySelector('.detail-close').addEventListener('click', close);
+    popover.querySelector('.detail-cancel').addEventListener('click', close);
+
+    // Attach outside click listener next tick so the opening click doesn't close it.
+    setTimeout(function () {
+      document.addEventListener('click', outsideClickHandler);
+    }, 0);
+
+    popover.querySelector('.detail-save').addEventListener('click', async function () {
+      const explanation = popover.querySelector('.detail-explanation').value.trim();
+      const example = popover.querySelector('.detail-example').value.trim();
+      const errorEl = popover.querySelector('.detail-error');
 
       if (!explanation) {
         errorEl.textContent = 'Explanation is required.';
@@ -1315,7 +1501,7 @@
       };
       renderNotes();
       close();
-      showToast('Note detail saved.', 'success');
+      MandoUi.toast('Note detail saved.', 'success');
     });
   }
 
@@ -1549,7 +1735,7 @@
       const hsk = extractHsk(video.title);
       const difficulty = difficultyFromHsk(hsk);
       const duration = video.durationSeconds ? formatTime(video.durationSeconds) : '';
-      const thumb = thumbnailUrl(video);
+      const thumb = thumbnailUrl(video, FALLBACK_VIDEO.thumbnail);
 
       const card = document.createElement('div');
       card.className = 'min-w-[260px] max-w-[260px] bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group';
@@ -1580,11 +1766,53 @@
   // Navigation wiring
   // ---------------------------------------------------------------------------
 
+  function getAdjacentVideo(direction) {
+    if (!state.allVideos || state.allVideos.length === 0) return null;
+    const currentIndex = state.allVideos.findIndex(function (v) {
+      return v.videoId === state.videoId;
+    });
+    if (currentIndex === -1) return null;
+    const targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+    if (targetIndex < 0 || targetIndex >= state.allVideos.length) return null;
+    return state.allVideos[targetIndex];
+  }
+
+  function navigateToVideo(videoId) {
+    if (!videoId) return;
+    const query = new URLSearchParams();
+    query.set('videoId', videoId);
+    if (state.userId) query.set('userId', state.userId);
+    window.location.href = `video-session.html?${query.toString()}`;
+  }
+
+  function updateLessonNavigation() {
+    const previousBtn = $('topnav-previous');
+    const nextBtn = $('topnav-next');
+    const previousVideo = getAdjacentVideo('previous');
+    const nextVideo = getAdjacentVideo('next');
+
+    if (previousBtn) {
+      previousBtn.classList.toggle('hidden', !previousVideo);
+    }
+    if (nextBtn) {
+      nextBtn.classList.toggle('hidden', !nextVideo);
+    }
+  }
+
   function initNavigation() {
     const previousBtn = $('topnav-previous');
     if (previousBtn) {
       previousBtn.addEventListener('click', function () {
-        window.location.href = '../index.html' + (state.userId ? `?userId=${encodeURIComponent(state.userId)}` : '');
+        const video = getAdjacentVideo('previous');
+        if (video) navigateToVideo(video.videoId);
+      });
+    }
+
+    const nextBtn = $('topnav-next');
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function () {
+        const video = getAdjacentVideo('next');
+        if (video) navigateToVideo(video.videoId);
       });
     }
 
@@ -1643,6 +1871,8 @@
     initNavigation();
     initScriptToggles();
     initKeyboardShortcuts();
+    initPlaybackSpeedMenu();
+    initSubtitleControls();
 
     // Shared shell behaviors.
     if (window.MandoShell) {
@@ -1683,31 +1913,81 @@
     renderMeta();
     initVideoPlayer();
     renderNotes();
-    renderScript();
+    setHtml('script-container', renderScriptSkeleton());
     renderVideoLibrary();
+    updateLessonNavigation();
     renderRelatedLessons();
 
     // Load backend data in parallel.
-    try {
-      await Promise.all([
-        loadCurrentVideo(),
-        loadNotes(),
-        loadVideoLibrary(),
-        loadRelatedVideos(),
-        loadScript(),
-      ]);
+    const results = await Promise.allSettled([
+      loadCurrentVideo(),
+      loadNotes(),
+      loadVideoLibrary(),
+      loadRelatedVideos(),
+      loadScript(),
+    ]);
 
-      renderMeta();
-      initVideoPlayer();
+    const [videoOk, notesOk, libraryOk, relatedOk, scriptOk] = results.map(function (r) {
+      return r.status === 'fulfilled' && r.value === true;
+    });
+
+    renderMeta();
+    initVideoPlayer();
+
+    if (notesOk) {
       renderNotes();
-      renderScript();
-      renderVideoLibrary();
-      renderRelatedLessons();
-
-      sendUserActive();
-    } catch (err) {
-      console.error('Video session init failed:', err);
+    } else {
+      function retryNotes() {
+        loadNotes().then(function (ok) {
+          if (ok) renderNotes();
+          else renderErrorState('notes-container', 'Could not load notes.', retryNotes);
+        });
+      }
+      renderErrorState('notes-container', 'Could not load notes.', retryNotes);
     }
+
+    if (scriptOk) {
+      renderScript();
+    } else {
+      function retryScript() {
+        loadScript().then(function (ok) {
+          if (ok) renderScript();
+          else renderErrorState('script-container', 'Could not load script.', retryScript);
+        });
+      }
+      renderErrorState('script-container', 'Could not load script.', retryScript);
+    }
+
+    if (libraryOk) {
+      renderVideoLibrary();
+      updateLessonNavigation();
+    } else {
+      function retryLibrary() {
+        loadVideoLibrary().then(function (ok) {
+          if (ok) {
+            renderVideoLibrary();
+            updateLessonNavigation();
+          } else {
+            renderErrorState('video-library-container', 'Could not load video library.', retryLibrary);
+          }
+        });
+      }
+      renderErrorState('video-library-container', 'Could not load video library.', retryLibrary);
+    }
+
+    if (relatedOk) {
+      renderRelatedLessons();
+    } else {
+      function retryRelated() {
+        loadRelatedVideos().then(function (ok) {
+          if (ok) renderRelatedLessons();
+          else renderErrorState('related-lessons-container', 'Could not load related lessons.', retryRelated);
+        });
+      }
+      renderErrorState('related-lessons-container', 'Could not load related lessons.', retryRelated);
+    }
+
+    sendUserActive();
   }
 
   if (document.readyState === 'loading') {

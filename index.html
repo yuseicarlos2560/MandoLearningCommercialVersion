@@ -26,51 +26,14 @@
 <!-- Mobile drawer overlay -->
 <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
 <!-- SideNavBar (Shared Component) -->
-<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-50 -translate-x-full md:translate-x-0 transition-transform duration-300">
-<div class="mb-lg px-base">
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
-<p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
-</div>
-<nav class="flex-1 space-y-1">
-<!-- Active: Videos (Dashboard Home) -->
-<a class="sidebar-nav-link sidebar-nav-link-active flex items-center gap-sm px-base py-sm rounded-lg" href="index.html">
-<span class="material-symbols-outlined" data-icon="play_circle">play_circle</span>
-<span class="font-body-md text-body-md">Videos</span>
-</a>
-<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="pages/script-reader.html">
-<span class="material-symbols-outlined" data-icon="description">description</span>
-<span class="font-body-md text-body-md">Scripts</span>
-</a>
-<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="pages/document-study.html">
-<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
-<span class="font-body-md text-body-md">Documents</span>
-</a>
-<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="pages/flashcards.html">
-<span class="material-symbols-outlined" data-icon="quiz">quiz</span>
-<span class="font-body-md text-body-md">Flashcards</span>
-</a>
-<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="pages/stats.html">
-<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
-<span class="font-body-md text-body-md">Stats</span>
-</a>
-</nav>
-<div class="mt-auto px-base py-md border-t border-outline-variant/30">
-<button class="w-full btn-gradient text-on-primary font-headline-md text-headline-md py-base rounded-xl shadow-md active:scale-95">
-                Start Practice
-            </button>
-<div class="mt-md flex items-center gap-sm">
-<div class="w-10 h-10 rounded-full border-2 border-outline-variant overflow-hidden shadow-sm">
-<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young adult with a friendly expression, soft cinematic lighting, warm skin tones, and a clean minimalist background that matches the soft reds and whites of the MandoLearning brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB82jUAlXAkov_25SX7S1L-AuNwKItdv3kl-pd93K1pTfY5MJA8SzDHPJrW0uvB9Q5Wabsk7Tp9IvPk_0BkRI-GyM5FurOKptJ6-9YODzYZMAspSyK6Sds99iyMyP1F2JfMLO3GyA_IDgR8GaoKQKvTMK55oXhBBWBMBkl9c8FUoPJ0GHjL1QvOemTieK6CT1klHa6kquRsOqorGgKgAPblzLhFl7L8LxVs7Tvk6OHZwNbRmtiX0meE"/>
-</div>
-<div class="flex flex-col">
-<span class="text-on-surface font-bold text-sm">Li Wei</span>
-<span class="text-on-surface-variant text-xs font-label-caps">HSK 4 Learner</span>
-</div>
-</div>
-</div>
-</aside>
+<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
+<script>
+  if (window.MandoShell) {
+    window.MandoShell.renderSidebar({ pageRoot: 'root', activeNavItem: 'videos', includeVideoLibrary: false });
+  }
+</script>
 <!-- TopNavBar (Shared Component) -->
-<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md bg-surface-container dark:bg-surface-container-high flex justify-between items-center px-md z-40">
+<header class="fixed top-0 left-0 right-0 md:left-[280px] h-16 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md bg-surface-container dark:bg-surface-container-high flex justify-between items-center px-md z-50">
 <div class="flex items-center gap-md">
 <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
 <span class="material-symbols-outlined">menu</span>

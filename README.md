@@ -178,14 +178,15 @@ Created and in use:
 ### 1. Most MVP pages are not built
 Six of the eight MVP pages are empty placeholders. Only Dashboard and Video Session are functional.
 
-### 2. Video playback synchronization is incomplete
+### 2. Video playback is mostly complete
 The video session page supports two source types:
 
 - **S3 / service-hosted videos:** The native `<video>` player is wired and hardened with error handling, but actual playback depends on a publicly accessible S3 URL, presigned URL, or CloudFront distribution.
-- **YouTube videos:** The YouTube IFrame Player API is integrated. Subtitles, script highlighting, auto-scroll, click-to-seek, and Space-to-play/pause all work.
+- **YouTube videos:** The YouTube IFrame Player API is integrated. Subtitles, script highlighting, auto-scroll, click-to-seek, Space-to-play/pause, and playback speed all work.
+- **Resume + speed:** Watch progress resumes from `localStorage` on load; playback speed is controllable for both source types.
 
 ### 3. Watch progress is local-only
-Resume progress is stored in `localStorage` under `mando.progress.{videoId}`. The backend has no `POST /api/videos/{videoId}/progress` endpoint yet.
+Resume progress is stored in `localStorage` under `mando.progress.{videoId}` and the video session now seeks to it on load. The backend has no `POST /api/videos/{videoId}/progress` endpoint yet, so cross-device resume is not possible.
 
 ### 4. No shared component layer
 The sidebar markup is still copy-pasted into `index.html` and `pages/video-session.html`. `js/shell.js` now provides shared drawer interaction and profile rendering, but full markup extraction is still pending.
@@ -218,34 +219,36 @@ These need to be renamed before being copied into `pages/`.
 - ✅ **`beforeunload` warning** — users are warned before reloading with unsaved note/flashcard changes.
 - ✅ **Mobile sidebar drawer** — both Dashboard and Video Session collapse the sidebar to a hamburger drawer on narrow viewports.
 - ✅ **Shared utilities + shell** — `js/utils.js` and `js/shell.js` created and wired into Dashboard and Video Session.
+- ✅ **Subtitle overlay controls** — floating CC toggle, size picker dropdown, and pinyin on/off toggle for the on-video Hanzi/Pinyin overlay; preferences persisted in `localStorage`.
+- ✅ **Fixed-height scrollable script panel** — script container is `600px` / `60vh` with internal vertical scrolling.
 
-### P1 — Complete the MVP experience
+### P1 — Complete the MVP experience (completed)
 
-1. **Resume playback position** from `localStorage` on page load for both S3 and YouTube videos.
-2. **Playback speed control** for both video source types, or hide the settings button until implemented.
-3. **Global loading and error states** for video, notes, and related-lessons sections.
-4. **Previous/Next lesson navigation** in the video session topnav.
-5. **Extract shared UI components** (`js/ui-components.js`) for toast, confirm modal, and detail modal.
-6. **Extract shared state / pending-change queue** (`js/state.js`) for reuse across pages.
+- ✅ **Resume playback position** from `localStorage` on page load for both S3 and YouTube videos.
+- ✅ **Playback speed control** via settings popover for both native `<video>` and YouTube.
+- ✅ **Global loading and error states** — per-section skeletons and retryable error UI for notes, script, video library, and related lessons.
+- ✅ **Previous/Next lesson navigation** in the video session topnav based on the video catalog order.
 
 ### P2 — Shared components and quality
 
-7. **Full sidebar markup extraction** into `js/shell.js` to eliminate duplication between `index.html` and `pages/video-session.html`.
-8. **Add `package.json` scripts** (serve, check, lint) and optionally ESLint.
+1. **Extract shared UI components** (`js/ui-components.js`) for toast, confirm modal, and detail modal.
+2. **Extract shared state / pending-change queue** (`js/state.js`) for reuse across pages.
+3. **Full sidebar markup extraction** into `js/shell.js` to eliminate duplication between `index.html` and `pages/video-session.html`.
+4. **Add `package.json` scripts** (serve, check, lint) and optionally ESLint.
 
 ### Short-term (MVP pages)
 
-9. **Flashcards Hub** — migrate `templates/flashcards_management_hub/` into `pages/flashcards.html` + `js/pages/flashcards.js`.
-10. **Study Mode** — migrate `templates/flashcards_study_interface/` and wire deck endpoints with `studyMode` filters.
-11. **Deck Editor** — migrate `templates/flashcards_deck_management_editor/` and implement CRUD + cursor pagination.
-12. **Stats** — migrate `templates/learning_statistics_dashboard/` and render aggregate + activity data.
-13. **Script Reader** — migrate `templates/updated_script_reading_interface/` and reuse the script API.
-14. **Document Study** — migrate `templates/document_study_interface/` and remove the AI tutor panel per the PRD.
+5. **Flashcards Hub** — migrate `templates/flashcards_management_hub/` into `pages/flashcards.html` + `js/pages/flashcards.js`.
+6. **Study Mode** — migrate `templates/flashcards_study_interface/` and wire deck endpoints with `studyMode` filters.
+7. **Deck Editor** — migrate `templates/flashcards_deck_management_editor/` and implement CRUD + cursor pagination.
+8. **Stats** — migrate `templates/learning_statistics_dashboard/` and render aggregate + activity data.
+9. **Script Reader** — migrate `templates/updated_script_reading_interface/` and reuse the script API.
+10. **Document Study** — migrate `templates/document_study_interface/` and remove the AI tutor panel per the PRD.
 
 ### Polish
 
-15. Clean up remaining `MandarinFlow` branding in templates.
-16. Add linting, formatting, and/or a minimal test harness.
+11. Clean up remaining `MandarinFlow` branding in templates.
+12. Add linting, formatting, and/or a minimal test harness.
 
 ---
 

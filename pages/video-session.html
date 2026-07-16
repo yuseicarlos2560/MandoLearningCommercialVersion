@@ -16,9 +16,10 @@
 <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
 <!-- YouTube IFrame Player API -->
 <script src="https://www.youtube.com/iframe_api"></script>
-<!-- Shared utilities and shell -->
+<!-- Shared utilities, shell, and UI components -->
 <script src="../js/utils.js"></script>
 <script src="../js/shell.js"></script>
+<script src="../js/ui-components.js"></script>
 <!-- API clients -->
 <script src="../js/api/client.js"></script>
 <script src="../js/api/videos.js"></script>
@@ -28,7 +29,7 @@
 </head>
 <body class="text-on-surface overflow-x-hidden">
 <!-- Top Navigation Bar -->
-<header class="fixed top-0 left-0 right-0 z-40 glass-nav bg-surface/90 border-b border-outline-variant">
+<header class="fixed top-0 left-0 right-0 md:left-[280px] z-50 glass-nav bg-surface/90 border-b border-outline-variant">
 <div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
 <div class="flex items-center gap-md">
 <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
@@ -37,8 +38,11 @@
 <a id="topnav-brand" class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
 </div>
 <div class="flex items-center gap-md">
-<button id="topnav-previous" class="px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all">
-                Previous
+<button id="topnav-previous" class="px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all hidden">
+                Previous Lesson
+            </button>
+<button id="topnav-next" class="px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all hidden">
+                Next Lesson
             </button>
 <div class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container overflow-hidden">
 <img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
@@ -49,55 +53,12 @@
 <!-- Mobile drawer overlay -->
 <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
 <!-- Side Navigation Bar -->
-<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-50 -translate-x-full md:translate-x-0 transition-transform duration-300">
-<div class="mb-lg px-base">
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
-<p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
-</div>
-<nav class="flex-1 space-y-1">
-<!-- Active: Videos -->
-<a class="sidebar-nav-link sidebar-nav-link-active flex items-center gap-sm px-base py-sm rounded-lg" href="../index.html">
-<span class="material-symbols-outlined" data-icon="play_circle">play_circle</span>
-<span class="font-body-md text-body-md">Videos</span>
-</a>
-<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="script-reader.html">
-<span class="material-symbols-outlined" data-icon="description">description</span>
-<span class="font-body-md text-body-md">Scripts</span>
-</a>
-<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="document-study.html">
-<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
-<span class="font-body-md text-body-md">Documents</span>
-</a>
-<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="flashcards.html">
-<span class="material-symbols-outlined" data-icon="quiz">quiz</span>
-<span class="font-body-md text-body-md">Flashcards</span>
-</a>
-<a class="sidebar-nav-link flex items-center gap-sm px-base py-sm rounded-lg text-on-surface-variant dark:text-outline-variant" href="stats.html">
-<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
-<span class="font-body-md text-body-md">Stats</span>
-</a>
-</nav>
-<div class="mt-md px-base">
-<h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mb-sm uppercase">Video Library</h3>
-<div id="video-library-container" class="space-y-1">
-<!-- Populated dynamically from api.videos.listReady -->
-</div>
-</div>
-<div id="sidebar-profile-snippet" class="mt-md mx-base p-md rounded-2xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-sm">
-<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
-<span class="material-symbols-outlined">person</span>
-</div>
-<div class="min-w-0">
-<p id="sidebar-user-name" class="font-body-md text-body-md text-on-surface font-semibold truncate">Learner</p>
-<p id="sidebar-user-role" class="font-label-caps text-label-caps text-on-surface-variant truncate">HSK 4 Learner</p>
-</div>
-</div>
-<div class="mt-auto px-base py-md border-t border-outline-variant/30">
-<button class="w-full btn-gradient text-on-primary font-headline-md text-headline-md py-base rounded-xl shadow-md active:scale-95">
-                Start Practice
-            </button>
-</div>
-</aside>
+<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
+<script>
+  if (window.MandoShell) {
+    window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'videos', includeVideoLibrary: true });
+  }
+</script>
 <!-- Main Content Canvas -->
 <main class="pt-[88px] min-h-screen md:ml-[280px] transition-all duration-300 overflow-visible">
 <div class="px-lg max-w-[1200px] mx-auto py-md overflow-visible">
@@ -119,7 +80,7 @@
                         Your browser does not support the video tag.
                     </video>
 </div>
-<div id="video-subtitle-overlay" class="absolute bottom-md left-1/2 -translate-x-1/2 w-[90%] max-w-[90%] bg-surface/90 backdrop-blur-md px-md py-sm rounded-2xl border border-outline-variant shadow-lg text-center z-10">
+<div id="video-subtitle-overlay" class="absolute bottom-md left-1/2 -translate-x-1/2 w-[90%] max-w-[90%] bg-surface/60 backdrop-blur-md px-md py-sm rounded-2xl border border-outline-variant shadow-lg text-center z-10">
 <p id="subtitle-hanzi" class="font-character-display text-[32px] leading-relaxed text-on-surface">是啊，你就说来我们公司面试的这几个吧……</p>
 <p id="subtitle-pinyin" class="font-body-md text-on-surface-variant mt-xs italic">shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba...</p>
 </div>
@@ -129,6 +90,27 @@
 <span class="material-symbols-outlined text-5xl text-on-surface-variant">videocam_off</span>
 <p class="mt-sm font-headline-md text-headline-md">Video unavailable</p>
 </div>
+</div>
+<div id="subtitle-controls" class="absolute top-md right-md z-20 flex items-center gap-xs bg-black/40 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<button id="subtitle-toggle-btn" class="p-1.5 rounded-md text-white hover:bg-white/20 transition-colors" title="Toggle subtitles">
+<span class="material-symbols-outlined text-sm">subtitles</span>
+</button>
+<div class="relative">
+<button id="subtitle-size-btn" class="p-1.5 rounded-md text-white hover:bg-white/20 transition-colors" title="Change subtitle size">
+<span class="material-symbols-outlined text-sm">text_fields</span>
+</button>
+<div id="subtitle-size-menu" class="hidden absolute top-full right-0 mt-1 bg-surface rounded-lg shadow-lg border border-outline-variant p-1 min-w-[100px] z-30">
+<button data-size="xxs" class="subtitle-size-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">Extra Small</button>
+<button data-size="xs" class="subtitle-size-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">Small</button>
+<button data-size="sm" class="subtitle-size-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">Medium</button>
+<button data-size="md" class="subtitle-size-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded font-semibold">Normal</button>
+<button data-size="lg" class="subtitle-size-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">Large</button>
+<button data-size="xl" class="subtitle-size-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">Extra Large</button>
+</div>
+</div>
+<button id="subtitle-pinyin-btn" class="p-1.5 rounded-md text-white hover:bg-white/20 transition-colors" title="Toggle pinyin">
+<span class="material-symbols-outlined text-sm">abc</span>
+</button>
 </div>
 <div id="video-custom-controls" class="absolute bottom-0 left-0 right-0 p-md bg-gradient-to-t from-black/60 to-transparent">
 <div class="w-full h-1.5 bg-white/30 rounded-full mb-md overflow-hidden relative cursor-pointer" id="video-progress-container">
@@ -140,15 +122,24 @@
 <span id="video-time" class="font-label-caps text-label-caps">0:00 / 0:00</span>
 </div>
 <div class="flex items-center gap-md">
+<div class="relative">
 <button id="video-settings-btn" class="material-symbols-outlined hover:scale-110 transition-transform">settings</button>
+<div id="playback-speed-menu" class="hidden absolute bottom-full right-0 mb-2 bg-surface rounded-lg shadow-lg border border-outline-variant p-1 min-w-[100px] z-20">
+<button data-rate="0.5" class="speed-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">0.5x</button>
+<button data-rate="0.75" class="speed-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">0.75x</button>
+<button data-rate="1" class="speed-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded font-semibold">1x</button>
+<button data-rate="1.25" class="speed-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">1.25x</button>
+<button data-rate="1.5" class="speed-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">1.5x</button>
+</div>
+</div>
 <button id="video-fullscreen-btn" class="material-symbols-outlined hover:scale-110 transition-transform">fullscreen</button>
 </div>
 </div>
 </div>
 </div>
 <!-- Hierarchical Notes System -->
-<div class="bg-surface-container-lowest rounded-3xl p-lg card-elevation-1 overflow-visible relative">
-<div class="flex items-center justify-between mb-lg">
+<div class="bg-surface-container-lowest rounded-3xl p-md card-elevation-1 overflow-visible relative">
+<div class="flex items-center justify-between mb-md">
 <div class="flex items-center gap-sm">
 <span class="material-symbols-outlined text-primary">sticky_note_2</span>
 <h3 class="font-headline-md text-headline-md text-on-surface">Topic Notes</h3>
@@ -162,7 +153,7 @@
                             </button>
 </div>
 </div>
-<div id="notes-container" class="space-y-md overflow-visible">
+<div id="notes-container" class="space-y-sm overflow-visible">
 <!-- Notes rendered dynamically -->
 </div>
 </div>
@@ -178,7 +169,7 @@
 <button id="script-toggle-en" class="script-toggle w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="en">EN</button>
 </div>
 </div>
-<div id="script-container" class="flex-1 overflow-y-auto pr-sm custom-scrollbar space-y-md">
+<div id="script-container" class="script-panel-fixed overflow-y-auto pr-sm custom-scrollbar space-y-md">
 <!-- Script lines rendered dynamically -->
 </div>
 <div class="mt-md pt-md border-t border-outline-variant">

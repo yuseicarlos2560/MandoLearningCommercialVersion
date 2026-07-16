@@ -113,3 +113,33 @@ body {
     box-shadow: 0 4px 12px rgba(78, 20, 30, 0.08), 0 8px 24px rgba(78, 20, 30, 0.06);
     border: 1px solid rgba(175, 35, 48, 0.10);
 }
+
+/* Subtitle overlay size presets */
+.subtitle-size-xxs #subtitle-hanzi { font-size: 16px; }
+.subtitle-size-xxs #subtitle-pinyin { font-size: 10px; }
+
+.subtitle-size-xs #subtitle-hanzi { font-size: 20px; }
+.subtitle-size-xs #subtitle-pinyin { font-size: 12px; }
+
+.subtitle-size-sm #subtitle-hanzi { font-size: 24px; }
+.subtitle-size-sm #subtitle-pinyin { font-size: 14px; }
+
+.subtitle-size-md #subtitle-hanzi { font-size: 32px; }
+.subtitle-size-md #subtitle-pinyin { font-size: 16px; }
+
+.subtitle-size-lg #subtitle-hanzi { font-size: 40px; }
+.subtitle-size-lg #subtitle-pinyin { font-size: 18px; }
+
+.subtitle-size-xl #subtitle-hanzi { font-size: 48px; }
+.subtitle-size-xl #subtitle-pinyin { font-size: 20px; }
+
+/* Hide pinyin line when pinyin is disabled */
+.subtitle-pinyin-hidden #subtitle-pinyin {
+    display: none;
+}
+
+/* Script panel fixed height */
+.script-panel-fixed {
+    height: 600px;
+    max-height: 60vh;
+}

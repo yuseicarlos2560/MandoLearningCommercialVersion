@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "python3 -m http.server 8000",
+    "check": "for f in js/*.js js/api/*.js js/pages/*.js; do node --check \"$f\"; done",
+    "lint": "npx eslint js/"
   },
   "private": true
 }
