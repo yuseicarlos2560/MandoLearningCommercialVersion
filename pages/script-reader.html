@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>MandoLearning | Script Reader</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="../js/tailwind-config.js"></script>
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../css/design-system.css" />
+  <!-- Pinyin generation -->
+  <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
+  <!-- Shared utilities and shell -->
+  <script src="../js/utils.js"></script>
+  <script src="../js/shell.js"></script>
+  <script src="../js/ui-components.js"></script>
+  <!-- API clients -->
+  <script src="../js/api/client.js"></script>
+  <script src="../js/api/videos.js"></script>
+  <script src="../js/api/scripts.js"></script>
+  <script src="../js/api/notes.js"></script>
+  <script src="../js/api/batch.js"></script>
+  <script src="../js/api/stats.js"></script>
+</head>
+<body class="font-body-md text-body-md text-on-surface overflow-x-hidden">
+  <!-- Cultural accent -->
+  <div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="fixed top-0 left-0 right-0 md:left-[280px] z-30 glass-nav bg-surface/90 border-b border-outline-variant">
+    <div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
+      <div class="flex items-center gap-md">
+        <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <a class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
+      </div>
+      <div class="flex items-center gap-md">
+        <button id="topnav-back" class="flex items-center gap-xs px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all">
+          <span class="material-symbols-outlined text-sm">arrow_back</span>
+          <span class="hidden sm:inline">Dashboard</span>
+        </button>
+        <div class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container overflow-hidden">
+          <img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile drawer overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
+
+  <!-- Side Navigation Bar -->
+  <aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
+  <script>
+    if (window.MandoShell) {
+      window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'scripts' });
+    }
+  </script>
+
+  <!-- Main Content -->
+  <main class="pt-[88px] min-h-screen md:ml-[280px] transition-all duration-300 relative z-10">
+    <div class="px-lg max-w-[900px] mx-auto py-xl">
+
+      <!-- Header -->
+      <div class="text-center mb-xl w-full">
+        <span id="script-type-badge" class="font-label-caps text-label-caps text-secondary bg-secondary-container px-base py-xs rounded-full mb-md inline-block">Script</span>
+        <h1 id="script-title" class="font-headline-lg text-headline-lg text-on-surface mb-sm">Loading script…</h1>
+        <p id="script-description" class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Please wait while we load the script.</p>
+      </div>
+
+      <!-- Reader Toolbar (inline) -->
+      <div class="flex items-center justify-center gap-md mb-lg">
+        <div class="flex items-center gap-xs bg-surface-container-high rounded-full p-1 border border-outline-variant">
+          <button id="reader-mode-zh" class="reader-mode-btn w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs" data-mode="zh">中</button>
+          <button id="reader-mode-py" class="reader-mode-btn w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="py">ǎ</button>
+          <button id="reader-mode-en" class="reader-mode-btn w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="en">EN</button>
+        </div>
+      </div>
+
+      <!-- Loading / Error States -->
+      <div id="reader-status" class="hidden text-center py-xl">
+        <p id="reader-status-message" class="font-body-lg text-on-surface-variant"></p>
+        <button id="reader-status-retry" class="hidden mt-md px-md py-xs bg-primary text-on-primary rounded-lg hover:bg-primary-dim transition-all">Retry</button>
+      </div>
+
+      <!-- Script Canvas -->
+      <div id="script-canvas" class="w-full bg-surface-container-lowest border border-outline-variant rounded-3xl p-lg shadow-sm relative overflow-hidden">
+        <!-- Cultural accent decor -->
+        <div class="absolute top-0 right-0 p-lg opacity-10">
+          <span id="script-accent-char" class="font-character-display text-[120px] leading-none text-primary pointer-events-none select-none">文</span>
+        </div>
+        <div id="script-lines" class="space-y-lg relative z-10">
+          <!-- Lines rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Quick Vocabulary Notes -->
+      <div class="w-full mt-lg">
+        <div class="flex items-center justify-between mb-md">
+          <h3 class="font-headline-md text-headline-md text-on-surface">Quick Vocabulary Notes</h3>
+          <div class="flex items-center gap-sm">
+            <button id="new-note-btn" class="flex items-center gap-xs px-md py-xs bg-surface-container-high text-on-surface rounded-lg font-body-md hover:bg-surface-dim transition-all border border-outline-variant">
+              <span class="material-symbols-outlined text-sm">add</span> New Note
+            </button>
+            <button id="save-notes-btn" class="flex items-center gap-xs px-md py-xs bg-primary text-on-primary rounded-lg font-body-md hover:bg-primary-dim transition-all shadow-md">
+              <span class="material-symbols-outlined text-sm">save</span> Save (Ctrl+S)
+            </button>
+          </div>
+        </div>
+        <div id="notes-container" class="space-y-sm">
+          <!-- Notes rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Related Scripts -->
+      <section class="mt-xl">
+        <div class="space-y-md">
+          <div>
+            <h3 class="font-headline-md text-headline-md text-on-surface">Related Scripts</h3>
+            <p class="text-on-surface-variant">More reading in the same category</p>
+          </div>
+          <div id="related-scripts-container" class="flex gap-md overflow-x-auto pb-md custom-scrollbar">
+            <!-- Related scripts rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Related Videos -->
+      <section class="mt-xl">
+        <div class="space-y-md">
+          <div>
+            <h3 class="font-headline-md text-headline-md text-on-surface">Related Videos</h3>
+            <p class="text-on-surface-variant">Visual context for this script's vocabulary</p>
+          </div>
+          <div id="related-videos-container" class="flex gap-md overflow-x-auto pb-md custom-scrollbar">
+            <!-- Related videos rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Floating Audio Toolbar -->
+  <div id="reader-toolbar" class="fixed bottom-lg left-1/2 -translate-x-1/2 glass-panel border border-outline-variant rounded-full px-lg py-md flex items-center gap-lg shadow-xl z-50 transition-transform duration-300 hover:scale-[1.02]">
+    <div class="flex items-center gap-md">
+      <button id="toolbar-play" class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md active:scale-95 transition-all">
+        <span class="material-symbols-outlined">play_arrow</span>
+      </button>
+      <div class="h-1.5 w-48 bg-outline-variant rounded-full overflow-hidden cursor-pointer" id="toolbar-progress-container">
+        <div id="toolbar-progress-bar" class="h-full bg-primary w-0 transition-all duration-100"></div>
+      </div>
+      <span id="toolbar-time" class="font-label-caps text-label-caps text-on-surface-variant">0:00 / 0:00</span>
+    </div>
+    <div class="h-8 w-[1px] bg-outline-variant"></div>
+    <div class="flex items-center gap-md">
+      <button id="toolbar-pinyin" class="text-on-surface-variant hover:text-primary transition-colors" title="Toggle Pinyin">
+        <span class="material-symbols-outlined">subtitles</span>
+      </button>
+      <button id="toolbar-volume" class="text-on-surface-variant hover:text-primary transition-colors" title="Audio Settings">
+        <span class="material-symbols-outlined">volume_up</span>
+      </button>
+      <button id="toolbar-translate" class="text-on-surface-variant hover:text-primary transition-colors" title="Toggle Translation">
+        <span class="material-symbols-outlined">translate</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden audio element -->
+  <audio id="script-audio" class="hidden"></audio>
+
+  <script src="../js/pages/script-reader.js"></script>
+</body>
+</html>

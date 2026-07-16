@@ -143,3 +143,36 @@ body {
     height: 600px;
     max-height: 60vh;
 }
+
+/* Glass panel used by floating toolbars and headers */
+.glass-panel {
+    background: rgba(255, 244, 244, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Narrow custom scrollbar for carousels and panels */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #dc9ca8;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a06773;
+}
+
+/* Script reader line interactions */
+.script-line .pinyin {
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+.script-line:hover .pinyin {
+    opacity: 1;
+    transform: translateY(0);
+}

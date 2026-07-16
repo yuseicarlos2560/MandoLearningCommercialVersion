@@ -139,6 +139,7 @@ Full backend API documentation lives in the companion Java project (`~/IdeaProje
 |---|---|---|
 | **Dashboard** | `index.html`, `js/pages/index.js` | `GET /api/stats/{userId}`, `GET /api/stats/{userId}/activity`, `GET /api/videos`, `POST /api/stats/{userId}/events` |
 | **Video Session** | `pages/video-session.html`, `js/pages/video-session.js` | `GET /api/videos/{videoId}`, `GET /api/videos/{videoId}/script`, `GET /api/textprocessing/{userId}/{sessionId}`, `GET /api/videos`, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` |
+| **Script Reader** | `pages/script-reader.html`, `js/pages/script-reader.js` | `GET /api/scripts/{scriptId}`, `GET /api/scripts/{scriptId}/content`, `GET /api/scripts/{scriptId}/audio`, `GET /api/textprocessing/{userId}/scripts/{scriptId}`, `POST /api/textprocessing/{userId}/batch`, `GET /api/videos`, `POST /api/stats/{userId}/events` |
 
 ### Empty placeholder pages
 
@@ -149,7 +150,6 @@ These files exist but are 0 bytes and have no JavaScript handlers:
 - `pages/deck-editor.html`
 - `pages/stats.html`
 - `pages/document-study.html`
-- `pages/script-reader.html`
 
 ### Missing shared modules
 
@@ -163,13 +163,19 @@ Modules planned in `HIGH_LEVEL_PLAN.md` that are still not created:
 - `js/pages/study-mode.js`
 - `js/pages/deck-editor.js`
 - `js/pages/stats.js`
-- `js/pages/script-reader.js`
 - `js/pages/document-study.js`
 
 Created and in use:
 
 - `js/utils.js` — shared formatting, HSK inference, identity, localStorage, DOM helpers
 - `js/shell.js` — shared mobile sidebar drawer + sidebar profile rendering
+- `js/ui-components.js` — toast and confirm modal primitives
+- `js/api/client.js` — shared fetch wrapper with retry logic
+- `js/api/videos.js` — video catalog + script endpoints
+- `js/api/scripts.js` — script catalog + content + audio endpoints
+- `js/api/notes.js` — session notes and script-scoped notes + details
+- `js/api/batch.js` — TextProcessing batch flush
+- `js/api/stats.js` — stats aggregate / activity / events
 
 ---
 
