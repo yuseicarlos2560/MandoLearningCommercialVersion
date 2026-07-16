@@ -14,6 +14,11 @@
 <link rel="stylesheet" href="../css/design-system.css" />
 <!-- Pinyin generation -->
 <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
+<!-- YouTube IFrame Player API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+<!-- Shared utilities and shell -->
+<script src="../js/utils.js"></script>
+<script src="../js/shell.js"></script>
 <!-- API clients -->
 <script src="../js/api/client.js"></script>
 <script src="../js/api/videos.js"></script>
@@ -26,6 +31,9 @@
 <header class="fixed top-0 left-0 right-0 z-40 glass-nav bg-surface/90 border-b border-outline-variant">
 <div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
 <div class="flex items-center gap-md">
+<button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
+<span class="material-symbols-outlined">menu</span>
+</button>
 <a id="topnav-brand" class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
 </div>
 <div class="flex items-center gap-md">
@@ -38,8 +46,10 @@
 </div>
 </div>
 </header>
+<!-- Mobile drawer overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
 <!-- Side Navigation Bar -->
-<aside class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-50">
+<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-50 -translate-x-full md:translate-x-0 transition-transform duration-300">
 <div class="mb-lg px-base">
 <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
 <p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
