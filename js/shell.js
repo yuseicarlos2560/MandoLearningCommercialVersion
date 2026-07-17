@@ -64,34 +64,31 @@
       `;
     }).join('');
 
-    const videoLibrarySection = includeVideoLibrary ? `
-      <div class="mt-md px-base">
-        <h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mb-sm uppercase">Video Library</h3>
-        <div id="video-library-container" class="space-y-1">
-          <!-- Populated dynamically by the page handler -->
-        </div>
-      </div>
-    ` : '';
+    const videoLibrarySection = includeVideoLibrary
+      ? renderCollapsibleLibrarySection('Video Library', 'video-library-container', false)
+      : '';
 
-    const scriptLibrarySection = includeScriptLibrary ? `
-      <div class="mt-md px-base">
-        <h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mb-sm uppercase">Script Library</h3>
-        <div id="script-library-container" class="space-y-1 max-h-[40vh] overflow-y-auto custom-scrollbar pr-xs">
-          <!-- Populated dynamically by the page handler -->
-        </div>
-      </div>
-    ` : '';
+    const scriptLibrarySection = includeScriptLibrary
+      ? renderCollapsibleLibrarySection('Script Library', 'script-library-container', false)
+      : '';
 
     container.innerHTML = `
-      <div class="mb-lg px-base">
-        <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
-        <p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
+      <div class="mb-lg px-base relative flex items-start justify-between gap-sm">
+        <div>
+          <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
+          <p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
+        </div>
+        <button type="button" class="sidebar-collapse-btn hidden md:flex items-center justify-center w-8 h-8 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors shrink-0" title="Collapse sidebar">
+          <span class="material-symbols-outlined text-sm">chevron_left</span>
+        </button>
       </div>
-      <nav class="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-xs">
-        ${navLinks}
-      </nav>
-      ${videoLibrarySection}
-      ${scriptLibrarySection}
+      <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-xs">
+        <nav class="space-y-1">
+          ${navLinks}
+        </nav>
+        ${videoLibrarySection}
+        ${scriptLibrarySection}
+      </div>
       <div id="sidebar-profile-snippet" class="mt-md mx-base p-md rounded-2xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-sm">
         <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined">person</span>
@@ -107,6 +104,109 @@
         </button>
       </div>
     `;
+
+    const collapseBtn = container.querySelector('.sidebar-collapse-btn');
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', function () {
+        setSidebarCollapsed(true);
+      });
+    }
+
+    ensureSidebarOpenButton();
+    applySidebarCollapsedState(isSidebarCollapsed());
+    initSidebarCollapsibleToggles();
+  }
+
+  const SIDEBAR_COLLAPSED_KEY = 'mando.sidebar.collapsed';
+
+  function isSidebarCollapsed() {
+    return MandoUtils ? MandoUtils.safeLocalStorageGet(SIDEBAR_COLLAPSED_KEY) === 'true' : false;
+  }
+
+  function setSidebarCollapsed(collapsed) {
+    if (MandoUtils && typeof MandoUtils.safeLocalStorageSet === 'function') {
+      MandoUtils.safeLocalStorageSet(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+    }
+    applySidebarCollapsedState(collapsed);
+  }
+
+  function applySidebarCollapsedState(collapsed) {
+    if (collapsed) {
+      document.body.classList.add('sidebar-collapsed');
+    } else {
+      document.body.classList.remove('sidebar-collapsed');
+    }
+
+    const openBtn = document.getElementById('sidebar-open-btn');
+    if (openBtn) {
+      if (collapsed) {
+        openBtn.classList.remove('hidden');
+      } else {
+        openBtn.classList.add('hidden');
+      }
+    }
+  }
+
+  function ensureSidebarOpenButton() {
+    let btn = document.getElementById('sidebar-open-btn');
+    if (btn) return btn;
+
+    btn = document.createElement('button');
+    btn.id = 'sidebar-open-btn';
+    btn.type = 'button';
+    btn.className = 'fixed top-[92px] left-0 z-30 hidden md:flex items-center justify-center w-8 h-10 rounded-r-xl bg-surface-container border border-l-0 border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high shadow-md transition-transform duration-300';
+    btn.title = 'Open sidebar';
+    btn.innerHTML = '<span class="material-symbols-outlined text-sm">chevron_right</span>';
+    btn.addEventListener('click', function () {
+      setSidebarCollapsed(false);
+    });
+    document.body.appendChild(btn);
+    return btn;
+  }
+
+  function renderCollapsibleLibrarySection(title, containerId, defaultCollapsed) {
+    const storageKey = 'mando.sidebar.' + containerId + '.collapsed';
+    const stored = MandoUtils ? MandoUtils.safeLocalStorageGet(storageKey) : null;
+    const collapsed = stored === null ? !!defaultCollapsed : stored === 'true';
+
+    return `
+      <div class="mt-md px-base">
+        <button type="button" class="sidebar-collapsible-toggle w-full flex items-center justify-between gap-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-container-id="${containerId}" aria-expanded="${!collapsed}">
+          <h3 class="font-label-caps text-label-caps tracking-wider uppercase">${title}</h3>
+          <span class="material-symbols-outlined text-sm transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}">expand_more</span>
+        </button>
+        <div id="${containerId}" class="space-y-1 overflow-y-auto custom-scrollbar pr-xs ${collapsed ? 'hidden' : 'max-h-[35vh]'}">
+          <!-- Populated dynamically by the page handler -->
+        </div>
+      </div>
+    `;
+  }
+
+  function initSidebarCollapsibleToggles() {
+    document.querySelectorAll('.sidebar-collapsible-toggle').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const containerId = btn.dataset.containerId;
+        const content = document.getElementById(containerId);
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (!content) return;
+
+        const willExpand = content.classList.contains('hidden');
+        if (willExpand) {
+          content.classList.remove('hidden');
+          content.classList.add('max-h-[35vh]');
+          if (icon) icon.classList.add('rotate-180');
+        } else {
+          content.classList.add('hidden');
+          content.classList.remove('max-h-[35vh]');
+          if (icon) icon.classList.remove('rotate-180');
+        }
+
+        btn.setAttribute('aria-expanded', String(willExpand));
+        if (MandoUtils && typeof MandoUtils.safeLocalStorageSet === 'function') {
+          MandoUtils.safeLocalStorageSet('mando.sidebar.' + containerId + '.collapsed', String(!willExpand));
+        }
+      });
+    });
   }
 
   // ---------------------------------------------------------------------------

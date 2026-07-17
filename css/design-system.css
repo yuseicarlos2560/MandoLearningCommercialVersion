@@ -176,3 +176,23 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* Sidebar collapse behaviour (desktop only) */
+.main-with-sidebar {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .main-with-sidebar {
+        margin-left: 280px;
+    }
+
+    body.sidebar-collapsed .main-with-sidebar {
+        margin-left: 0;
+    }
+
+    body.sidebar-collapsed #sidebar {
+        transform: translateX(-100%);
+    }
+}
