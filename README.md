@@ -70,12 +70,12 @@ MandoLearningCommercialVersion/
 │
 ├── pages/                              # Page HTML files
 │   ├── video-session.html              # ✅ Implemented
-│   ├── flashcards.html                 # ❌ Empty placeholder
+│   ├── flashcards.html                 # ✅ Implemented (hub)
 │   ├── study-mode.html                 # ❌ Empty placeholder
 │   ├── deck-editor.html                # ❌ Empty placeholder
-│   ├── stats.html                      # ❌ Empty placeholder
+│   ├── stats.html                      # ✅ Implemented
 │   ├── document-study.html             # ❌ Empty placeholder
-│   └── script-reader.html              # ❌ Empty placeholder
+│   └── script-reader.html              # ✅ Implemented
 │
 ├── js/
 │   ├── tailwind-config.js              # Tailwind theme tokens
@@ -140,15 +140,14 @@ Full backend API documentation lives in the companion Java project (`~/IdeaProje
 | **Dashboard** | `index.html`, `js/pages/index.js` | `GET /api/stats/{userId}`, `GET /api/stats/{userId}/activity`, `GET /api/videos`, `POST /api/stats/{userId}/events` |
 | **Video Session** | `pages/video-session.html`, `js/pages/video-session.js` | `GET /api/videos/{videoId}`, `GET /api/videos/{videoId}/script`, `GET /api/textprocessing/{userId}/{sessionId}`, `GET /api/videos`, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` |
 | **Script Reader** | `pages/script-reader.html`, `js/pages/script-reader.js` | `GET /api/scripts/{scriptId}`, `GET /api/scripts/{scriptId}/content`, `GET /api/scripts/{scriptId}/audio`, `GET /api/textprocessing/{userId}/scripts/{scriptId}`, `POST /api/textprocessing/{userId}/batch`, `GET /api/videos`, `POST /api/stats/{userId}/events` |
+| **Flashcards Hub** | `pages/flashcards.html`, `js/pages/flashcards.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `POST /api/textprocessing/{userId}/batch` |
 
 ### Empty placeholder pages
 
 These files exist but are 0 bytes and have no JavaScript handlers:
 
-- `pages/flashcards.html`
 - `pages/study-mode.html`
 - `pages/deck-editor.html`
-- `pages/stats.html`
 - `pages/document-study.html`
 
 ### Missing shared modules
@@ -157,12 +156,9 @@ Modules planned in `HIGH_LEVEL_PLAN.md` that are still not created:
 
 - `js/main.js`
 - `js/state.js`
-- `js/ui-components.js`
 - `js/pinyin-helper.js`
-- `js/pages/flashcards.js`
 - `js/pages/study-mode.js`
 - `js/pages/deck-editor.js`
-- `js/pages/stats.js`
 - `js/pages/document-study.js`
 
 Created and in use:
@@ -174,8 +170,10 @@ Created and in use:
 - `js/api/videos.js` — video catalog + script endpoints
 - `js/api/scripts.js` — script catalog + content + audio endpoints
 - `js/api/notes.js` — session notes and script-scoped notes + details
+- `js/api/flashcards.js` — flashcard deck queries (all / HSK / category)
 - `js/api/batch.js` — TextProcessing batch flush
 - `js/api/stats.js` — stats aggregate / activity / events
+- `js/pages/flashcards.js` — flashcards hub handler
 
 ---
 

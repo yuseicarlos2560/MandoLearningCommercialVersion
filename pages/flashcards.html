@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Flashcard Mastery | MandoLearning</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../js/tailwind-config.js"></script>
+<link rel="stylesheet" href="../css/design-system.css" />
+<!-- Shared utilities, shell, and UI components -->
+<script src="../js/utils.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/ui-components.js"></script>
+<!-- API clients -->
+<script src="../js/api/client.js"></script>
+<script src="../js/api/flashcards.js"></script>
+<script src="../js/api/batch.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+<!-- Cultural Background Pattern -->
+<div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
+<!-- Top Navigation Bar. Width is adjusted by MandoShell's desktop sidebar collapse state (header-with-sidebar). -->
+<header class="fixed top-0 left-0 right-0 header-with-sidebar z-30 glass-nav bg-surface/90 border-b border-outline-variant">
+<div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
+<div class="flex items-center gap-md">
+<button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<a class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input id="deck-search-input" class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-sm w-56 focus:ring-2 focus:ring-primary/20 placeholder:text-outline" placeholder="Search decks..." type="text"/>
+</div>
+<div class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Mobile drawer overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
+<!-- Side Navigation Bar -->
+<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
+<script>
+  if (window.MandoShell) {
+    window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'flashcards' });
+  }
+</script>
+<!-- Main Content Area. Margin is adjusted by MandoShell's desktop sidebar collapse state (main-with-sidebar). -->
+<main class="pt-[88px] min-h-screen main-with-sidebar transition-all duration-300 relative z-10">
+<div class="px-lg py-md max-w-[1200px] mx-auto">
+<!-- Header Section -->
+<div class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Flashcard Mastery</h1>
+<p id="hub-subtitle" class="text-on-surface-variant text-body-lg max-w-2xl mt-base opacity-90">Reinforce your vocabulary with our optimized spaced-repetition system.</p>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-md items-stretch">
+<!-- Continue Studying Hero Card -->
+<div id="hero-card" class="xl:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-md relative overflow-hidden flex flex-col justify-between min-h-[320px] shadow-sm hover:shadow-md transition-shadow">
+<div class="relative z-10">
+<span id="hero-deck-badge" class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-wider mb-sm inline-block">Most Active</span>
+<h3 id="hero-deck-title" class="font-headline-md text-headline-md text-on-surface mt-base">Business Mandarin</h3>
+<p id="hero-deck-description" class="text-on-surface-variant mt-sm max-w-md">Focused on negotiation, trade terms, and professional etiquette in corporate Beijing environments.</p>
+</div>
+<div class="relative z-10 flex items-end justify-between mt-md">
+<div class="space-y-sm w-full max-w-xs">
+<div class="flex justify-between items-end">
+<span id="hero-deck-percent" class="text-sm font-bold text-on-surface">68% Mastered</span>
+<span id="hero-deck-stats" class="text-xs text-on-surface-variant">142 / 210 Cards</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div id="hero-deck-progress-bar" class="h-full bg-primary transition-all duration-1000 ease-out" style="width: 68%;"></div>
+</div>
+</div>
+<button id="hero-resume-btn" class="bg-primary text-on-primary px-lg py-sm rounded-xl font-bold flex items-center gap-sm scale-100 hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-primary/20 ml-md shrink-0">
+Resume Deck <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Subtle Character Graphic -->
+<div class="absolute right-[-20px] top-[-20px] opacity-[0.04] pointer-events-none select-none">
+<span id="hero-watermark" class="font-character-display text-[280px] leading-none text-primary">学</span>
+</div>
+</div>
+<!-- Study Modes Sidebar Area -->
+<div class="xl:col-span-4 flex flex-col gap-md">
+<div class="bg-surface-container-high border border-outline-variant rounded-xl p-md flex-1">
+<h4 class="font-label-caps text-label-caps text-secondary mb-md tracking-widest uppercase">Study Modes</h4>
+<div class="space-y-base">
+<button id="study-mode-spaced" class="w-full flex items-center justify-between p-base bg-surface-container-lowest rounded-lg border border-outline-variant/30 hover:border-primary/50 transition-all group">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">rebase_edit</span>
+</div>
+<div class="text-left">
+<p class="text-sm font-bold text-on-surface">Spaced Repetition</p>
+<p class="text-xs text-on-surface-variant">Optimized intervals</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+<button id="study-mode-random" class="w-full flex items-center justify-between p-base bg-surface-container-lowest rounded-lg border border-outline-variant/30 hover:border-primary/50 transition-all group">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/30 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">shuffle</span>
+</div>
+<div class="text-left">
+<p class="text-sm font-bold text-on-surface">Random Mix</p>
+<p class="text-xs text-on-surface-variant">Chaos for retention</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+<button id="study-mode-speed" class="w-full flex items-center justify-between p-base bg-surface-container-lowest rounded-lg border border-outline-variant/30 hover:border-primary/50 transition-all group">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">speed</span>
+</div>
+<div class="text-left">
+<p class="text-sm font-bold text-on-surface">Speed Blitz</p>
+<p class="text-xs text-on-surface-variant">2-min high intensity</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Your Decks Header -->
+<div class="xl:col-span-12 mt-md flex justify-between items-end">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Your Decks</h3>
+<p class="text-sm text-on-surface-variant mt-xs">Curated collections for every situation.</p>
+</div>
+<div class="flex gap-sm">
+<button id="edit-decks-btn" class="flex items-center gap-xs px-md py-2 border border-outline-variant text-on-surface-variant text-sm font-bold rounded-full hover:bg-surface-container-high hover:text-on-surface transition-all mr-sm">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Edit Decks</span>
+</button>
+<button id="sort-recent-btn" class="px-md py-2 bg-surface-container-high text-on-surface text-sm font-bold rounded-full">Recent</button>
+<button id="sort-alpha-btn" class="px-md py-2 text-on-surface-variant text-sm font-medium rounded-full">Alphabetical</button>
+</div>
+</div>
+<!-- Deck Grid (rendered by js/pages/flashcards.js) -->
+<div id="deck-grid" class="xl:col-span-12 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-md"></div>
+</div>
+<!-- Focus Characters Section -->
+<div class="mt-xl">
+<h4 class="font-label-caps text-label-caps text-secondary mb-md tracking-widest uppercase">Focus Characters</h4>
+<div id="focus-characters-row" class="flex gap-md overflow-x-auto pb-md custom-scrollbar"></div>
+</div>
+</div>
+</main>
+<!-- Create New Deck Modal -->
+<div id="create-deck-modal" class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm items-center justify-center p-md hidden">
+<div class="bg-surface rounded-3xl shadow-2xl w-full max-w-md p-lg border border-outline-variant" role="dialog" aria-modal="true" aria-labelledby="create-deck-title">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary text-2xl">add_circle</span>
+<h3 id="create-deck-title" class="font-headline-md text-headline-md text-on-surface">Create New Deck</h3>
+</div>
+<p class="font-body-md text-on-surface-variant mb-md">A deck is created when you add its first card.</p>
+<form id="create-deck-form" class="space-y-md">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-deck-name">Deck Name</label>
+<input id="new-deck-name" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. Travel Essentials" type="text" maxlength="50"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-card-character">Chinese <span class="text-primary">*</span></label>
+<input id="new-card-character" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs font-character-display text-xl text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. 旅行" type="text" maxlength="25" required/>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-card-pinyin">Pinyin</label>
+<input id="new-card-pinyin" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. lǚxíng" type="text" maxlength="250"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-card-hsk">HSK Level <span class="text-primary">*</span></label>
+<select id="new-card-hsk" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+<option value="HSK1">HSK 1</option>
+<option value="HSK2">HSK 2</option>
+<option value="HSK3" selected>HSK 3</option>
+<option value="HSK4">HSK 4</option>
+<option value="HSK5">HSK 5</option>
+<option value="HSK6">HSK 6</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-card-meaning">English Meaning</label>
+<input id="new-card-meaning" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. to travel; journey" type="text" maxlength="150"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-card-tags">Tags <span class="text-on-surface-variant/70 normal-case">(optional, comma-separated)</span></label>
+<input id="new-card-tags" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. travel,common" type="text"/>
+</div>
+<p id="create-deck-error" class="text-error text-sm hidden"></p>
+<div class="flex justify-end gap-sm pt-sm">
+<button type="button" id="create-deck-cancel" class="px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">Cancel</button>
+<button type="submit" id="create-deck-submit" class="px-md py-xs rounded-lg bg-primary text-on-primary font-body-md hover:bg-primary-dim transition-all shadow-md">Create Deck</button>
+</div>
+</form>
+</div>
+</div>
+<script src="../js/pages/flashcards.js"></script>
+</body>
+</html>
