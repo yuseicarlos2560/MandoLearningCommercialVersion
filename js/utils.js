@@ -232,6 +232,97 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Text-to-speech helper
+  // ---------------------------------------------------------------------------
+
+  let currentSpeechId = null;
+  let isSpeakingFlag = false;
+
+  function getChineseVoice() {
+    if (!window.speechSynthesis) return null;
+    const voices = window.speechSynthesis.getVoices();
+    return voices.find(function (v) { return v.lang && v.lang.startsWith('zh'); }) || null;
+  }
+
+  function stopSpeaking() {
+    if (!window.speechSynthesis) return;
+    isSpeakingFlag = false;
+    currentSpeechId = null;
+    window.speechSynthesis.cancel();
+  }
+
+  function isSpeaking() {
+    return isSpeakingFlag;
+  }
+
+  /**
+   * Speaks the given text using the browser's speech synthesis.
+   *
+   * If the same `id` is passed while it is still speaking, the playback stops
+   * (toggle behaviour). Calling with a different `id` cancels the previous
+   * utterance and starts the new one.
+   */
+  function speak(text, options) {
+    options = options || {};
+    const id = options.id || null;
+
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+      if (window.MandoUi && typeof window.MandoUi.toast === 'function') {
+        window.MandoUi.toast('Text-to-speech is not supported in this browser.', 'error');
+      }
+      return;
+    }
+
+    const normalized = String(text || '').trim();
+    if (!normalized) return;
+
+    // Toggle: pressing the same line again stops playback.
+    if (id && id === currentSpeechId && isSpeakingFlag) {
+      stopSpeaking();
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new window.SpeechSynthesisUtterance(normalized);
+    utterance.lang = options.lang || 'zh-CN';
+    utterance.rate = typeof options.rate === 'number' ? options.rate : 0.9;
+
+    const zhVoice = getChineseVoice();
+    if (zhVoice) utterance.voice = zhVoice;
+
+    utterance.onstart = function () {
+      isSpeakingFlag = true;
+      currentSpeechId = id;
+      if (typeof options.onStart === 'function') options.onStart(id);
+    };
+
+    utterance.onend = function () {
+      isSpeakingFlag = false;
+      if (currentSpeechId === id) currentSpeechId = null;
+      if (typeof options.onEnd === 'function') options.onEnd(id);
+    };
+
+    utterance.onerror = function (e) {
+      isSpeakingFlag = false;
+      if (currentSpeechId === id) currentSpeechId = null;
+      console.warn('Speech synthesis error', e.error);
+      if (e.error === 'not-allowed') {
+        if (window.MandoUi && typeof window.MandoUi.toast === 'function') {
+          window.MandoUi.toast('Speech playback was blocked. Check browser permissions.', 'error');
+        }
+      } else if (e.error !== 'canceled' && e.error !== 'interrupted') {
+        if (window.MandoUi && typeof window.MandoUi.toast === 'function') {
+          window.MandoUi.toast('Could not play speech. Try again.', 'error');
+        }
+      }
+      if (typeof options.onEnd === 'function') options.onEnd(id);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
 
@@ -261,5 +352,8 @@
     setText,
     setAttr,
     setHtml,
+    speak,
+    stopSpeaking,
+    isSpeaking,
   };
 })(window);

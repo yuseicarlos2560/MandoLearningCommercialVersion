@@ -176,6 +176,7 @@
     inferHskLabel,
     difficultyFromHsk,
     thumbnailUrl,
+    speak,
   } = window.MandoUtils;
 
   const MandoUi = window.MandoUi;
@@ -926,7 +927,7 @@
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
         const index = parseInt(btn.dataset.index, 10);
-        openSaveWordModal(state.lines[index].chinese, state.lines[index].pinyin);
+        createPrefilledNote(state.lines[index].chinese, state.lines[index].pinyin);
       });
     });
   }
@@ -953,342 +954,431 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Notes rendering
+  // Notes rendering (matches video-session inline editing)
   // ---------------------------------------------------------------------------
 
   function buildNoteTree() {
-    const roots = state.notes.filter(function (n) { return n.parentNoteId === null || n.parentNoteId === undefined; });
-    const childrenOf = function (parentId) {
-      return state.notes.filter(function (n) { return n.parentNoteId === parentId; });
-    };
-    return { roots, childrenOf };
+    const roots = [];
+    const childrenMap = {};
+
+    state.notes.forEach(function (note) {
+      if (note._pendingDelete) return;
+      if (note.parentNoteId === null || note.parentNoteId === undefined) {
+        roots.push(note);
+      } else {
+        childrenMap[note.parentNoteId] = childrenMap[note.parentNoteId] || [];
+        childrenMap[note.parentNoteId].push(note);
+      }
+    });
+
+    return { roots, childrenMap };
   }
 
   function renderNotes() {
     const container = $('notes-container');
     if (!container) return;
 
-    if (state.notes.length === 0) {
-      container.innerHTML = `
-        <div class="text-center py-md text-on-surface-variant bg-surface-container-low rounded-2xl border border-outline-variant/40">
-          <p>No vocabulary notes yet. Select a word and save it, or click New Note.</p>
-        </div>
-      `;
+    const { roots, childrenMap } = buildNoteTree();
+
+    container.innerHTML = '';
+
+    if (roots.length === 0) {
+      container.appendChild(createEmptyState());
       return;
     }
 
-    const { roots, childrenOf } = buildNoteTree();
-
-    container.innerHTML = roots.map(function (note) {
-      return renderNoteItem(note, childrenOf, 0);
-    }).join('');
-
-    attachNoteEventListeners();
+    roots.forEach(function (note) {
+      container.appendChild(createNoteNode(note, childrenMap, 0));
+    });
   }
 
-  function renderNoteItem(note, childrenOf, depth) {
-    const detail = state.noteDetails[note.noteId];
-    const children = childrenOf(note.noteId);
-    const paddingLeft = depth > 0 ? `pl-${Math.min(depth * 4, 12)}` : '';
-    const isPending = !!note._pending;
+  function createEmptyState() {
+    const el = document.createElement('div');
+    el.className = 'text-center py-xl text-on-surface-variant';
+    el.innerHTML = `
+      <span class="material-symbols-outlined text-4xl mb-sm">notes</span>
+      <p class="font-body-md">No notes yet. Click "New Note" to capture vocabulary.</p>
+    `;
+    return el;
+  }
 
-    return `
-      <div class="note-item rounded-2xl border border-outline-variant/40 ${isPending ? 'bg-surface-container-high/50' : 'bg-surface-container-lowest'} p-md ${paddingLeft}" data-note-id="${note.noteId}">
-        <div class="flex items-start justify-between gap-sm">
-          <div class="flex items-center gap-md min-w-0">
-            <div class="text-center">
-              <p class="font-character-display text-[32px] text-primary leading-none">${escapeHtml(note.character)}</p>
-              <p class="pinyin text-secondary text-sm">${escapeHtml(note.pinyin || '')}</p>
-              ${isPending ? '<span class="text-xs text-on-surface-variant">unsaved</span>' : ''}
-            </div>
-            <div class="min-w-0">
-              ${detail ? `
-                <p class="font-body-md text-on-surface-variant text-sm">${escapeHtml(detail.detailedNote || '')}</p>
-                ${detail.exampleSentence ? `<p class="font-body-md text-secondary text-sm mt-xs">${escapeHtml(detail.exampleSentence)}</p>` : ''}
-              ` : `
-                <p class="font-body-md text-on-surface-variant text-sm italic">No explanation yet.</p>
-              `}
-            </div>
-          </div>
-          <div class="flex items-center gap-xs shrink-0">
-            <button class="note-add-child p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant ${isPending ? 'opacity-40 cursor-not-allowed' : ''}" title="Add child note" ${isPending ? 'disabled' : ''}>
-              <span class="material-symbols-outlined text-sm">add</span>
-            </button>
-            <button class="note-edit p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant ${isPending ? 'opacity-40 cursor-not-allowed' : ''}" title="Edit" ${isPending ? 'disabled' : ''}>
-              <span class="material-symbols-outlined text-sm">edit</span>
-            </button>
-            <button class="note-detail p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant ${isPending ? 'opacity-40 cursor-not-allowed' : ''}" title="Add explanation" ${isPending ? 'disabled' : ''}>
-              <span class="material-symbols-outlined text-sm">description</span>
-            </button>
-            <button class="note-delete p-1.5 rounded-lg hover:bg-error-container text-error" title="Delete">
-              <span class="material-symbols-outlined text-sm">delete</span>
-            </button>
+  function createNoteNode(note, childrenMap, depth) {
+    const isChild = depth > 0;
+    const children = childrenMap[note.noteId] || [];
+    const detail = state.noteDetails[note.noteId];
+    const hasDetail = detail && (detail.detailedNote || detail.exampleSentence);
+    const isPending = note._pendingCreate || note._pendingUpdate || note._pendingDelete;
+    const safeId = note.noteId.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = `note-node rounded-2xl border transition-all ${
+      isPending
+        ? 'border-primary/40 bg-primary-container/10'
+        : 'border-outline-variant/40 bg-surface-container-lowest'
+    } ${depth > 0 ? 'ml-md mt-xs' : ''}`;
+
+    const content = document.createElement('div');
+    content.className = 'p-sm';
+
+    const detailIcon = hasDetail ? 'sticky_note' : 'sticky_note_2';
+    const autoPinyin = generatePinyin(note.character || '');
+
+    content.innerHTML = `
+      <div class="flex items-start gap-sm">
+        <div class="flex-1 min-w-0 bg-surface-container-high rounded-xl border border-outline-variant overflow-hidden">
+          <input id="note-char-${safeId}" type="text" value="${escapeHtml(note.character || '')}" placeholder="Character" maxlength="25" class="w-full bg-transparent text-on-surface px-sm py-sm outline-none focus:ring-0 border-0 font-character-display text-3xl">
+          <div class="h-px bg-outline-variant/40 mx-sm"></div>
+          <div class="flex items-center gap-sm px-sm py-1">
+            <input id="note-py-${safeId}" type="text" value="${escapeHtml(note.pinyin || '')}" placeholder="Pinyin" maxlength="250" class="flex-1 bg-transparent text-on-surface-variant font-body-md text-xs outline-none focus:ring-0 border-0">
+            ${autoPinyin && autoPinyin !== (note.pinyin || '').trim() ? `<span class="text-[10px] text-on-surface-variant whitespace-nowrap">↳ ${escapeHtml(autoPinyin)}</span>` : ''}
           </div>
         </div>
-        ${children.length > 0 ? `
-          <div class="mt-sm space-y-sm border-t border-outline-variant/30 pt-sm">
-            ${children.map(function (child) { return renderNoteItem(child, childrenOf, depth + 1); }).join('')}
-          </div>
-        ` : ''}
+        <div class="flex items-start gap-xs pt-1 shrink-0">
+          ${!isChild ? `<button class="note-detail-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" title="Details"><span class="material-symbols-outlined text-sm">${detailIcon}</span></button>` : ''}
+          ${!isChild && !note._pendingCreate ? `<button class="note-add-child-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" title="Add child note"><span class="material-symbols-outlined text-sm">add</span></button>` : ''}
+          <button class="note-delete-btn p-xs rounded-lg hover:bg-error-container transition-colors text-on-surface-variant hover:text-error" title="Delete"><span class="material-symbols-outlined text-sm">delete</span></button>
+        </div>
       </div>
+      ${hasDetail && (detail.detailedNote || detail.exampleSentence) ? `
+        <div class="mt-xs text-xs">
+          ${detail.detailedNote ? `<p class="text-on-surface-variant line-clamp-2">${escapeHtml(detail.detailedNote)}</p>` : ''}
+          ${detail.exampleSentence ? `<p class="text-primary italic mt-xs">${escapeHtml(detail.exampleSentence)}</p>` : ''}
+        </div>
+      ` : ''}
     `;
-  }
 
-  function attachNoteEventListeners() {
-    const container = $('notes-container');
-    if (!container) return;
+    wrapper.appendChild(content);
 
-    container.querySelectorAll('.note-add-child').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const noteId = btn.closest('.note-item').dataset.noteId;
-        openSaveWordModal('', '', noteId);
+    if (children.length > 0 || !isChild) {
+      const childWrap = document.createElement('div');
+      childWrap.className = 'pb-sm pr-sm';
+      children.forEach(function (child) {
+        childWrap.appendChild(createNoteNode(child, childrenMap, depth + 1));
       });
-    });
+      wrapper.appendChild(childWrap);
+    }
 
-    container.querySelectorAll('.note-edit').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const noteId = btn.closest('.note-item').dataset.noteId;
-        openEditNoteModal(noteId);
-      });
-    });
+    const charInput = content.querySelector(`#note-char-${safeId}`);
+    const pyInput = content.querySelector(`#note-py-${safeId}`);
 
-    container.querySelectorAll('.note-detail').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const noteId = btn.closest('.note-item').dataset.noteId;
-        openDetailModal(noteId);
-      });
-    });
-
-    container.querySelectorAll('.note-delete').forEach(function (btn) {
-      btn.addEventListener('click', async function () {
-        const noteId = btn.closest('.note-item').dataset.noteId;
-        const note = state.notes.find(function (n) { return n.noteId === noteId; });
-        const confirmed = await MandoUi.confirm(
-          'Delete note?',
-          note ? `Remove "${note.character}" from your notes?` : 'Remove this note?'
-        );
-        if (confirmed) {
-          if (note && note._pending) {
-            // Remove the queued CREATE_NOTE instead of asking the backend to delete
-            // a record that does not exist yet.
-            removePendingChangeByPredicate(function (c) {
-              return c.operation === 'CREATE_NOTE' &&
-                c.data.character === note.character &&
-                c.data.pinyin === note.pinyin;
-            });
-          } else {
-            queueChange('DELETE_NOTE', { noteId });
-          }
-          state.notes = state.notes.filter(function (n) { return n.noteId !== noteId; });
-          renderNotes();
+    if (charInput) {
+      charInput.addEventListener('input', function () {
+        updateNoteField(note.noteId, 'character', charInput.value);
+        const generated = generatePinyin(charInput.value);
+        if (generated && !note._pinyinEdited) {
+          pyInput.value = generated;
+          updateNoteField(note.noteId, 'pinyin', generated);
         }
       });
-    });
-  }
-
-  // ---------------------------------------------------------------------------
-  // Modals
-  // ---------------------------------------------------------------------------
-
-  function createModalOverlay(title, bodyHtml) {
-    const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex items-center justify-center p-md';
-    overlay.innerHTML = `
-      <div class="bg-surface rounded-3xl shadow-2xl w-full max-w-md p-lg border border-outline-variant max-h-[90vh] overflow-y-auto">
-        <h3 class="font-headline-md text-headline-md text-on-surface mb-md">${escapeHtml(title)}</h3>
-        ${bodyHtml}
-        <div class="flex justify-end gap-sm mt-lg">
-          <button class="modal-cancel px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">Cancel</button>
-          <button class="modal-confirm px-md py-xs rounded-lg bg-primary text-on-primary font-body-md hover:bg-primary-dim transition-all shadow-md">Save</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    return overlay;
-  }
-
-  function openSaveWordModal(prefilledCharacter, prefilledPinyin, parentNoteId) {
-    const title = parentNoteId ? 'Add Child Note' : 'Save Word';
-    const character = prefilledCharacter || '';
-    const pinyin = prefilledPinyin || generatePinyin(character);
-    const hsk = inferHskLabel((state.script || DEMO_SCRIPT).title);
-
-    const body = `
-      <div class="space-y-md">
-        <div>
-          <label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Character</label>
-          <input type="text" id="modal-character" class="w-full mt-xs px-md py-sm rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" value="${escapeHtml(character)}">
-        </div>
-        <div>
-          <label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Pinyin</label>
-          <input type="text" id="modal-pinyin" class="w-full mt-xs px-md py-sm rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" value="${escapeHtml(pinyin)}">
-        </div>
-        <div>
-          <label class="font-label-caps text-label-caps text-on-surface-variant uppercase">HSK</label>
-          <input type="text" id="modal-hsk" class="w-full mt-xs px-md py-sm rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" value="${escapeHtml(hsk)}">
-        </div>
-        <div>
-          <label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Meaning</label>
-          <input type="text" id="modal-meaning" class="w-full mt-xs px-md py-sm rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" placeholder="Optional English meaning">
-        </div>
-        <div class="flex items-center gap-sm">
-          <input type="checkbox" id="modal-add-to-deck" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary">
-          <label for="modal-add-to-deck" class="font-body-md text-on-surface">Also add to flashcard deck</label>
-        </div>
-      </div>
-    `;
-
-    const overlay = createModalOverlay(title, body);
-
-    overlay.querySelector('.modal-cancel').addEventListener('click', function () {
-      overlay.remove();
-    });
-
-    overlay.querySelector('.modal-confirm').addEventListener('click', function () {
-      const characterVal = $('modal-character').value.trim();
-      const pinyinVal = $('modal-pinyin').value.trim();
-      const hskVal = $('modal-hsk').value.trim() || hsk;
-      const meaningVal = $('modal-meaning').value.trim();
-      const addToDeck = $('modal-add-to-deck').checked;
-
-      if (!characterVal) {
-        MandoUi.toast('Character is required.', 'error');
-        return;
-      }
-
-      queueChange('CREATE_NOTE', {
-        character: characterVal,
-        pinyin: pinyinVal || generatePinyin(characterVal),
-        hsk: hskVal,
-        parentNoteId: parentNoteId || null,
+    }
+    if (pyInput) {
+      pyInput.addEventListener('input', function () {
+        note._pinyinEdited = true;
+        updateNoteField(note.noteId, 'pinyin', pyInput.value);
       });
+    }
 
-      if (addToDeck) {
-        queueChange('CREATE_FLASHCARD', {
-          character: characterVal,
-          pinyin: pinyinVal || generatePinyin(characterVal),
-          meaning: meaningVal || '—',
-          hsk: hskVal,
-          category: 'MISCELLANEOUS',
-        });
-      }
+    const detailBtn = content.querySelector('.note-detail-btn');
+    if (detailBtn) {
+      detailBtn.addEventListener('click', function () {
+        openDetailPopover(note.noteId, detailBtn);
+      });
+    }
 
-      // Optimistic render.
-      const tempNote = {
-        noteId: 'TEMP_' + uuid(),
-        contentType: 'SCRIPT',
-        contentId: state.scriptId,
-        character: characterVal,
-        pinyin: pinyinVal || generatePinyin(characterVal),
-        parentNoteId: parentNoteId || null,
-        timestamp: new Date().toISOString(),
-        _pending: true,
-      };
-      state.notes.push(tempNote);
-      renderNotes();
+    const addChildBtn = content.querySelector('.note-add-child-btn');
+    if (addChildBtn) {
+      addChildBtn.addEventListener('click', function () {
+        createEmptyNote(note.noteId);
+      });
+    }
 
-      overlay.remove();
-    });
+    const deleteBtn = content.querySelector('.note-delete-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', function () {
+        promptDeleteNote(note.noteId);
+      });
+    }
+
+    return wrapper;
   }
 
-  function openEditNoteModal(noteId) {
-    const note = state.notes.find(function (n) { return n.noteId === noteId; });
+  function updateNoteField(noteId, field, value) {
+    const note = state.notes.find(function (n) {
+      return n.noteId === noteId;
+    });
     if (!note) return;
 
-    const body = `
-      <div class="space-y-md">
+    note[field] = value.trim();
+
+    if (note._pendingCreate) {
+      const createChange = state.pendingChanges.find(function (c) {
+        return c.operation === 'CREATE_NOTE' && c.data._tempId === noteId;
+      });
+      if (createChange) {
+        createChange.data[field] = note[field];
+      }
+    } else {
+      note._pendingUpdate = true;
+      const updateChange = state.pendingChanges.find(function (c) {
+        return c.operation === 'UPDATE_NOTE' && c.data.noteId === noteId;
+      });
+      if (updateChange) {
+        updateChange.data[field] = note[field];
+      } else {
+        queueChange('UPDATE_NOTE', {
+          noteId: note.noteId,
+          character: note.character,
+          pinyin: note.pinyin,
+        });
+      }
+    }
+
+    updateSaveButtonState();
+  }
+
+  function createEmptyNote(parentNoteId) {
+    const tempId = 'TEMP_' + uuid();
+    const newNote = {
+      noteId: tempId,
+      contentType: 'SCRIPT',
+      contentId: state.scriptId,
+      character: '',
+      pinyin: '',
+      hsk: inferHskLabel((state.script || DEMO_SCRIPT).title),
+      parentNoteId: parentNoteId || null,
+      timestamp: new Date().toISOString(),
+      _pendingCreate: true,
+    };
+
+    state.notes.push(newNote);
+    queueChange('CREATE_NOTE', {
+      _tempId: tempId,
+      character: newNote.character,
+      pinyin: newNote.pinyin,
+      hsk: newNote.hsk,
+      parentNoteId: newNote.parentNoteId,
+    });
+    renderNotes();
+    updateSaveButtonState();
+
+    const safeId = tempId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const input = $('note-char-' + safeId);
+    if (input) input.focus();
+  }
+
+  function createPrefilledNote(character, pinyin, parentNoteId) {
+    const tempId = 'TEMP_' + uuid();
+    const generatedPinyin = pinyin || generatePinyin(character);
+    const newNote = {
+      noteId: tempId,
+      contentType: 'SCRIPT',
+      contentId: state.scriptId,
+      character: character || '',
+      pinyin: generatedPinyin,
+      hsk: inferHskLabel((state.script || DEMO_SCRIPT).title),
+      parentNoteId: parentNoteId || null,
+      timestamp: new Date().toISOString(),
+      _pendingCreate: true,
+    };
+
+    state.notes.push(newNote);
+    queueChange('CREATE_NOTE', {
+      _tempId: tempId,
+      character: newNote.character,
+      pinyin: newNote.pinyin,
+      hsk: newNote.hsk,
+      parentNoteId: newNote.parentNoteId,
+    });
+    renderNotes();
+    updateSaveButtonState();
+
+    const safeId = tempId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const input = $('note-char-' + safeId);
+    if (input) input.focus();
+  }
+
+  function promptDeleteNote(noteId) {
+    const note = state.notes.find(function (n) {
+      return n.noteId === noteId;
+    });
+    if (!note) return;
+
+    MandoUi.confirm(
+      `Delete "${note.character || 'this note'}"?`,
+      'This will also remove any child notes. You can undo by clicking away until you save.'
+    ).then(function (confirmed) {
+      if (confirmed) confirmDeleteNote(noteId);
+    });
+  }
+
+  function confirmDeleteNote(noteId) {
+    const note = state.notes.find(function (n) {
+      return n.noteId === noteId;
+    });
+    if (!note) return;
+
+    const children = state.notes.filter(function (n) {
+      return n.parentNoteId === noteId;
+    });
+
+    function removeNoteAndChanges(id, isExisting) {
+      state.notes = state.notes.filter(function (n) {
+        return n.noteId !== id;
+      });
+      state.pendingChanges = state.pendingChanges.filter(function (c) {
+        return !((c.operation === 'CREATE_NOTE' && c.data._tempId === id) ||
+                 (c.operation === 'UPDATE_NOTE' && c.data.noteId === id));
+      });
+      if (isExisting) {
+        queueChange('DELETE_NOTE', { noteId: id });
+      }
+    }
+
+    if (note._pendingCreate) {
+      removeNoteAndChanges(note.noteId, false);
+    } else {
+      note._pendingDelete = true;
+      removeNoteAndChanges(note.noteId, true);
+    }
+
+    children.forEach(function (child) {
+      if (child._pendingCreate) {
+        removeNoteAndChanges(child.noteId, false);
+      } else {
+        child._pendingDelete = true;
+        removeNoteAndChanges(child.noteId, true);
+      }
+    });
+
+    renderNotes();
+    updateSaveButtonState();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Note detail popover
+  // ---------------------------------------------------------------------------
+
+  function openDetailPopover(noteId, anchorBtn) {
+    const note = state.notes.find(function (n) {
+      return n.noteId === noteId;
+    });
+    if (!note || !anchorBtn) return;
+
+    const existing = state.noteDetails[noteId] || {};
+
+    const existingPopover = document.querySelector('.mando-detail-popover');
+    if (existingPopover) existingPopover.remove();
+
+    const popover = document.createElement('div');
+    popover.className = 'mando-detail-popover fixed z-[70] bg-surface rounded-2xl shadow-2xl w-80 p-md border border-outline-variant';
+    popover.innerHTML = `
+      <div class="flex items-center justify-between mb-sm">
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">${escapeHtml(note.character || 'Note')} Details</h3>
+        <button class="detail-close p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">close</span></button>
+      </div>
+      <div class="space-y-sm">
         <div>
-          <label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Character</label>
-          <input type="text" id="modal-character" class="w-full mt-xs px-md py-sm rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" value="${escapeHtml(note.character)}">
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Explanation</label>
+          <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="3" maxlength="1000" placeholder="Add a longer explanation...">${escapeHtml(existing.detailedNote || '')}</textarea>
         </div>
         <div>
-          <label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Pinyin</label>
-          <input type="text" id="modal-pinyin" class="w-full mt-xs px-md py-sm rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" value="${escapeHtml(note.pinyin || '')}">
+          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Example Sentence</label>
+          <textarea class="detail-example w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="2" maxlength="100" placeholder="Add an example sentence...">${escapeHtml(existing.exampleSentence || '')}</textarea>
+        </div>
+        <div class="detail-error text-error text-sm hidden"></div>
+        <div class="flex justify-end gap-sm pt-xs">
+          <button class="detail-cancel px-sm py-xs rounded-lg border border-outline-variant text-on-surface font-body-md text-sm hover:bg-surface-container transition-all">Cancel</button>
+          <button class="detail-save px-sm py-xs rounded-lg bg-primary text-on-primary font-body-md text-sm hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save</button>
         </div>
       </div>
     `;
 
-    const overlay = createModalOverlay('Edit Note', body);
+    document.body.appendChild(popover);
 
-    overlay.querySelector('.modal-cancel').addEventListener('click', function () {
-      overlay.remove();
-    });
+    function positionPopover() {
+      const rect = anchorBtn.getBoundingClientRect();
+      const popoverRect = popover.getBoundingClientRect();
+      let top = rect.bottom + 8;
+      let left = rect.left;
 
-    overlay.querySelector('.modal-confirm').addEventListener('click', function () {
-      const characterVal = $('modal-character').value.trim();
-      const pinyinVal = $('modal-pinyin').value.trim();
+      if (left + popoverRect.width > window.innerWidth - 16) {
+        left = window.innerWidth - popoverRect.width - 16;
+      }
+      if (left < 16) left = 16;
 
-      if (!characterVal) {
-        MandoUi.toast('Character is required.', 'error');
+      if (top + popoverRect.height > window.innerHeight - 16) {
+        top = rect.top - popoverRect.height - 8;
+      }
+
+      popover.style.top = `${top}px`;
+      popover.style.left = `${left}px`;
+    }
+
+    requestAnimationFrame(positionPopover);
+
+    function close() {
+      popover.remove();
+      document.removeEventListener('click', outsideClickHandler);
+    }
+
+    function outsideClickHandler(e) {
+      if (!popover.contains(e.target) && e.target !== anchorBtn) {
+        close();
+      }
+    }
+
+    popover.querySelector('.detail-close').addEventListener('click', close);
+    popover.querySelector('.detail-cancel').addEventListener('click', close);
+
+    setTimeout(function () {
+      document.addEventListener('click', outsideClickHandler);
+    }, 0);
+
+    popover.querySelector('.detail-save').addEventListener('click', async function () {
+      const explanation = popover.querySelector('.detail-explanation').value.trim();
+      const example = popover.querySelector('.detail-example').value.trim();
+      const errorEl = popover.querySelector('.detail-error');
+
+      if (!explanation) {
+        errorEl.textContent = 'Explanation is required.';
+        errorEl.classList.remove('hidden');
         return;
       }
 
-      queueChange('UPDATE_NOTE', {
-        noteId,
-        character: characterVal,
-        pinyin: pinyinVal || generatePinyin(characterVal),
+      if (state.demoMode) {
+        state.noteDetails[noteId] = {
+          ...existing,
+          noteId,
+          detailedNote: explanation,
+          exampleSentence: example,
+        };
+        renderNotes();
+        close();
+        return;
+      }
+
+      const res = await window.MandoApi.notes.saveScriptDetail(state.userId, state.scriptId, noteId, {
+        detailedNote: explanation,
+        exampleSentence: example,
       });
 
-      note.character = characterVal;
-      note.pinyin = pinyinVal || generatePinyin(characterVal);
-      renderNotes();
-
-      overlay.remove();
-    });
-  }
-
-  function openDetailModal(noteId) {
-    const detail = state.noteDetails[noteId] || {};
-
-    const body = `
-      <div class="space-y-md">
-        <div>
-          <label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Explanation</label>
-          <textarea id="modal-detail-note" rows="4" class="w-full mt-xs px-md py-sm rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none">${escapeHtml(detail.detailedNote || '')}</textarea>
-        </div>
-        <div>
-          <label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Example Sentence</label>
-          <input type="text" id="modal-detail-example" class="w-full mt-xs px-md py-sm rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:outline-none" value="${escapeHtml(detail.exampleSentence || '')}">
-        </div>
-      </div>
-    `;
-
-    const overlay = createModalOverlay('Note Detail', body);
-
-    overlay.querySelector('.modal-cancel').addEventListener('click', function () {
-      overlay.remove();
-    });
-
-    overlay.querySelector('.modal-confirm').addEventListener('click', async function () {
-      const detailedNote = $('modal-detail-note').value.trim();
-      const exampleSentence = $('modal-detail-example').value.trim();
-
-      if (!detailedNote) {
-        MandoUi.toast('Explanation is required.', 'error');
+      if (!res.ok) {
+        errorEl.textContent = (res.error && res.error.message) || 'Could not save detail.';
+        errorEl.classList.remove('hidden');
         return;
       }
 
-      if (state.userId && !state.demoMode) {
-        const res = await window.MandoApi.notes.saveScriptDetail(state.userId, state.scriptId, noteId, {
-          detailedNote,
-          exampleSentence,
-        });
-        if (!res.ok) {
-          MandoUi.toast('Could not save detail. Please retry.', 'error');
-          return;
-        }
-      }
-
-      state.noteDetails[noteId] = {
+      state.noteDetails[noteId] = res.data && res.data.noteDetail ? res.data.noteDetail : {
         noteId,
-        detailedNote,
-        exampleSentence,
+        detailedNote: explanation,
+        exampleSentence: example,
       };
       renderNotes();
-
-      overlay.remove();
+      close();
+      MandoUi.toast('Note detail saved.', 'success');
     });
   }
+
 
   // ---------------------------------------------------------------------------
   // Related content rendering
@@ -1444,12 +1534,8 @@
     if (playBtn) {
       playBtn.addEventListener('click', function () {
         if (!state.audioUrl) {
-          if (state.demoMode) {
-            const index = state.activeLineIndex >= 0 ? state.activeLineIndex : 0;
-            playLineAudio(index);
-          } else {
-            MandoUi.toast('No audio available for this script.', 'info');
-          }
+          const index = state.activeLineIndex >= 0 ? state.activeLineIndex : 0;
+          playLineAudio(index);
           return;
         }
         if (state.isPlaying) {
@@ -1497,37 +1583,13 @@
     }
   }
 
-  function speakLine(text) {
-    if (!window.speechSynthesis) {
-      MandoUi.toast('Text-to-speech is not supported in this browser.', 'error');
-      return;
-    }
-
-    // Cancel any ongoing speech so repeated clicks don't queue up endlessly.
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-CN';
-    utterance.rate = 0.9;
-
-    const voices = window.speechSynthesis.getVoices();
-    const zhVoice = voices.find(function (v) { return v.lang && v.lang.startsWith('zh'); });
-    if (zhVoice) utterance.voice = zhVoice;
-
-    window.speechSynthesis.speak(utterance);
-  }
-
   function playLineAudio(index) {
     const line = state.lines[index];
     if (!line) return;
 
-    // Demo fallback: use the browser's speech synthesis when no real audio is attached.
+    // Fallback: use the browser's speech synthesis when no real audio is attached.
     if (!state.audioUrl) {
-      if (state.demoMode) {
-        speakLine(line.chinese);
-      } else {
-        MandoUi.toast('No audio available for this script.', 'info');
-      }
+      speak(line.chinese, { id: 'script-line-' + index });
       return;
     }
 
@@ -1584,7 +1646,7 @@
     const newNoteBtn = $('new-note-btn');
     if (newNoteBtn) {
       newNoteBtn.addEventListener('click', function () {
-        openSaveWordModal('', '', null);
+        createEmptyNote(null);
       });
     }
 

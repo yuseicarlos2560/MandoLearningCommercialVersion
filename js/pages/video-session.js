@@ -137,6 +137,7 @@
     difficultyFromHsk,
     thumbnailUrl,
     getStoredProgress,
+    speak,
   } = window.MandoUtils;
 
   const MandoUi = window.MandoUi;
@@ -1528,7 +1529,9 @@
       el.innerHTML = `
         <div class="flex items-start gap-sm">
           <div class="flex flex-col items-center shrink-0 pt-1">
-            <span class="material-symbols-outlined text-primary text-sm">play_arrow</span>
+            <button class="script-play-line inline-flex items-center justify-center text-primary hover:text-primary/80 transition-colors" data-index="${index}" title="Play sentence audio">
+              <span class="material-symbols-outlined text-sm">play_arrow</span>
+            </button>
             <span class="text-[10px] text-on-surface-variant font-medium mt-xs">${escapeHtml(formatTime(line.t))}</span>
           </div>
           <div class="flex-1">
@@ -1539,9 +1542,18 @@
         </div>
       `;
 
-      el.addEventListener('click', function () {
+      el.addEventListener('click', function (e) {
+        if (e.target.closest('.script-play-line')) return;
         seekTo(line.t);
       });
+
+      const playBtn = el.querySelector('.script-play-line');
+      if (playBtn) {
+        playBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          speak(line.zh, { id: 'video-script-line-' + index });
+        });
+      }
 
       container.appendChild(el);
     });
