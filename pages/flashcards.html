@@ -15,6 +15,7 @@
 <script src="../js/utils.js"></script>
 <script src="../js/shell.js"></script>
 <script src="../js/ui-components.js"></script>
+<script src="../js/pinyin-helper.js"></script>
 <!-- API clients -->
 <script src="../js/api/client.js"></script>
 <script src="../js/api/flashcards.js"></script>
@@ -176,8 +177,8 @@ Resume Deck <span class="material-symbols-outlined">arrow_forward</span>
 </div>
 <div class="grid grid-cols-2 gap-sm">
 <div>
-<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-card-pinyin">Pinyin</label>
-<input id="new-card-pinyin" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. lǚxíng" type="text" maxlength="250"/>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-card-pinyin">Pinyin <span class="text-on-surface-variant/70 normal-case">(auto-filled)</span></label>
+<input id="new-card-pinyin" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="Auto-filled from the character" type="text" maxlength="250"/>
 </div>
 <div>
 <label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="new-card-hsk">HSK Level <span class="text-primary">*</span></label>

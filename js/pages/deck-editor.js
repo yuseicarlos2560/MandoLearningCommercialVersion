@@ -54,6 +54,9 @@
 
   const MandoUi = window.MandoUi;
 
+  // Pinyin auto-fill controller for the Add/Edit Card modal (wired in init).
+  let cardFormPinyin = { reset: function () {} };
+
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
@@ -716,6 +719,11 @@
       error.textContent = '';
     }
 
+    // Re-baseline pinyin auto-fill after the fields are populated: automatic
+    // for new cards; in edit mode the existing pinyin belongs to the current
+    // character and is preserved until the character actually changes.
+    cardFormPinyin.reset({ auto: !card });
+
     const modal = $('card-modal');
     if (modal) {
       modal.classList.remove('hidden');
@@ -860,6 +868,14 @@
   // ---------------------------------------------------------------------------
 
   function initInteractions() {
+    if (window.MandoPinyin) {
+      cardFormPinyin = window.MandoPinyin.autoFill(
+        $('card-field-character'),
+        $('card-field-pinyin'),
+        { prefillIsManual: true }
+      );
+    }
+
     const tbody = $('card-table-body');
     if (tbody) {
       tbody.addEventListener('click', function (e) {

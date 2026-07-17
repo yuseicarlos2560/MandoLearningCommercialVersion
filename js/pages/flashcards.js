@@ -69,6 +69,9 @@
 
   const MandoUi = window.MandoUi;
 
+  // Pinyin auto-fill controller for the Create New Deck modal (wired in init).
+  let createDeckPinyin = { reset: function () {} };
+
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
@@ -395,6 +398,8 @@
       error.classList.add('hidden');
       error.textContent = '';
     }
+    // Fresh form: pinyin auto-fill starts in automatic mode.
+    createDeckPinyin.reset({ auto: true });
     const nameInput = $('new-deck-name');
     if (nameInput) nameInput.focus();
   }
@@ -547,6 +552,10 @@
   // ---------------------------------------------------------------------------
 
   function initInteractions() {
+    if (window.MandoPinyin) {
+      createDeckPinyin = window.MandoPinyin.autoFill($('new-card-character'), $('new-card-pinyin'));
+    }
+
     const studyNav = {
       'study-mode-spaced': 'study-mode.html?mode=spaced&global=true',
       'study-mode-random': 'study-mode.html?mode=random&global=true',

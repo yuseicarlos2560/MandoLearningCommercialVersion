@@ -156,7 +156,6 @@ Modules planned in `HIGH_LEVEL_PLAN.md` that are still not created:
 
 - `js/main.js`
 - `js/state.js`
-- `js/pinyin-helper.js`
 - `js/pages/document-study.js`
 
 Created and in use:
@@ -164,6 +163,7 @@ Created and in use:
 - `js/utils.js` — shared formatting, HSK inference, identity, localStorage, DOM helpers
 - `js/shell.js` — shared mobile sidebar drawer + sidebar profile rendering
 - `js/ui-components.js` — toast and confirm modal primitives
+- `js/pinyin-helper.js` — lazy pinyin-pro wrapper + form auto-fill
 - `js/api/client.js` — shared fetch wrapper with retry logic
 - `js/api/videos.js` — video catalog + script endpoints
 - `js/api/scripts.js` — script catalog + content + audio endpoints
