@@ -31,25 +31,38 @@
     updatedAt: new Date().toISOString(),
   };
 
-  const DEMO_SCRIPT_BODY = `是啊，你就说来我们公司面试的这几个吧……
-*Shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba.*
-> "Yeah, just take these few people who came to our company for interviews as an example..."
-
-行，我先说第一个。
-*Xíng, wǒ xiān shuō dì yī gè.*
-> "Okay, I will start with the first one."
-
-他的简历看起来不错。
-*Tā de jiǎnlì kàn qǐlái búcuò.*
-> "His resume looks pretty good."
-
-不过，他的中文水平怎么样？
-*Búguò, tā de Zhōngwén shuǐpíng zěnme yàng?*
-> "But how is his Chinese level?"
-
-回国之后，我想要更多的时间陪父母。
-*Huíguó zhīhòu, wǒ xiǎng yào gèng duō de shíjiān péi fùmǔ.*
-> "After returning home, I want more time to accompany my parents."`;
+  const DEMO_SCRIPT_LINES = [
+    {
+      lineNumber: 1,
+      chinese: '是啊，你就说来我们公司面试的这几个吧……',
+      pinyin: 'Shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba.',
+      english: 'Yeah, just take these few people who came to our company for interviews as an example...',
+    },
+    {
+      lineNumber: 2,
+      chinese: '行，我先说第一个。',
+      pinyin: 'Xíng, wǒ xiān shuō dì yī gè.',
+      english: 'Okay, I will start with the first one.',
+    },
+    {
+      lineNumber: 3,
+      chinese: '他的简历看起来不错。',
+      pinyin: 'Tā de jiǎnlì kàn qǐlái búcuò.',
+      english: 'His resume looks pretty good.',
+    },
+    {
+      lineNumber: 4,
+      chinese: '不过，他的中文水平怎么样？',
+      pinyin: 'Búguò, tā de Zhōngwén shuǐpíng zěnme yàng?',
+      english: 'But how is his Chinese level?',
+    },
+    {
+      lineNumber: 5,
+      chinese: '回国之后，我想要更多的时间陪父母。',
+      pinyin: 'Huíguó zhīhòu, wǒ xiǎng yào gèng duō de shíjiān péi fùmǔ.',
+      english: 'After returning home, I want more time to accompany my parents.',
+    },
+  ];
 
   const DEMO_NOTES = [
     {
@@ -157,10 +170,12 @@
     setText,
     setHtml,
     formatTime,
+    formatDuration,
     escapeHtml,
     extractHsk,
     inferHskLabel,
     difficultyFromHsk,
+    thumbnailUrl,
   } = window.MandoUtils;
 
   const MandoUi = window.MandoUi;
@@ -177,7 +192,7 @@
     const storedId = safeLocalStorageGet('mando.lastScriptId');
     if (storedId) return storedId;
 
-    return DEMO_SCRIPT_ID;
+    return null;
   }
 
   function persistLastScriptId(scriptId) {
@@ -200,53 +215,111 @@
   }
 
   /**
-   * Parse the structured Markdown body into reader lines.
+   * Normalize the structured ScriptLine array returned by the API.
    *
-   * Expected format per block (separated by blank lines):
-   *   Chinese text
-   *   *pinyin with tone marks*
-   *   > "English translation"
+   * The backend now stores scripts as `lines: ScriptLine[]` with
+   * lineNumber, chinese, pinyin, and english. We ensure each line has a
+   * fallback pinyin (auto-generated) and english (placeholder) when the
+   * admin did not provide them.
    */
-  function parseScriptBody(body) {
-    if (!body) return [];
+  function normalizeScriptLines(lines) {
+    if (!Array.isArray(lines)) return [];
 
-    const blocks = body.split(/\n\s*\n/);
-    const lines = [];
-    let lineNumber = 1;
+    return lines.map(function (line, index) {
+      const chinese = line.chinese || '';
+      const pinyin = line.pinyin && line.pinyin.trim()
+        ? line.pinyin.trim()
+        : generatePinyin(chinese);
+      const english = line.english && line.english.trim()
+        ? line.english.trim()
+        : 'Translation not available.';
 
-    blocks.forEach(function (block) {
-      const rawLines = block.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
-      if (rawLines.length === 0) return;
-
-      const chinese = rawLines[0];
-      let pinyin = '';
-      let english = '';
-
-      rawLines.slice(1).forEach(function (line) {
-        if (line.startsWith('*') && line.endsWith('*') && line.length > 2) {
-          pinyin = line.slice(1, -1).trim();
-        } else if (line.startsWith('>')) {
-          english = line.slice(1).trim().replace(/^["']|["']$/g, '');
-        }
-      });
-
-      if (!pinyin) {
-        pinyin = generatePinyin(chinese);
-      }
-
-      lines.push({
-        lineNumber: lineNumber++,
+      return {
+        lineNumber: line.lineNumber || index + 1,
         chinese: chinese,
         pinyin: pinyin,
-        english: english || 'Translation not available.',
-      });
+        english: english,
+      };
     });
-
-    return lines;
   }
 
-  function getHskFromScript(script) {
-    return extractHsk(script && script.title, 'HSK 4');
+  /**
+   * Format an ISO date as a human-readable relative string.
+   */
+  function formatRelativeDate(isoDate) {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    if (isNaN(date.getTime())) return '';
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 1) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+    return `${Math.floor(diffDays / 365)} years ago`;
+  }
+
+  /**
+   * Resolve a thumbnail URL for a script entity.
+   */
+  function scriptThumbnailUrl(script, fallbackUrl) {
+    if (script.thumbnailUrl) return script.thumbnailUrl;
+    return fallbackUrl || '';
+  }
+
+  /**
+   * Return `count` random items from `array` using Fisher-Yates shuffle.
+   * Temporary helper until a real Recommendations service is available.
+   */
+  function pickRandomItems(array, count) {
+    if (!Array.isArray(array) || array.length === 0) return [];
+    const source = array.slice();
+    const limit = Math.min(count, source.length);
+    for (let i = source.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = source[i];
+      source[i] = source[j];
+      source[j] = temp;
+    }
+    return source.slice(0, limit);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Font size helpers
+  // ---------------------------------------------------------------------------
+
+  const SCRIPT_FONT_SIZE_CLASSES = {
+    sm: { chinese: 'text-[22px] md:text-[26px]', pinyin: 'text-sm', english: 'text-sm' },
+    md: { chinese: 'text-[26px] md:text-[32px]', pinyin: 'text-base', english: 'text-base' },
+    lg: { chinese: 'text-[30px] md:text-[38px]', pinyin: 'text-base', english: 'text-base' },
+    xl: { chinese: 'text-[36px] md:text-[44px]', pinyin: 'text-lg', english: 'text-lg' },
+  };
+
+  function getScriptFontSize() {
+    const stored = safeLocalStorageGet('mando.scriptFontSize');
+    if (stored && SCRIPT_FONT_SIZE_CLASSES[stored]) return stored;
+    return 'md';
+  }
+
+  function setScriptFontSize(size) {
+    if (!SCRIPT_FONT_SIZE_CLASSES[size]) return;
+    safeLocalStorageSet('mando.scriptFontSize', size);
+    state.fontSize = size;
+    const container = $('script-lines');
+    if (container) container.dataset.fontSize = size;
+    renderLines();
+  }
+
+  function adjustScriptFontSize(delta) {
+    const sizes = ['sm', 'md', 'lg', 'xl'];
+    const current = getScriptFontSize();
+    const index = sizes.indexOf(current);
+    const nextIndex = Math.max(0, Math.min(sizes.length - 1, index + delta));
+    setScriptFontSize(sizes[nextIndex]);
   }
 
   // ---------------------------------------------------------------------------
@@ -266,6 +339,7 @@
     saveError: null,
     demoMode: false,
     readerMode: 'zh',
+    fontSize: getScriptFontSize(),
     activeLineIndex: -1,
     isPlaying: false,
     playbackProgress: 0,
@@ -317,7 +391,7 @@
     const btn = $('save-notes-btn');
     if (!btn) return;
     const count = state.pendingChanges.length;
-    btn.disabled = count === 0 || state.isSaving;
+    btn.disabled = count === 0 || state.isSaving || state.demoMode;
     const label = count > 0 ? `Save (${count})` : 'Save';
     btn.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> ${escapeHtml(label)} (Ctrl+S)`;
   }
@@ -447,6 +521,11 @@
   async function flushPendingChanges() {
     if (state.pendingChanges.length === 0) return;
 
+    if (state.demoMode) {
+      MandoUi.toast('Notes cannot be saved in demo mode. Open a real script to save.', 'info');
+      return;
+    }
+
     if (!state.userId) {
       MandoUi.toast('Please sign in to save notes.', 'error');
       return;
@@ -550,13 +629,13 @@
 
   async function loadScriptContent() {
     if (state.demoMode) {
-      state.lines = parseScriptBody(DEMO_SCRIPT_BODY);
+      state.lines = DEMO_SCRIPT_LINES.map(function (line) { return { ...line }; });
       return true;
     }
 
     const res = await window.MandoApi.scripts.getContent(state.scriptId);
-    if (res.ok && res.data && typeof res.data.body === 'string') {
-      state.lines = parseScriptBody(res.data.body);
+    if (res.ok && res.data && Array.isArray(res.data.lines)) {
+      state.lines = normalizeScriptLines(res.data.lines);
       return true;
     }
 
@@ -606,23 +685,49 @@
     return false;
   }
 
+  // ---------------------------------------------------------------------------
+  // Related content
+  // ---------------------------------------------------------------------------
+  // TODO: Recommend the backend add an `hsk` field to the Scripts API so we
+  // can match related scripts by proficiency level instead of only by type.
+  // TODO: Replace the temporary random sampling below with a call to a proper
+  // Recommendations algorithm/service once one exists.
+  // ---------------------------------------------------------------------------
+
   async function loadRelatedScripts() {
     const currentType = state.script && state.script.scriptType;
-    if (!currentType) {
+
+    if (state.demoMode || !currentType) {
+      state.relatedScripts = DEMO_RELATED_SCRIPTS.map(function (s) { return { ...s }; });
+      return state.demoMode;
+    }
+
+    // The public GET /api/scripts endpoint currently returns all published
+    // scripts newest-first and does not support server-side filtering by
+    // scriptType. We fetch a broad pool and filter client-side so the
+    // recommendation container actually matches the current script's category.
+    const res = await window.MandoApi.scripts.listReady({ pageSize: 50 });
+    if (!res.ok || !res.data || !Array.isArray(res.data.scripts)) {
       state.relatedScripts = DEMO_RELATED_SCRIPTS.map(function (s) { return { ...s }; });
       return false;
     }
 
-    if (state.demoMode) {
-      state.relatedScripts = DEMO_RELATED_SCRIPTS.map(function (s) { return { ...s }; });
-      return true;
+    const allScripts = res.data.scripts.filter(function (s) { return s.scriptId !== state.scriptId; });
+
+    // 1) Prefer scripts of the same type.
+    let pool = allScripts.filter(function (s) { return s.scriptType === currentType; });
+
+    // 2) Supplement with other scripts if we have fewer than 5 matches.
+    if (pool.length < 5) {
+      const sameTypeIds = new Set(pool.map(function (s) { return s.scriptId; }));
+      const others = allScripts.filter(function (s) { return !sameTypeIds.has(s.scriptId); });
+      pool = pool.concat(others);
     }
 
-    const res = await window.MandoApi.scripts.listReady({ pageSize: 10, scriptType: currentType });
-    if (res.ok && res.data && Array.isArray(res.data.scripts)) {
-      state.relatedScripts = res.data.scripts
-        .filter(function (s) { return s.scriptId !== state.scriptId; })
-        .slice(0, 5);
+    if (pool.length > 0) {
+      // The API already returns newest first; use that order for a stable
+      // recommendation surface instead of shuffling.
+      state.relatedScripts = pool.slice(0, 5);
       return true;
     }
 
@@ -631,27 +736,57 @@
   }
 
   async function loadRelatedVideos() {
-    const hsk = getHskFromScript(state.script);
-    const hskLevel = hsk.replace(/\D/g, '');
-
     if (state.demoMode) {
       state.relatedVideos = DEMO_RELATED_VIDEOS.map(function (v) { return { ...v }; });
       return true;
     }
 
-    const res = await window.MandoApi.videos.listReady({ pageSize: 10 });
+    // Fetch a larger pool so the random sample has variety.
+    const res = await window.MandoApi.videos.listReady({ pageSize: 50 });
     if (res.ok && res.data && Array.isArray(res.data.videos)) {
-      state.relatedVideos = res.data.videos
-        .filter(function (v) {
-          const videoHsk = extractHsk(v.title, '').replace(/\D/g, '');
-          return videoHsk === hskLevel;
-        })
-        .slice(0, 5);
+      const pool = res.data.videos.filter(function (v) { return v.videoId; });
+      state.relatedVideos = pickRandomItems(pool, 5);
       return true;
     }
 
     state.relatedVideos = DEMO_RELATED_VIDEOS.map(function (v) { return { ...v }; });
     return false;
+  }
+
+  async function loadScriptLibrary() {
+    const container = document.getElementById('script-library-container');
+    if (!container) return;
+
+    let scripts = [];
+
+    if (!state.demoMode) {
+      const res = await window.MandoApi.scripts.listReady({ pageSize: 50 });
+      if (res.ok && res.data && Array.isArray(res.data.scripts)) {
+        scripts = res.data.scripts;
+      }
+    }
+
+    if (scripts.length === 0) {
+      container.innerHTML = `
+        <p class="text-xs text-on-surface-variant px-sm py-xs">
+          No scripts available yet.
+        </p>
+      `;
+      return;
+    }
+
+    container.innerHTML = scripts.map(function (script) {
+      const isActive = script.scriptId === state.scriptId;
+      const typeLabel = SCRIPT_TYPE_LABELS[script.scriptType] || 'Script';
+      return `
+        <a class="flex items-center gap-sm px-sm py-xs rounded-lg text-sm ${isActive ? 'bg-primary-container text-on-primary-container font-semibold' : 'text-on-surface-variant hover:bg-surface-container'} transition-colors truncate"
+           href="script-reader.html?scriptId=${encodeURIComponent(script.scriptId)}"
+           title="${escapeHtml(script.title)} (${escapeHtml(typeLabel)})">
+          <span class="material-symbols-outlined text-base ${isActive ? 'text-on-primary-container' : 'text-secondary'}">description</span>
+          <span class="truncate">${escapeHtml(script.title)}</span>
+        </a>
+      `;
+    }).join('');
   }
 
   async function sendUserActive() {
@@ -742,23 +877,27 @@
     const zhDisplay = state.readerMode === 'zh' || state.readerMode === 'py' ? 'block' : 'hidden';
     const pyDisplay = state.readerMode === 'py' ? 'block' : 'hidden';
     const enDisplay = state.readerMode === 'en' ? 'block' : 'hidden';
+    const fontSize = getScriptFontSize();
+    const classes = SCRIPT_FONT_SIZE_CLASSES[fontSize];
+
+    container.dataset.fontSize = fontSize;
 
     container.innerHTML = state.lines.map(function (line, index) {
       const isActive = index === state.activeLineIndex;
       return `
-        <div class="script-line group cursor-pointer p-md hover:bg-surface-container-low rounded-2xl transition-all duration-300 ${isActive ? 'bg-surface-container-low' : ''}" data-index="${index}">
-          <div class="flex flex-col items-center">
-            <div class="pinyin font-body-md text-secondary mb-xs transform -translate-y-1 ${pyDisplay}">${escapeHtml(line.pinyin)}</div>
-            <div class="font-character-display text-[32px] md:text-[40px] text-on-surface leading-relaxed text-center ${zhDisplay}">
+        <div class="script-line group cursor-pointer py-2 px-md hover:bg-surface-container-low rounded-xl transition-all duration-200 ${isActive ? 'bg-surface-container-low' : ''}" data-index="${index}">
+          <div class="flex flex-col items-center text-center">
+            <div class="script-chinese font-character-display text-on-surface leading-relaxed text-center ${zhDisplay} ${classes.chinese}">
               <button class="script-play-line inline-block mr-sm text-primary hover:scale-110 transition-transform align-middle" data-index="${index}" title="Play sentence audio">
-                <span class="material-symbols-outlined text-[24px]">play_circle</span>
+                <span class="material-symbols-outlined text-[20px]">play_circle</span>
               </button>
               ${escapeHtml(line.chinese)}
               <button class="script-lookup-line inline-block ml-sm text-primary hover:scale-110 transition-transform align-middle" data-index="${index}" title="Look up word">
-                <span class="material-symbols-outlined text-[24px]">search</span>
+                <span class="material-symbols-outlined text-[20px]">search</span>
               </button>
             </div>
-            <div class="mt-md font-body-md text-on-surface-variant italic ${enDisplay}">
+            <div class="script-pinyin font-body-md text-secondary mt-1 ${pyDisplay} ${classes.pinyin}">${escapeHtml(line.pinyin)}</div>
+            <div class="script-english font-body-md text-on-surface-variant italic mt-1 ${enDisplay} ${classes.english}">
               "${escapeHtml(line.english)}"
             </div>
           </div>
@@ -1164,15 +1303,45 @@
       return;
     }
 
-    container.innerHTML = state.relatedScripts.map(function (script) {
-      return `
-        <a href="script-reader.html?scriptId=${encodeURIComponent(script.scriptId)}" class="min-w-[300px] bg-surface-container rounded-2xl p-md border border-outline-variant hover:scale-[1.02] transition-transform cursor-pointer block">
-          <span class="font-label-caps text-label-caps text-secondary">${escapeHtml(SCRIPT_TYPE_LABELS[script.scriptType] || 'Script')}</span>
-          <h4 class="font-bold mt-xs text-on-surface">${escapeHtml(script.title)}</h4>
-          ${script.hasAudio ? '<span class="material-symbols-outlined text-primary text-sm mt-xs">volume_up</span>' : ''}
-        </a>
+    const fallbackThumb = (DEMO_RELATED_SCRIPTS[0] && DEMO_RELATED_SCRIPTS[0].thumbnailUrl) || '';
+
+    container.innerHTML = '';
+    state.relatedScripts.forEach(function (script) {
+      const typeLabel = SCRIPT_TYPE_LABELS[script.scriptType] || 'Script';
+      const updated = formatRelativeDate(script.updatedAt);
+      const thumb = scriptThumbnailUrl(script, fallbackThumb);
+      const hasThumb = !!thumb;
+
+      const card = document.createElement('a');
+      card.href = `script-reader.html?scriptId=${encodeURIComponent(script.scriptId)}`;
+      card.className = 'min-w-[280px] max-w-[280px] bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group block flex flex-col';
+
+      const thumbnailBlock = hasThumb
+        ? `<div class="aspect-[16/9] relative overflow-hidden">
+             <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${escapeHtml(thumb)}" alt="${escapeHtml(script.title)}">
+             <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">${escapeHtml(typeLabel)}</div>
+           </div>`
+        : `<div class="aspect-[16/9] bg-surface-container-high flex items-center justify-center relative overflow-hidden">
+             <span class="font-character-display text-[64px] text-primary/20 select-none">文</span>
+             <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">${escapeHtml(typeLabel)}</div>
+           </div>`;
+
+      card.innerHTML = `
+        ${thumbnailBlock}
+        <div class="p-md flex flex-col flex-1">
+          <div class="flex items-center justify-between mb-xs">
+            <span class="font-label-caps text-label-caps text-secondary bg-secondary-container px-sm py-xs rounded">${escapeHtml(typeLabel)}</span>
+            <div class="flex items-center gap-xs text-on-surface-variant">
+              ${script.hasAudio ? '<span class="material-symbols-outlined text-primary text-sm" title="Has audio">volume_up</span>' : ''}
+            </div>
+          </div>
+          <h4 class="font-bold text-on-surface text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">${escapeHtml(script.title)}</h4>
+          <p class="text-sm text-on-surface-variant mt-xs line-clamp-2 flex-1">${escapeHtml(script.description || '')}</p>
+          ${updated ? `<p class="text-xs text-on-surface-variant/70 mt-md">Updated ${escapeHtml(updated)}</p>` : ''}
+        </div>
       `;
-    }).join('');
+      container.appendChild(card);
+    });
   }
 
   function renderRelatedVideos() {
@@ -1184,21 +1353,38 @@
       return;
     }
 
-    container.innerHTML = state.relatedVideos.map(function (video) {
-      const duration = video.durationSeconds ? `${Math.floor(video.durationSeconds / 60)} min` : '';
-      return `
-        <a href="video-session.html?videoId=${encodeURIComponent(video.videoId)}" class="min-w-[320px] aspect-video bg-surface-container-highest rounded-2xl overflow-hidden relative group block">
-          <img src="${escapeHtml(video.thumbnail || '')}" alt="${escapeHtml(video.title)}" class="w-full h-full object-cover">
-          <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-            <span class="material-symbols-outlined text-white text-[48px]">play_circle</span>
+    const fallbackThumb = (DEMO_RELATED_VIDEOS[0] && DEMO_RELATED_VIDEOS[0].thumbnail) || '';
+
+    container.innerHTML = '';
+    state.relatedVideos.forEach(function (video) {
+      const hsk = extractHsk(video.title);
+      const difficulty = difficultyFromHsk(hsk);
+      const duration = formatDuration(video.durationSeconds);
+      const thumb = thumbnailUrl(video, fallbackThumb);
+
+      const card = document.createElement('div');
+      card.className = 'min-w-[260px] max-w-[260px] bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm hover:shadow-lg transition-all group cursor-pointer';
+      card.innerHTML = `
+        <div class="aspect-video relative overflow-hidden" data-video-id="${escapeHtml(video.videoId)}">
+          <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${escapeHtml(thumb)}" alt="${escapeHtml(video.title)}">
+          <div class="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm px-sm py-xs rounded text-[10px] font-bold text-primary border border-primary/20">${escapeHtml(hsk)}</div>
+        </div>
+        <div class="p-md">
+          <h4 class="font-bold text-on-surface text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">${escapeHtml(video.title)}</h4>
+          <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">${escapeHtml(video.description || '')}</p>
+          <div class="flex items-center gap-md mt-md text-xs text-on-surface-variant">
+            ${duration ? `<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">schedule</span> ${escapeHtml(duration)}</span>` : ''}
+            <span class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">bar_chart</span> ${escapeHtml(difficulty)}</span>
           </div>
-          <div class="absolute bottom-0 left-0 right-0 p-md bg-gradient-to-t from-black/60 to-transparent">
-            <p class="text-white font-bold">${escapeHtml(video.title)}</p>
-            ${duration ? `<p class="text-white/80 text-sm">${escapeHtml(duration)}</p>` : ''}
-          </div>
-        </a>
+        </div>
       `;
-    }).join('');
+
+      card.addEventListener('click', function () {
+        window.location.href = `video-session.html?videoId=${encodeURIComponent(video.videoId)}`;
+      });
+
+      container.appendChild(card);
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -1258,7 +1444,12 @@
     if (playBtn) {
       playBtn.addEventListener('click', function () {
         if (!state.audioUrl) {
-          MandoUi.toast('No audio available for this script.', 'info');
+          if (state.demoMode) {
+            const index = state.activeLineIndex >= 0 ? state.activeLineIndex : 0;
+            playLineAudio(index);
+          } else {
+            MandoUi.toast('No audio available for this script.', 'info');
+          }
           return;
         }
         if (state.isPlaying) {
@@ -1306,9 +1497,37 @@
     }
   }
 
+  function speakLine(text) {
+    if (!window.speechSynthesis) {
+      MandoUi.toast('Text-to-speech is not supported in this browser.', 'error');
+      return;
+    }
+
+    // Cancel any ongoing speech so repeated clicks don't queue up endlessly.
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-CN';
+    utterance.rate = 0.9;
+
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find(function (v) { return v.lang && v.lang.startsWith('zh'); });
+    if (zhVoice) utterance.voice = zhVoice;
+
+    window.speechSynthesis.speak(utterance);
+  }
+
   function playLineAudio(index) {
+    const line = state.lines[index];
+    if (!line) return;
+
+    // Demo fallback: use the browser's speech synthesis when no real audio is attached.
     if (!state.audioUrl) {
-      MandoUi.toast('No audio available for this script.', 'info');
+      if (state.demoMode) {
+        speakLine(line.chinese);
+      } else {
+        MandoUi.toast('No audio available for this script.', 'info');
+      }
       return;
     }
 
@@ -1330,10 +1549,12 @@
     const toolbar = $('reader-toolbar');
     if (!toolbar) return;
 
-    if (!state.audioUrl) {
-      toolbar.classList.add('hidden');
-    } else {
+    // Show the toolbar when real audio exists, or in demo mode where it
+    // doubles as a text-to-speech controller.
+    if (state.audioUrl || state.demoMode) {
       toolbar.classList.remove('hidden');
+    } else {
+      toolbar.classList.add('hidden');
     }
   }
 
@@ -1348,6 +1569,16 @@
         setReaderMode(btn.dataset.mode);
       });
     });
+
+    // Font size controls.
+    const fontSizeDecrease = $('font-size-decrease');
+    if (fontSizeDecrease) {
+      fontSizeDecrease.addEventListener('click', function () { adjustScriptFontSize(-1); });
+    }
+    const fontSizeIncrease = $('font-size-increase');
+    if (fontSizeIncrease) {
+      fontSizeIncrease.addEventListener('click', function () { adjustScriptFontSize(1); });
+    }
 
     // New note button.
     const newNoteBtn = $('new-note-btn');
@@ -1393,9 +1624,11 @@
   // ---------------------------------------------------------------------------
 
   async function initPage() {
-    state.demoMode = !state.userId;
-
-    if (state.demoMode) {
+    // No user id or no specific script requested: run in demo mode so the
+    // page always renders useful content. The full catalog view is still a
+    // future TODO (see SCRIPTS_MVP_PLAN §5.3).
+    if (!state.userId || !state.scriptId) {
+      state.demoMode = true;
       state.scriptId = DEMO_SCRIPT_ID;
     }
 
@@ -1406,7 +1639,18 @@
     setText('script-description', 'Please wait while we load the script.');
 
     try {
-      await loadScriptMeta();
+      let metaOk = await loadScriptMeta();
+
+      // If the requested script does not exist on the backend, fall back to
+      // demo content rather than rendering a broken reader.
+      if (!metaOk && !state.demoMode) {
+        console.warn(`Script ${state.scriptId} not found; falling back to demo.`);
+        state.demoMode = true;
+        state.scriptId = DEMO_SCRIPT_ID;
+        persistLastScriptId(state.scriptId);
+        metaOk = await loadScriptMeta();
+      }
+
       await Promise.all([
         loadScriptContent(),
         loadAudioUrl(),
@@ -1415,6 +1659,7 @@
       await Promise.all([
         loadRelatedScripts(),
         loadRelatedVideos(),
+        loadScriptLibrary(),
       ]);
 
       renderHeader();

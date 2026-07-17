@@ -59,13 +59,13 @@
   <aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
   <script>
     if (window.MandoShell) {
-      window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'scripts' });
+      window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'scripts', includeScriptLibrary: true });
     }
   </script>
 
   <!-- Main Content -->
   <main class="pt-[88px] min-h-screen md:ml-[280px] transition-all duration-300 relative z-10">
-    <div class="px-lg max-w-[900px] mx-auto py-xl">
+    <div class="px-lg max-w-[1200px] mx-auto py-xl">
 
       <!-- Header -->
       <div class="text-center mb-xl w-full">
@@ -75,11 +75,19 @@
       </div>
 
       <!-- Reader Toolbar (inline) -->
-      <div class="flex items-center justify-center gap-md mb-lg">
+      <div class="flex flex-wrap items-center justify-center gap-md mb-lg">
         <div class="flex items-center gap-xs bg-surface-container-high rounded-full p-1 border border-outline-variant">
           <button id="reader-mode-zh" class="reader-mode-btn w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs" data-mode="zh">中</button>
           <button id="reader-mode-py" class="reader-mode-btn w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="py">ǎ</button>
           <button id="reader-mode-en" class="reader-mode-btn w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="en">EN</button>
+        </div>
+        <div class="flex items-center gap-xs bg-surface-container-high rounded-full p-1 border border-outline-variant" title="Text size">
+          <button id="font-size-decrease" class="w-9 h-9 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center hover:bg-surface-dim transition-colors" aria-label="Decrease text size">
+            <span class="material-symbols-outlined text-sm">text_decrease</span>
+          </button>
+          <button id="font-size-increase" class="w-9 h-9 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center hover:bg-surface-dim transition-colors" aria-label="Increase text size">
+            <span class="material-symbols-outlined text-sm">text_increase</span>
+          </button>
         </div>
       </div>
 
@@ -89,33 +97,42 @@
         <button id="reader-status-retry" class="hidden mt-md px-md py-xs bg-primary text-on-primary rounded-lg hover:bg-primary-dim transition-all">Retry</button>
       </div>
 
-      <!-- Script Canvas -->
-      <div id="script-canvas" class="w-full bg-surface-container-lowest border border-outline-variant rounded-3xl p-lg shadow-sm relative overflow-hidden">
-        <!-- Cultural accent decor -->
-        <div class="absolute top-0 right-0 p-lg opacity-10">
-          <span id="script-accent-char" class="font-character-display text-[120px] leading-none text-primary pointer-events-none select-none">文</span>
-        </div>
-        <div id="script-lines" class="space-y-lg relative z-10">
-          <!-- Lines rendered dynamically -->
-        </div>
-      </div>
+      <!-- Reader Grid: Script + Sticky Notes -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-lg items-start">
 
-      <!-- Quick Vocabulary Notes -->
-      <div class="w-full mt-lg">
-        <div class="flex items-center justify-between mb-md">
-          <h3 class="font-headline-md text-headline-md text-on-surface">Quick Vocabulary Notes</h3>
-          <div class="flex items-center gap-sm">
-            <button id="new-note-btn" class="flex items-center gap-xs px-md py-xs bg-surface-container-high text-on-surface rounded-lg font-body-md hover:bg-surface-dim transition-all border border-outline-variant">
-              <span class="material-symbols-outlined text-sm">add</span> New Note
-            </button>
-            <button id="save-notes-btn" class="flex items-center gap-xs px-md py-xs bg-primary text-on-primary rounded-lg font-body-md hover:bg-primary-dim transition-all shadow-md">
-              <span class="material-symbols-outlined text-sm">save</span> Save (Ctrl+S)
-            </button>
+        <!-- Script Canvas -->
+        <div class="lg:col-span-8">
+          <div id="script-canvas" class="w-full bg-surface-container-lowest border border-outline-variant rounded-3xl p-md lg:p-lg shadow-sm relative overflow-hidden">
+            <!-- Cultural accent decor -->
+            <div class="absolute top-0 right-0 p-md lg:p-lg opacity-10">
+              <span id="script-accent-char" class="font-character-display text-[80px] lg:text-[120px] leading-none text-primary pointer-events-none select-none">文</span>
+            </div>
+            <div id="script-lines" class="space-y-sm relative z-10" data-font-size="md">
+              <!-- Lines rendered dynamically -->
+            </div>
           </div>
         </div>
-        <div id="notes-container" class="space-y-sm">
-          <!-- Notes rendered dynamically -->
+
+        <!-- Quick Vocabulary Notes (sticky on desktop) -->
+        <div class="lg:col-span-4 lg:sticky lg:top-[104px]">
+          <div class="bg-surface-container-lowest rounded-3xl p-md border border-outline-variant shadow-sm max-h-[calc(100vh-136px)] flex flex-col">
+            <div class="flex items-center justify-between mb-md shrink-0">
+              <h3 class="font-headline-md text-headline-md text-on-surface">Quick Notes</h3>
+              <div class="flex items-center gap-sm">
+                <button id="new-note-btn" class="flex items-center gap-xs px-sm py-xs bg-surface-container-high text-on-surface rounded-lg font-body-md hover:bg-surface-dim transition-all border border-outline-variant" title="New note">
+                  <span class="material-symbols-outlined text-sm">add</span>
+                </button>
+                <button id="save-notes-btn" class="flex items-center gap-xs px-sm py-xs bg-primary text-on-primary rounded-lg font-body-md hover:bg-primary-dim transition-all shadow-md" title="Save notes (Ctrl+S)">
+                  <span class="material-symbols-outlined text-sm">save</span>
+                </button>
+              </div>
+            </div>
+            <div id="notes-container" class="space-y-sm overflow-y-auto custom-scrollbar pr-xs">
+              <!-- Notes rendered dynamically -->
+            </div>
+          </div>
         </div>
+
       </div>
 
       <!-- Related Scripts -->

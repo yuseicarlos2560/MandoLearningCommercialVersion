@@ -1,6 +1,11 @@
 /**
  * Scripts API client.
  * Base path: /api/scripts (public learner catalog)
+ *
+ * Note: the public list endpoint currently returns all published scripts
+ * newest-first and does not support server-side filtering by scriptType.
+ * Callers that need type-specific results should filter the returned
+ * `scripts` array client-side.
  */
 
 (function (window) {
@@ -12,16 +17,13 @@
     return encodeURIComponent(value);
   }
 
-  async function listReady({ pageSize = 20, nextToken = null, scriptType = null } = {}) {
+  async function listReady({ pageSize = 20, nextToken = null } = {}) {
     const params = new URLSearchParams();
     if (pageSize !== undefined && pageSize !== null) {
       params.set('pageSize', String(pageSize));
     }
     if (nextToken) {
       params.set('nextToken', nextToken);
-    }
-    if (scriptType) {
-      params.set('scriptType', scriptType);
     }
     const query = params.toString() ? `?${params.toString()}` : '';
     return window.MandoApi.get(`${BASE}${query}`);

@@ -41,6 +41,7 @@
    * @param {'root'|'pages'} options.pageRoot    Which directory the current page lives in (default 'root')
    * @param {string} options.activeNavItem       Nav item id to mark active ('videos', 'scripts', etc.)
    * @param {boolean} options.includeVideoLibrary Show the Video Library collapsible section (default false)
+   * @param {boolean} options.includeScriptLibrary Show the Scripts Library collapsible section (default false)
    */
   function renderSidebar(options) {
     options = options || {};
@@ -50,6 +51,7 @@
     const pageRoot = options.pageRoot === 'pages' ? 'pages' : 'root';
     const activeNavItem = options.activeNavItem || 'videos';
     const includeVideoLibrary = !!options.includeVideoLibrary;
+    const includeScriptLibrary = !!options.includeScriptLibrary;
 
     const navLinks = NAV_ITEMS[pageRoot].map(function (item) {
       const isActive = item.id === activeNavItem;
@@ -71,15 +73,25 @@
       </div>
     ` : '';
 
+    const scriptLibrarySection = includeScriptLibrary ? `
+      <div class="mt-md px-base">
+        <h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mb-sm uppercase">Script Library</h3>
+        <div id="script-library-container" class="space-y-1 max-h-[40vh] overflow-y-auto custom-scrollbar pr-xs">
+          <!-- Populated dynamically by the page handler -->
+        </div>
+      </div>
+    ` : '';
+
     container.innerHTML = `
       <div class="mb-lg px-base">
         <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MandoLearning</h1>
         <p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
       </div>
-      <nav class="flex-1 space-y-1">
+      <nav class="flex-1 space-y-1 overflow-y-auto custom-scrollbar pr-xs">
         ${navLinks}
       </nav>
       ${videoLibrarySection}
+      ${scriptLibrarySection}
       <div id="sidebar-profile-snippet" class="mt-md mx-base p-md rounded-2xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-sm">
         <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined">person</span>
