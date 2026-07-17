@@ -177,15 +177,27 @@ body {
     transform: translateY(0);
 }
 
-/* Sidebar collapse behaviour (desktop only) */
 .main-with-sidebar {
     margin-left: 0;
     transition: margin-left 0.3s ease;
 }
 
+.header-with-sidebar {
+    left: 0;
+    transition: left 0.3s ease;
+}
+
 @media (min-width: 768px) {
+    .header-with-sidebar {
+        left: 280px;
+    }
+
     .main-with-sidebar {
         margin-left: 280px;
+    }
+
+    body.sidebar-collapsed .header-with-sidebar {
+        left: 0;
     }
 
     body.sidebar-collapsed .main-with-sidebar {

@@ -154,9 +154,9 @@
     btn = document.createElement('button');
     btn.id = 'sidebar-open-btn';
     btn.type = 'button';
-    btn.className = 'fixed top-[92px] left-0 z-30 hidden md:flex items-center justify-center w-8 h-10 rounded-r-xl bg-surface-container border border-l-0 border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high shadow-md transition-transform duration-300';
+    btn.className = 'fixed top-[92px] left-0 z-30 hidden md:flex items-center justify-center w-10 h-12 rounded-r-xl bg-primary-container text-on-primary-container border border-l-0 border-outline-variant/30 shadow-lg hover:bg-primary-container-high hover:scale-105 active:scale-95 transition-all duration-300';
     btn.title = 'Open sidebar';
-    btn.innerHTML = '<span class="material-symbols-outlined text-sm">chevron_right</span>';
+    btn.innerHTML = '<span class="material-symbols-outlined text-lg">chevron_right</span>';
     btn.addEventListener('click', function () {
       setSidebarCollapsed(false);
     });
