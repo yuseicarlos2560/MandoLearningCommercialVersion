@@ -74,7 +74,7 @@ MandoLearningCommercialVersion/
 │   ├── study-mode.html                 # ✅ Implemented
 │   ├── deck-editor.html                # ✅ Implemented
 │   ├── stats.html                      # ✅ Implemented
-│   ├── document-study.html             # ❌ Empty placeholder
+│   ├── document-study.html             # ✅ Implemented
 │   └── script-reader.html              # ✅ Implemented
 │
 ├── js/
@@ -143,12 +143,7 @@ Full backend API documentation lives in the companion Java project (`~/IdeaProje
 | **Flashcards Hub** | `pages/flashcards.html`, `js/pages/flashcards.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `POST /api/textprocessing/{userId}/batch` |
 | **Flashcard Study** | `pages/study-mode.html`, `js/pages/study-mode.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `GET /api/textprocessing/{userId}/flashcard/deck/hsk/{level}`, `GET /api/textprocessing/{userId}/flashcard/deck/category/{category}`, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` |
 | **Deck Editor** | `pages/deck-editor.html`, `js/pages/deck-editor.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `GET /api/textprocessing/{userId}/flashcard/deck/category/{category}`, `POST /api/textprocessing/{userId}/batch` |
-
-### Empty placeholder pages
-
-These files exist but are 0 bytes and have no JavaScript handlers:
-
-- `pages/document-study.html`
+| **Document Study** | `pages/document-study.html`, `js/pages/document-study.js` | `GET /api/documents` ⏳, `GET /api/documents/{id}` ⏳, `GET /api/textprocessing/{userId}/documents/{id}` ⏳, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` (⏳ = specified, backend pending — page degrades to demo/local mode) |
 
 ### Missing shared modules
 
@@ -156,7 +151,10 @@ Modules planned in `HIGH_LEVEL_PLAN.md` that are still not created:
 
 - `js/main.js`
 - `js/state.js`
+<<<<<<< Updated upstream
 - `js/pages/document-study.js`
+=======
+>>>>>>> Stashed changes
 
 Created and in use:
 
@@ -167,20 +165,22 @@ Created and in use:
 - `js/api/client.js` — shared fetch wrapper with retry logic
 - `js/api/videos.js` — video catalog + script endpoints
 - `js/api/scripts.js` — script catalog + content + audio endpoints
-- `js/api/notes.js` — session notes and script-scoped notes + details
+- `js/api/notes.js` — session, script-scoped, and document-scoped notes + details
+- `js/api/documents.js` — document library + upload/download (backend pending)
 - `js/api/flashcards.js` — flashcard deck queries (all / HSK / category)
 - `js/api/batch.js` — TextProcessing batch flush
 - `js/api/stats.js` — stats aggregate / activity / events
 - `js/pages/flashcards.js` — flashcards hub handler
 - `js/pages/study-mode.js` — flashcard study session handler
 - `js/pages/deck-editor.js` — deck editor handler
+- `js/pages/document-study.js` — document library + study handler
 
 ---
 
 ## Known Limitations & Problems
 
-### 1. Most MVP pages are not built
-Six of the eight MVP pages are empty placeholders. Only Dashboard and Video Session are functional.
+### 1. All MVP pages are built
+All eight MVP pages are functional: Dashboard, Video Session, Script Reader, Flashcards Hub, Study Mode, Deck Editor, Stats, and Document Study. The Documents page degrades gracefully until the backend documents module ships (see below).
 
 ### 2. Video playback is mostly complete
 The video session page supports two source types:
@@ -196,15 +196,10 @@ Resume progress is stored in `localStorage` under `mando.progress.{videoId}` and
 The sidebar markup is still copy-pasted into `index.html` and `pages/video-session.html`. `js/shell.js` now provides shared drawer interaction and profile rendering, but full markup extraction is still pending.
 
 ### 5. No shared state / pending-change queue
-The pending-change queue for notes is inline inside `video-session.js`. Flashcards, deck editor, and stats will need their own queue logic unless `state.js` is extracted.
+Each page with mutations (video session, study mode, deck editor) carries its own inline pending-change queue. The queues follow the same pattern but are not yet extracted into a shared `state.js`.
 
-### 6. Brand inconsistency in templates
-The migrated pages use **MandoLearning**, but some source templates still reference **MandarinFlow**:
-
-- `templates/flashcards_study_interface/code.html`
-- `templates/flashcards_deck_management_editor/code.html`
-
-These need to be renamed before being copied into `pages/`.
+### 6. Brand consistency
+All pages and source templates use **MandoLearning**. The last two `MandarinFlow` references (in the flashcards study and deck editor templates) were renamed during the flashcards migration.
 
 ### 7. No frontend tests or tooling
 `package.json` is a placeholder. There is no linting, formatting, or test framework configured. `node --check` passes on all JS files, but that is the only validation.

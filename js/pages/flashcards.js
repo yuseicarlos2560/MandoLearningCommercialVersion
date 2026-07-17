@@ -211,7 +211,10 @@
     if (resumeBtn) {
       resumeBtn.innerHTML = 'Resume Deck <span class="material-symbols-outlined">arrow_forward</span>';
       resumeBtn.onclick = function () {
-        window.location.href = `study-mode.html?mode=spaced&category=${encodeURIComponent(hero.category)}`;
+        // Decks with nothing mastered yet go to a mixed review instead of a
+        // spaced session that would have zero cards.
+        const mode = hero.masteredCount > 0 ? 'spaced' : 'random';
+        window.location.href = `study-mode.html?mode=${mode}&category=${encodeURIComponent(hero.category)}`;
       };
     }
 
@@ -305,7 +308,8 @@
         if (deck.category === '__ALL__') {
           window.location.href = 'study-mode.html?mode=random&global=true';
         } else {
-          window.location.href = `study-mode.html?mode=spaced&category=${encodeURIComponent(deck.category)}`;
+          const mode = deck.masteredCount > 0 ? 'spaced' : 'random';
+          window.location.href = `study-mode.html?mode=${mode}&category=${encodeURIComponent(deck.category)}`;
         }
       });
       grid.appendChild(card);

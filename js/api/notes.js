@@ -87,6 +87,49 @@
     return window.MandoApi.delete(`${BASE}/${encode(userId)}/scripts/${encode(scriptId)}/${encode(noteId)}/detail`);
   }
 
+  // ---------------------------------------------------------------------------
+  // Document-scoped notes (user-uploaded documents)
+  // Base path: /api/textprocessing/{userId}/documents/{documentId}
+  //
+  // Mirrors the script-scoped endpoints. The backend documents module is
+  // specified but not yet deployed — expect 404 until Phase 3/4 ships.
+  // ---------------------------------------------------------------------------
+
+  async function listDocument(userId, documentId, details = true) {
+    const query = details ? '?details=true' : '';
+    return window.MandoApi.get(`${BASE}/${encode(userId)}/documents/${encode(documentId)}${query}`);
+  }
+
+  async function getDocumentNote(userId, documentId, noteId, includeDetail = true) {
+    const query = includeDetail ? '?includeDetail=true' : '';
+    return window.MandoApi.get(`${BASE}/${encode(userId)}/documents/${encode(documentId)}/${encode(noteId)}${query}`);
+  }
+
+  async function createDocumentNote(userId, documentId, data, parentNoteId = null) {
+    const query = parentNoteId ? `?parentNoteId=${encode(parentNoteId)}` : '';
+    return window.MandoApi.post(`${BASE}/${encode(userId)}/documents/${encode(documentId)}/notes/add${query}`, data);
+  }
+
+  async function updateDocumentNote(userId, documentId, noteId, data) {
+    return window.MandoApi.put(`${BASE}/${encode(userId)}/documents/${encode(documentId)}/${encode(noteId)}`, data);
+  }
+
+  async function deleteDocumentNote(userId, documentId, noteId) {
+    return window.MandoApi.delete(`${BASE}/${encode(userId)}/documents/${encode(documentId)}/${encode(noteId)}`);
+  }
+
+  async function getDocumentDetail(userId, documentId, noteId) {
+    return window.MandoApi.get(`${BASE}/${encode(userId)}/documents/${encode(documentId)}/${encode(noteId)}/detail`);
+  }
+
+  async function saveDocumentDetail(userId, documentId, noteId, detail) {
+    return window.MandoApi.put(`${BASE}/${encode(userId)}/documents/${encode(documentId)}/${encode(noteId)}/detail`, detail);
+  }
+
+  async function deleteDocumentDetail(userId, documentId, noteId) {
+    return window.MandoApi.delete(`${BASE}/${encode(userId)}/documents/${encode(documentId)}/${encode(noteId)}/detail`);
+  }
+
   window.MandoApi = window.MandoApi || {};
   window.MandoApi.notes = {
     listSession,
@@ -105,5 +148,13 @@
     getScriptDetail,
     saveScriptDetail,
     deleteScriptDetail,
+    listDocument,
+    getDocumentNote,
+    createDocumentNote,
+    updateDocumentNote,
+    deleteDocumentNote,
+    getDocumentDetail,
+    saveDocumentDetail,
+    deleteDocumentDetail,
   };
 })(window);

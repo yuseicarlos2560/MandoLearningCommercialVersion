@@ -107,6 +107,7 @@
     userId: getUserId(),
     demoMode: false,
     mode: url.mode,
+    effectiveMode: null,   // set when the requested mode falls back (e.g. spaced → random)
     filter: url.filter,
     cards: [],
     currentIndex: 0,
@@ -256,7 +257,7 @@
   }
 
   function renderSessionHeader() {
-    const meta = MODE_META[state.mode];
+    const meta = MODE_META[state.effectiveMode || state.mode];
     let title = meta.title;
     if (state.filter.type === 'category') {
       title += ` — ${displayCategory(state.filter.value)}`;
@@ -421,41 +422,55 @@
   // Data loading
   // ---------------------------------------------------------------------------
 
+  async function fetchDeck(studyMode) {
+    const options = { studyMode: studyMode, pageSize: 50 };
+    try {
+      if (state.filter.type === 'category') {
+        return await window.MandoApi.flashcards.getDeckByCategory(state.userId, state.filter.value, options);
+      } else if (state.filter.type === 'hsk') {
+        return await window.MandoApi.flashcards.getDeckByHsk(state.userId, state.filter.value, options);
+      }
+      return await window.MandoApi.flashcards.getDeckAll(state.userId, options);
+    } catch (err) {
+      console.error('Deck load error', err);
+      return { ok: false, status: 0, error: { message: err.message } };
+    }
+  }
+
+  function cardsFrom(res, toastOnError) {
+    if (res.ok && res.data && Array.isArray(res.data.notes)) return res.data.notes;
+    if (res.status === 404) return [];
+    if (toastOnError && MandoUi) MandoUi.toast('Could not load the deck. Please try again.', 'error');
+    return [];
+  }
+
   async function loadDeck() {
     if (state.demoMode) {
       state.cards = FALLBACK_DECK.slice();
       return;
     }
 
-    const studyMode = MODE_META[state.mode].studyMode;
-    const options = { studyMode: studyMode, pageSize: 50 };
+    let cards = cardsFrom(await fetchDeck(MODE_META[state.mode].studyMode), true);
 
-    let res;
-    try {
-      if (state.filter.type === 'category') {
-        res = await window.MandoApi.flashcards.getDeckByCategory(state.userId, state.filter.value, options);
-      } else if (state.filter.type === 'hsk') {
-        res = await window.MandoApi.flashcards.getDeckByHsk(state.userId, state.filter.value, options);
-      } else {
-        res = await window.MandoApi.flashcards.getDeckAll(state.userId, options);
+    // A deck without MASTERED cards (e.g. freshly created) returns nothing
+    // for SPACED. Rather than dead-ending on the empty state, fall back to a
+    // mixed review of all cards and tell the user why.
+    if (cards.length === 0 && state.mode === 'spaced') {
+      const fallback = cardsFrom(await fetchDeck('RANDOM'), false);
+      if (fallback.length > 0) {
+        cards = fallback;
+        state.effectiveMode = 'random';
+        if (MandoUi) {
+          MandoUi.toast('No mastered cards here yet — starting a Random Mix with all cards instead.', 'info');
+        }
       }
-    } catch (err) {
-      console.error('Deck load error', err);
-      res = { ok: false, status: 0, error: { message: err.message } };
     }
 
-    if (res.ok && res.data && Array.isArray(res.data.notes)) {
-      state.cards = res.data.notes;
-    } else if (res.status === 404) {
-      state.cards = [];
-    } else {
-      state.cards = [];
-      if (MandoUi) MandoUi.toast('Could not load the deck. Please try again.', 'error');
-    }
+    state.cards = cards;
 
     // RANDOM arrives shuffled from the backend; shuffle locally as well so the
     // order is never predictable and demo mode behaves the same.
-    if (state.mode === 'random' || state.mode === 'speed') {
+    if (state.mode === 'random' || state.mode === 'speed' || state.effectiveMode === 'random') {
       shuffle(state.cards);
     }
   }
@@ -540,6 +555,9 @@
       renderCard(false);
 
       await loadDeck();
+
+      // Re-render the header in case the study mode fell back (spaced → random).
+      renderSessionHeader();
 
       if (state.cards.length === 0) {
         showEmptyState();

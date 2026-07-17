@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Document Study | MandoLearning</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../js/tailwind-config.js"></script>
+<link rel="stylesheet" href="../css/design-system.css" />
+<!-- Shared utilities, shell, and UI components -->
+<script src="../js/utils.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/ui-components.js"></script>
+<script src="../js/pinyin-helper.js"></script>
+<!-- API clients -->
+<script src="../js/api/client.js"></script>
+<script src="../js/api/documents.js"></script>
+<script src="../js/api/notes.js"></script>
+<script src="../js/api/batch.js"></script>
+<script src="../js/api/stats.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+<!-- Cultural Background Pattern -->
+<div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 header-with-sidebar z-30 glass-nav bg-surface/90 border-b border-outline-variant">
+<div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
+<div class="flex items-center gap-md">
+<button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<a class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Mobile drawer overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
+<!-- Side Navigation Bar -->
+<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
+<script>
+  if (window.MandoShell) {
+    window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'documents' });
+  }
+</script>
+<!-- Main Content Area -->
+<main class="pt-[88px] min-h-screen main-with-sidebar transition-all duration-300 relative z-10">
+<div class="px-lg py-md max-w-[1200px] mx-auto">
+<!-- Backend deployment notice (authenticated mode only) -->
+<div id="doc-banner" class="hidden mb-md flex items-center gap-sm px-md py-sm bg-tertiary-container/20 border border-tertiary/30 text-on-tertiary-container rounded-xl text-sm">
+<span class="material-symbols-outlined text-[20px]">info</span>
+<span>The documents backend module is not deployed yet — showing demo content. Your notes are kept locally and will sync later.</span>
+</div>
+
+<!-- ============================ LIBRARY VIEW ============================ -->
+<section id="library-view">
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">My Documents</h1>
+<p class="text-on-surface-variant text-body-lg max-w-2xl mt-base opacity-90">Read and annotate your study materials.</p>
+</div>
+<button id="upload-btn" class="hidden items-center gap-sm px-md py-sm bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-dim transition-all shadow-md active:scale-95">
+<span class="material-symbols-outlined">upload_file</span>
+Upload Document
+</button>
+<input id="upload-file-input" type="file" accept="application/pdf" class="hidden"/>
+</div>
+<div id="document-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md"></div>
+</section>
+
+<!-- ============================ STUDY VIEW ============================ -->
+<section id="study-view" class="hidden">
+<!-- Header Actions -->
+<div class="flex flex-col sm:flex-row justify-between sm:items-end gap-md mb-lg">
+<div>
+<nav class="flex items-center gap-xs text-on-surface-variant text-sm mb-xs">
+<a href="document-study.html" class="hover:text-primary transition-colors">Documents</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span id="doc-breadcrumb" class="text-primary font-semibold">Reading Practice</span>
+</nav>
+<h1 id="doc-title" class="font-headline-lg text-headline-lg text-on-surface">Document</h1>
+</div>
+<div class="flex gap-sm">
+<button id="export-btn" class="hidden items-center gap-sm px-md py-sm bg-surface-container-high rounded-full text-on-surface-variant font-semibold hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">file_download</span>
+Export PDF
+</button>
+<button id="manage-btn" class="hidden items-center gap-sm px-md py-sm bg-secondary-container text-on-secondary-container rounded-full font-bold hover:brightness-95 transition-all">
+<span class="material-symbols-outlined">edit</span>
+Manage Files
+</button>
+</div>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-12 gap-md">
+<!-- Document Preview Main Block -->
+<div class="col-span-12 lg:col-span-8 space-y-md">
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+<!-- Doc Toolbar -->
+<div class="bg-surface-container px-md py-sm border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-md">
+<span id="doc-file-name" class="text-on-surface-variant font-medium text-sm truncate max-w-[240px]">document.pdf</span>
+<div class="flex items-center bg-surface-container-low rounded-lg p-xs">
+<button id="zoom-out-btn" class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-highest rounded" title="Zoom out"><span class="material-symbols-outlined text-[20px]">zoom_out</span></button>
+<span id="zoom-label" class="px-sm text-sm font-bold">100%</span>
+<button id="zoom-in-btn" class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-highest rounded" title="Zoom in"><span class="material-symbols-outlined text-[20px]">zoom_in</span></button>
+</div>
+</div>
+<div class="flex gap-xs">
+<button id="fullscreen-btn" class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-highest rounded" title="Fullscreen"><span class="material-symbols-outlined">fullscreen</span></button>
+</div>
+</div>
+<!-- Document Canvas -->
+<div id="viewer-container" class="bg-surface-variant/30 overflow-auto max-h-[75vh] custom-scrollbar">
+<div id="viewer-scale" class="origin-top transition-transform duration-200">
+<iframe id="document-frame" class="w-full h-[75vh] bg-white hidden" title="Document viewer"></iframe>
+<!-- Demo / fallback HTML reading canvas -->
+<div id="demo-canvas" class="p-lg flex flex-col items-center">
+<div class="w-full max-w-[700px] bg-white shadow-lg p-xl min-h-[600px] border border-outline-variant/30">
+<div class="mb-lg border-b-2 border-primary/20 pb-md text-center">
+<h3 class="font-headline-md text-headline-md text-primary">HSK Level 3: Reading Practice</h3>
+<p class="text-on-surface-variant italic">Lesson 57: The Return Home</p>
+</div>
+<div class="space-y-lg">
+<div class="text-center py-md">
+<p class="font-character-display text-character-display text-on-surface mb-sm">是我，我就说...</p>
+<p class="text-tertiary font-medium">shì wǒ, wǒ jiù shuō...</p>
+</div>
+<article class="max-w-none text-on-surface leading-loose text-lg">
+<p>在海外留学是一段非常有意义的经历。但是，回国后的适应过程同样重要。本课件将探讨如何向未来的雇主介绍你的海外背景。</p>
+<div class="my-lg p-md bg-secondary-container/20 border-l-4 border-secondary rounded-r-lg">
+<h4 class="font-bold text-secondary mb-xs">Key Vocabulary:</h4>
+<ul class="grid grid-cols-2 gap-sm text-sm">
+<li>• <strong>留学 (liúxué):</strong> To study abroad</li>
+<li>• <strong>经历 (jīnglì):</strong> Experience</li>
+<li>• <strong>雇主 (gùzhǔ):</strong> Employer</li>
+<li>• <strong>背景 (bèijǐng):</strong> Background</li>
+</ul>
+</div>
+<p>Many students find the transition challenging because they have changed significantly while away. Employers in China look for "International-mindedness with local heart" (有国际视野，也有中国心).</p>
+<p>当你参加面试时，记得强调你的跨文化沟通能力。这不仅仅是语言问题，更是解决问题的思维方式。</p>
+</article>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Study Notes Section -->
+<div class="bg-surface-container-high rounded-xl border border-outline-variant p-md shadow-md">
+<div class="flex items-center justify-between mb-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">history_edu</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Study Notes</h3>
+</div>
+<div class="flex gap-xs items-center">
+<button id="fmt-bold" class="p-xs hover:bg-surface-container-highest rounded text-on-surface-variant" title="Bold"><span class="material-symbols-outlined">format_bold</span></button>
+<button id="fmt-italic" class="p-xs hover:bg-surface-container-highest rounded text-on-surface-variant" title="Italic"><span class="material-symbols-outlined">format_italic</span></button>
+<button id="fmt-list" class="p-xs hover:bg-surface-container-highest rounded text-on-surface-variant" title="Bullet list"><span class="material-symbols-outlined">format_list_bulleted</span></button>
+<div class="w-px h-6 bg-outline-variant mx-xs"></div>
+<span id="notes-save-state" class="text-xs text-on-surface-variant mr-xs"></span>
+<button id="save-notes-btn" class="px-md py-xs bg-primary text-on-primary rounded-lg text-sm font-bold active:scale-95 transition-all">Save Notes</button>
+</div>
+</div>
+<textarea id="notes-textarea" class="w-full h-48 bg-surface-container-lowest border border-outline-variant rounded-lg p-md focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all font-body-md text-on-surface" placeholder="Start jotting down your insights, translations, or questions here..."></textarea>
+</div>
+<!-- Vocabulary Notes Section -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-md shadow-sm">
+<div class="flex items-center justify-between mb-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">style</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Vocabulary</h3>
+</div>
+<div class="flex items-center gap-sm">
+<button id="save-word-btn" class="flex items-center gap-xs px-md py-xs border border-primary text-primary rounded-lg text-sm font-bold hover:bg-primary-container/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[18px]">add</span>
+Save Word
+</button>
+<button id="save-all-btn" class="relative flex items-center gap-xs px-md py-xs bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-primary-dim active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none" disabled>
+<span class="material-symbols-outlined text-[18px]">save</span>
+Save All
+<span id="vocab-pending-badge" class="hidden absolute -top-2 -right-2 min-w-[20px] h-5 px-1 bg-error text-on-error text-[10px] font-bold rounded-full items-center justify-center">0</span>
+</button>
+</div>
+</div>
+<p id="notes-sync-notice" class="hidden mb-sm text-xs text-on-tertiary-container bg-tertiary-container/20 border border-tertiary/30 rounded-lg px-sm py-xs"></p>
+<div id="vocab-notes-list" class="space-y-sm"></div>
+</div>
+</div>
+<!-- Right Sidebar -->
+<div class="col-span-12 lg:col-span-4 space-y-md">
+<!-- Progress Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-md shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 p-lg opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-primary text-6xl">trending_up</span>
+</div>
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-md">SECTION PROGRESS</h4>
+<div class="flex items-end gap-sm mb-xs">
+<span id="progress-percent" class="text-4xl font-bold text-on-surface">0%</span>
+<span class="text-on-surface-variant mb-1">Complete</span>
+</div>
+<div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+<div id="progress-bar" class="h-full bg-primary rounded-full shadow-[0_0_8px_rgba(214,64,72,0.3)] transition-all duration-300" style="width: 0%;"></div>
+</div>
+<p id="progress-hint" class="mt-md text-sm text-on-surface-variant">Scroll the document to track your progress.</p>
+</div>
+<!-- Related Topics Chip Cloud -->
+<div class="bg-surface-container-highest/30 rounded-xl border border-outline-variant p-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-md">RELATED TOPICS</h4>
+<div id="topics-cloud" class="flex flex-wrap gap-xs"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Quick Notes FAB (study view only) -->
+<button id="fab-save-word" class="hidden fixed bottom-8 right-8 z-40 items-center gap-sm bg-primary text-on-primary px-lg py-md rounded-full shadow-[0_8px_24px_rgba(175,35,48,0.3)] hover:translate-y-[-4px] hover:shadow-[0_12px_32px_rgba(175,35,48,0.4)] transition-all font-bold">
+<span class="material-symbols-outlined">edit_note</span>
+Save Word
+</button>
+<!-- Save Word Modal -->
+<div id="save-word-modal" class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm items-center justify-center p-md hidden">
+<div class="bg-surface rounded-3xl shadow-2xl w-full max-w-md p-lg border border-outline-variant" role="dialog" aria-modal="true" aria-labelledby="sw-title">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary text-2xl">edit_note</span>
+<h3 id="sw-title" class="font-headline-md text-headline-md text-on-surface">Save Word</h3>
+</div>
+<form id="sw-form" class="space-y-md">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-character">Chinese <span class="text-primary">*</span></label>
+<input id="sw-character" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs font-character-display text-xl text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. 留学" type="text" maxlength="25" required/>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-pinyin">Pinyin <span class="text-on-surface-variant/70 normal-case">(auto-filled)</span></label>
+<input id="sw-pinyin" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="Auto-filled" type="text" maxlength="250"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-hsk">HSK Level <span class="text-primary">*</span></label>
+<select id="sw-hsk" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+<option value="HSK1">HSK 1</option>
+<option value="HSK2">HSK 2</option>
+<option value="HSK3" selected>HSK 3</option>
+<option value="HSK4">HSK 4</option>
+<option value="HSK5">HSK 5</option>
+<option value="HSK6">HSK 6</option>
+</select>
+</div>
+</div>
+<div id="sw-deck-fields">
+<div class="mb-md">
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-meaning">English Meaning</label>
+<input id="sw-meaning" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. to study abroad" type="text" maxlength="150"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-category">Deck (for flashcard)</label>
+<input id="sw-category" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="Miscellaneous" type="text" maxlength="50"/>
+</div>
+</div>
+<label class="flex items-center gap-sm cursor-pointer select-none">
+<input id="sw-add-to-deck" type="checkbox" class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/30" checked/>
+<span class="text-sm text-on-surface">Also add to my flashcard deck</span>
+</label>
+<p id="sw-error" class="text-error text-sm hidden"></p>
+<div class="flex justify-end gap-sm pt-sm">
+<button type="button" id="sw-cancel" class="px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">Cancel</button>
+<button type="submit" id="sw-submit" class="px-md py-xs rounded-lg bg-primary text-on-primary font-body-md hover:bg-primary-dim transition-all shadow-md">Save Word</button>
+</div>
+</form>
+</div>
+</div>
+<script src="../js/pages/document-study.js"></script>
+</body>
+</html>

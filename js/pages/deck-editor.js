@@ -905,11 +905,17 @@
       renderFooter();
     });
     bind('study-now-btn', function () {
+      // Pick a mode the deck actually has cards for: spaced review needs at
+      // least one mastered card, otherwise a mixed review is the useful path.
+      const summaries = mergeDeckSummaries();
       if (state.activeCategory === ALL_DECKS) {
-        window.location.href = 'study-mode.html?mode=spaced&global=true';
-      } else {
-        window.location.href = `study-mode.html?mode=spaced&category=${encodeURIComponent(state.activeCategory)}`;
+        const anyMastered = summaries.some(function (d) { return d.masteredCount > 0; });
+        window.location.href = `study-mode.html?mode=${anyMastered ? 'spaced' : 'random'}&global=true`;
+        return;
       }
+      const deck = summaries.find(function (d) { return d.category === state.activeCategory; });
+      const mode = deck && deck.masteredCount > 0 ? 'spaced' : 'random';
+      window.location.href = `study-mode.html?mode=${mode}&category=${encodeURIComponent(state.activeCategory)}`;
     });
 
     const searchInput = $('card-search-input');
