@@ -71,8 +71,8 @@ MandoLearningCommercialVersion/
 ├── pages/                              # Page HTML files
 │   ├── video-session.html              # ✅ Implemented
 │   ├── flashcards.html                 # ✅ Implemented (hub)
-│   ├── study-mode.html                 # ❌ Empty placeholder
-│   ├── deck-editor.html                # ❌ Empty placeholder
+│   ├── study-mode.html                 # ✅ Implemented
+│   ├── deck-editor.html                # ✅ Implemented
 │   ├── stats.html                      # ✅ Implemented
 │   ├── document-study.html             # ❌ Empty placeholder
 │   └── script-reader.html              # ✅ Implemented
@@ -141,13 +141,13 @@ Full backend API documentation lives in the companion Java project (`~/IdeaProje
 | **Video Session** | `pages/video-session.html`, `js/pages/video-session.js` | `GET /api/videos/{videoId}`, `GET /api/videos/{videoId}/script`, `GET /api/textprocessing/{userId}/{sessionId}`, `GET /api/videos`, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` |
 | **Script Reader** | `pages/script-reader.html`, `js/pages/script-reader.js` | `GET /api/scripts/{scriptId}`, `GET /api/scripts/{scriptId}/content`, `GET /api/scripts/{scriptId}/audio`, `GET /api/textprocessing/{userId}/scripts/{scriptId}`, `POST /api/textprocessing/{userId}/batch`, `GET /api/videos`, `POST /api/stats/{userId}/events` |
 | **Flashcards Hub** | `pages/flashcards.html`, `js/pages/flashcards.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `POST /api/textprocessing/{userId}/batch` |
+| **Flashcard Study** | `pages/study-mode.html`, `js/pages/study-mode.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `GET /api/textprocessing/{userId}/flashcard/deck/hsk/{level}`, `GET /api/textprocessing/{userId}/flashcard/deck/category/{category}`, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` |
+| **Deck Editor** | `pages/deck-editor.html`, `js/pages/deck-editor.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `GET /api/textprocessing/{userId}/flashcard/deck/category/{category}`, `POST /api/textprocessing/{userId}/batch` |
 
 ### Empty placeholder pages
 
 These files exist but are 0 bytes and have no JavaScript handlers:
 
-- `pages/study-mode.html`
-- `pages/deck-editor.html`
 - `pages/document-study.html`
 
 ### Missing shared modules
@@ -157,8 +157,6 @@ Modules planned in `HIGH_LEVEL_PLAN.md` that are still not created:
 - `js/main.js`
 - `js/state.js`
 - `js/pinyin-helper.js`
-- `js/pages/study-mode.js`
-- `js/pages/deck-editor.js`
 - `js/pages/document-study.js`
 
 Created and in use:
@@ -174,6 +172,8 @@ Created and in use:
 - `js/api/batch.js` — TextProcessing batch flush
 - `js/api/stats.js` — stats aggregate / activity / events
 - `js/pages/flashcards.js` — flashcards hub handler
+- `js/pages/study-mode.js` — flashcard study session handler
+- `js/pages/deck-editor.js` — deck editor handler
 
 ---
 

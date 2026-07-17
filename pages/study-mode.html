@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Study Mode | MandoLearning</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../js/tailwind-config.js"></script>
+<link rel="stylesheet" href="../css/design-system.css" />
+<!-- Shared utilities, shell, and UI components -->
+<script src="../js/utils.js"></script>
+<script src="../js/shell.js"></script>
+<script src="../js/ui-components.js"></script>
+<!-- API clients -->
+<script src="../js/api/client.js"></script>
+<script src="../js/api/flashcards.js"></script>
+<script src="../js/api/batch.js"></script>
+<script src="../js/api/stats.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+<!-- Cultural Background Pattern -->
+<div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 header-with-sidebar z-30 glass-nav bg-surface/90 border-b border-outline-variant">
+<div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
+<div class="flex items-center gap-md">
+<button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<a class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
+</div>
+<div class="flex items-center gap-md">
+<a href="flashcards.html" class="flex items-center gap-xs text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">layers</span>
+<span class="hidden sm:inline">My Decks</span>
+</a>
+<div class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Mobile drawer overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
+<!-- Side Navigation Bar -->
+<aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
+<script>
+  if (window.MandoShell) {
+    window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'flashcards' });
+  }
+</script>
+<!-- Main Content Canvas -->
+<main class="pt-[88px] min-h-screen main-with-sidebar transition-all duration-300 relative z-10 flex flex-col items-center px-margin-mobile md:px-lg pb-lg">
+<!-- Study Session View -->
+<div id="study-view" class="w-full max-w-[640px] flex flex-col items-center justify-center flex-1 py-md">
+<!-- Status & Progress Bar -->
+<div class="w-full mb-md flex flex-col space-y-sm">
+<div class="flex justify-between items-end">
+<div>
+<p id="session-mode-label" class="font-label-caps text-on-surface-variant uppercase tracking-widest text-[10px]">Session Progress</p>
+<h2 id="session-title" class="font-headline-md text-primary-dim">Random Mix</h2>
+</div>
+<div class="text-right flex items-center gap-sm">
+<span id="speed-timer" class="hidden px-sm py-xs bg-error-container/20 text-error font-label-caps text-[11px] rounded-full">2:00</span>
+<span id="session-counter" class="font-label-caps text-on-surface-variant">Card 1 / 10</span>
+</div>
+</div>
+<!-- Linear Progress Indicator -->
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="session-progress-track">
+<div id="session-progress-bar" class="h-full bg-primary rounded-full transition-all duration-700 ease-out" style="width: 0%;"></div>
+</div>
+</div>
+<!-- The Flashcard -->
+<div id="flashcard" class="relative w-full aspect-[4/3] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col items-center justify-center p-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(193,81,112,0.12)]">
+<!-- Card Meta Actions -->
+<div class="absolute top-md right-md flex space-x-xs">
+<button id="btn-speak" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors active:scale-90" title="Play pronunciation" aria-label="Play pronunciation">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+</div>
+<div class="absolute top-md left-md">
+<span id="card-hsk-tag" class="px-sm py-xs bg-tertiary-container text-on-tertiary-container font-label-caps text-[10px] rounded-full uppercase">HSK 3</span>
+</div>
+<!-- Character Display -->
+<div class="flex flex-col items-center">
+<h3 id="card-hanzi" class="font-character-display text-character-display text-on-surface mb-sm leading-none">面试</h3>
+<!-- Pinyin / Meaning Reveal Zone -->
+<div id="card-reveal-zone" class="opacity-0 translate-y-2 transition-all duration-300 pointer-events-none">
+<p id="card-pinyin" class="font-body-lg text-secondary text-center tracking-widest">miàn shì</p>
+<p id="card-meaning" class="font-body-md text-on-surface-variant text-center mt-xs italic">to interview; interview</p>
+</div>
+</div>
+<button id="btn-toggle-reveal" class="mt-lg px-md py-sm rounded-full border border-secondary text-secondary font-label-caps hover:bg-secondary/5 transition-all active:scale-95">
+Show Answer
+</button>
+</div>
+<!-- Response Actions -->
+<div class="w-full mt-lg grid grid-cols-2 sm:grid-cols-4 gap-md">
+<button id="btn-again" class="h-12 flex flex-col items-center justify-center rounded-xl border-2 border-primary-dim text-primary-dim font-label-caps hover:bg-primary-dim/5 transition-all active:scale-95" aria-label="Again (keyboard 1)">
+<span class="material-symbols-outlined text-[20px]">replay</span>
+Again
+</button>
+<button id="btn-got-it" class="h-12 flex flex-col items-center justify-center rounded-xl bg-secondary text-on-secondary font-label-caps hover:brightness-110 shadow-md shadow-secondary/20 transition-all active:scale-95" aria-label="Got it (keyboard 2)">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+Got it
+</button>
+<button id="btn-skip" class="h-12 flex flex-col items-center justify-center rounded-xl border border-outline-variant text-on-surface-variant font-label-caps hover:bg-surface-container-high transition-all active:scale-95" aria-label="Skip card">
+<span class="material-symbols-outlined text-[20px]">skip_next</span>
+Skip
+</button>
+<button id="btn-end" class="h-12 flex flex-col items-center justify-center rounded-xl border border-outline-variant text-on-surface-variant font-label-caps hover:bg-surface-container-high transition-all active:scale-95" aria-label="End session (Escape)">
+<span class="material-symbols-outlined text-[20px]">exit_to_app</span>
+End
+</button>
+</div>
+<!-- Keyboard Shortcuts Hint -->
+<div class="mt-xl text-center max-w-md">
+<p class="font-label-caps text-on-surface-variant text-[11px] flex items-center justify-center space-x-xs">
+<span class="material-symbols-outlined text-[14px]">info</span>
+<span>Keyboard Shortcuts: 1 (Again), 2 (Got it), Space (Show), Esc (End)</span>
+</p>
+</div>
+</div>
+<!-- Empty Deck State -->
+<div id="empty-state" class="hidden w-full max-w-[480px] flex-col items-center justify-center flex-1 text-center py-lg">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant mb-md">
+<span class="material-symbols-outlined text-[36px]">style</span>
+</div>
+<h3 id="empty-title" class="font-headline-md text-headline-md text-on-surface mb-sm">No cards to study</h3>
+<p id="empty-message" class="font-body-md text-on-surface-variant mb-lg">This deck is empty for the selected study mode.</p>
+<a href="flashcards.html" class="px-lg py-sm bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-dim transition-all shadow-md">Back to Decks</a>
+</div>
+<!-- Session Summary -->
+<div id="session-summary" class="hidden w-full max-w-[640px] flex-col items-center justify-center flex-1 py-md">
+<div class="w-full bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-lg text-center">
+<div class="w-16 h-16 rounded-full bg-primary-container/30 flex items-center justify-center text-primary mx-auto mb-md">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">celebration</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Session Complete</h3>
+<p id="summary-mode" class="text-sm text-on-surface-variant mb-lg">Random Mix</p>
+<div id="summary-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-md mb-lg"><!-- rendered by JS --></div>
+<div class="flex flex-col sm:flex-row justify-center gap-sm">
+<button id="summary-continue" class="px-lg py-sm bg-primary text-on-primary rounded-xl font-bold hover:bg-primary-dim transition-all shadow-md active:scale-95">Study Again</button>
+<button id="summary-hub" class="px-lg py-sm border border-outline-variant text-on-surface rounded-xl font-bold hover:bg-surface-container transition-all active:scale-95">Back to Decks</button>
+</div>
+</div>
+</div>
+</main>
+<script src="../js/pages/study-mode.js"></script>
+</body>
+</html>

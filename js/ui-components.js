@@ -51,9 +51,12 @@
    *
    * @param {string} title
    * @param {string} message
+   * @param {{okText?: string, cancelText?: string}} [options]
    * @returns {Promise<boolean>} resolves true on confirm, false on cancel/close
    */
-  function confirm(title, message) {
+  function confirm(title, message, options) {
+    const okText = (options && options.okText) || 'Delete';
+    const cancelText = (options && options.cancelText) || 'Cancel';
     return new Promise(function (resolve) {
       const overlay = document.createElement('div');
       overlay.className = 'fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-md';
@@ -65,8 +68,8 @@
           </div>
           <p class="font-body-md text-on-surface-variant mb-lg">${escapeHtml(message)}</p>
           <div class="flex justify-end gap-sm">
-            <button class="confirm-cancel px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">Cancel</button>
-            <button class="confirm-ok px-md py-xs rounded-lg bg-error text-on-error font-body-md hover:bg-error-dim transition-all shadow-md">Delete</button>
+            <button class="confirm-cancel px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">${escapeHtml(cancelText)}</button>
+            <button class="confirm-ok px-md py-xs rounded-lg bg-error text-on-error font-body-md hover:bg-error-dim transition-all shadow-md">${escapeHtml(okText)}</button>
           </div>
         </div>
       `;
