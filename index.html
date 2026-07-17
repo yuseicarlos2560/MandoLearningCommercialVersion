@@ -32,7 +32,7 @@
     window.MandoShell.renderSidebar({ pageRoot: 'root', activeNavItem: 'videos', includeVideoLibrary: false });
   }
 </script>
-<!-- TopNavBar (Shared Component) -->
+<!-- TopNavBar (Shared Component). Width is adjusted by MandoShell's desktop sidebar collapse state (header-with-sidebar). -->
 <header class="fixed top-0 left-0 right-0 header-with-sidebar h-16 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md bg-surface-container dark:bg-surface-container-high flex justify-between items-center px-md z-30">
 <div class="flex items-center gap-md">
 <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
@@ -59,7 +59,7 @@
 </div>
 </div>
 </header>
-<!-- Main Content Area -->
+<!-- Main Content Area. Margin is adjusted by MandoShell's desktop sidebar collapse state (main-with-sidebar). -->
 <main class="main-with-sidebar pt-24 px-md pb-xl min-h-screen relative z-10 transition-all duration-300">
 <div class="max-w-[1200px] mx-auto">
 <!-- Header Section -->

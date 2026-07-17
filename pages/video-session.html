@@ -28,7 +28,7 @@
 <script src="../js/api/batch.js"></script>
 </head>
 <body class="text-on-surface overflow-x-hidden">
-<!-- Top Navigation Bar -->
+<!-- Top Navigation Bar. Width is adjusted by MandoShell's desktop sidebar collapse state (header-with-sidebar). -->
 <header class="fixed top-0 left-0 right-0 header-with-sidebar z-30 glass-nav bg-surface/90 border-b border-outline-variant">
 <div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
 <div class="flex items-center gap-md">
@@ -59,7 +59,7 @@
     window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'videos', includeVideoLibrary: true });
   }
 </script>
-<!-- Main Content Canvas -->
+<!-- Main Content Canvas. Margin is adjusted by MandoShell's desktop sidebar collapse state (main-with-sidebar). -->
 <main class="pt-[88px] min-h-screen main-with-sidebar transition-all duration-300 overflow-visible">
 <div class="px-lg max-w-[1200px] mx-auto py-md overflow-visible">
 <!-- Breadcrumbs -->

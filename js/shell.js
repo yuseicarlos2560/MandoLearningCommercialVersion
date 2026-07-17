@@ -3,6 +3,8 @@
  *
  * Handles:
  * - Sidebar markup injection (single source of truth)
+ * - Collapsible Video/Script Library sections inside the sidebar
+ * - Desktop sidebar collapse/expand toggle (persisted per user)
  * - Mobile sidebar drawer toggle
  * - Sidebar profile snippet rendering
  */
@@ -117,12 +119,18 @@
     initSidebarCollapsibleToggles();
   }
 
+  // ---------------------------------------------------------------------------
+  // Desktop sidebar collapse/expand
+  // ---------------------------------------------------------------------------
+
   const SIDEBAR_COLLAPSED_KEY = 'mando.sidebar.collapsed';
 
+  /** @returns {boolean} whether the user previously collapsed the desktop sidebar */
   function isSidebarCollapsed() {
     return MandoUtils ? MandoUtils.safeLocalStorageGet(SIDEBAR_COLLAPSED_KEY) === 'true' : false;
   }
 
+  /** Persist and apply the desktop sidebar collapsed state. */
   function setSidebarCollapsed(collapsed) {
     if (MandoUtils && typeof MandoUtils.safeLocalStorageSet === 'function') {
       MandoUtils.safeLocalStorageSet(SIDEBAR_COLLAPSED_KEY, String(collapsed));
@@ -130,6 +138,7 @@
     applySidebarCollapsedState(collapsed);
   }
 
+  /** Toggle the `sidebar-collapsed` body class and the floating reopen tab. */
   function applySidebarCollapsedState(collapsed) {
     if (collapsed) {
       document.body.classList.add('sidebar-collapsed');
@@ -147,6 +156,7 @@
     }
   }
 
+  /** Inject the floating tab used to reopen the sidebar on desktop. */
   function ensureSidebarOpenButton() {
     let btn = document.getElementById('sidebar-open-btn');
     if (btn) return btn;
@@ -164,6 +174,14 @@
     return btn;
   }
 
+  // ---------------------------------------------------------------------------
+  // Collapsible sidebar library sections
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Build a collapsible library section (Video/Script) for the sidebar.
+   * State is persisted per section under `mando.sidebar.{containerId}.collapsed`.
+   */
   function renderCollapsibleLibrarySection(title, containerId, defaultCollapsed) {
     const storageKey = 'mando.sidebar.' + containerId + '.collapsed';
     const stored = MandoUtils ? MandoUtils.safeLocalStorageGet(storageKey) : null;
@@ -182,6 +200,7 @@
     `;
   }
 
+  /** Wire up the expand/collapse buttons for library sections. */
   function initSidebarCollapsibleToggles() {
     document.querySelectorAll('.sidebar-collapsible-toggle').forEach(function (btn) {
       btn.addEventListener('click', function () {

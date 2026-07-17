@@ -4,6 +4,11 @@
  * These functions are used across multiple page handlers and shell components.
  * Keeping them in one place avoids duplication and keeps page handlers focused
  * on page-specific behavior.
+ *
+ * Includes:
+ * - localStorage, identity, UUID, date/formatting, DOM helpers
+ * - `MandoUtils.speak(text, { id })` / `MandoUtils.stopSpeaking()` for
+ *   browser-based Mandarin text-to-speech with per-line play/stop toggle
  */
 
 (function (window) {
@@ -244,6 +249,7 @@
     return voices.find(function (v) { return v.lang && v.lang.startsWith('zh'); }) || null;
   }
 
+  /** Stop any in-progress speech synthesis playback. */
   function stopSpeaking() {
     if (!window.speechSynthesis) return;
     isSpeakingFlag = false;
@@ -251,6 +257,7 @@
     window.speechSynthesis.cancel();
   }
 
+  /** @returns {boolean} whether speech synthesis is currently playing. */
   function isSpeaking() {
     return isSpeakingFlag;
   }

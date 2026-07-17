@@ -7,6 +7,11 @@
  * - MandoApi.batch    (Save All / pending changes)
  * - MandoApi.stats    (USER_ACTIVE event)
  *
+ * UI features:
+ * - Script panel below the video with per-line synthetic-voice play buttons
+ *   (uses `MandoUtils.speak`; pressing again stops playback)
+ * - Collapsible Video Library in the shared sidebar
+ *
  * Keeps all markup intact; only dynamic text/attributes are updated via ids.
  */
 
@@ -1547,6 +1552,7 @@
         seekTo(line.t);
       });
 
+      // Per-line synthetic-voice play button (toggle: second press stops playback).
       const playBtn = el.querySelector('.script-play-line');
       if (playBtn) {
         playBtn.addEventListener('click', function (e) {

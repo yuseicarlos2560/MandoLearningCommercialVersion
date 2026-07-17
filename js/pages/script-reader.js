@@ -7,6 +7,11 @@
  * - MandoApi.batch    (flashcard creates from "Also add to deck")
  * - MandoApi.videos   (related videos by HSK level)
  * - MandoApi.stats    (USER_ACTIVE event)
+ *
+ * UI features:
+ * - Inline per-line play button with browser TTS fallback when no audio URL is
+ *   available (uses `MandoUtils.speak` so a second press stops playback)
+ * - Collapsible Script Library in the shared sidebar
  */
 
 (function () {
@@ -1587,7 +1592,8 @@
     const line = state.lines[index];
     if (!line) return;
 
-    // Fallback: use the browser's speech synthesis when no real audio is attached.
+    // Fallback: use browser speech synthesis when no real audio is attached.
+    // `MandoUtils.speak` toggles: a second press on the same line stops playback.
     if (!state.audioUrl) {
       speak(line.chinese, { id: 'script-line-' + index });
       return;

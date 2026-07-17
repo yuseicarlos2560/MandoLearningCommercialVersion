@@ -90,7 +90,7 @@
 <body class="bg-background text-on-background font-body-md overflow-x-hidden">
 <!-- Cultural Background Pattern -->
 <div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
-<!-- Top Navigation Bar -->
+<!-- Top Navigation Bar. Width is adjusted by MandoShell's desktop sidebar collapse state (header-with-sidebar). -->
 <header class="fixed top-0 left-0 right-0 header-with-sidebar z-30 glass-nav bg-surface/90 border-b border-outline-variant">
 <div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
 <div class="flex items-center gap-md">
@@ -115,7 +115,7 @@
     window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'stats', includeVideoLibrary: false });
   }
 </script>
-<!-- Main Content Area -->
+<!-- Main Content Area. Margin is adjusted by MandoShell's desktop sidebar collapse state (main-with-sidebar). -->
 <main class="pt-[88px] min-h-screen main-with-sidebar transition-all duration-300 relative z-10">
 <div class="px-lg py-md max-w-[1200px] mx-auto">
 <!-- Header & Filter -->
