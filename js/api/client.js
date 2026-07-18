@@ -4,6 +4,7 @@
  * Responsibilities:
  * - Build absolute URLs from a configurable base host.
  * - Attach JSON headers.
+ * - Attach the Bearer session token; clear the session and redirect to login on 401.
  * - Inject userId into path parameters where required.
  * - Exponential backoff for 5xx / network errors.
  * - Return a normalized { ok, status, data, error } result object.
@@ -12,7 +13,15 @@
 (function (window) {
   'use strict';
 
-  const DEFAULT_HOST = 'http://localhost:8080';
+  const DEFAULT_LOCAL_HOST = 'http://localhost:8080';
+
+  function getDefaultHost() {
+    const host = window.location && window.location.hostname;
+    // Local dev (e.g. python http.server on :8000) talks to the local backend.
+    if (host === 'localhost' || host === '127.0.0.1') return DEFAULT_LOCAL_HOST;
+    // Deployed environments are same-origin: CloudFront routes /api/* to API Gateway.
+    return '';
+  }
 
   function getBaseUrl() {
     let storedHost = null;
@@ -21,7 +30,7 @@
     } catch (e) {
       storedHost = null;
     }
-    return window.__MANDO_HOST__ || storedHost || DEFAULT_HOST;
+    return window.__MANDO_HOST__ || storedHost || getDefaultHost();
   }
 
   function sleep(ms) {
@@ -42,12 +51,19 @@
   async function request(method, path, options = {}) {
     const baseUrl = path.startsWith('http') ? '' : getBaseUrl();
     const url = `${baseUrl}${path}`;
+    const isLoginCall = path.indexOf('/api/auth/login') === 0;
 
     const headers = {
       Accept: 'application/json',
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
       ...(options.headers || {}),
     };
+
+    // Attach the session token to every call except the login call itself.
+    if (!isLoginCall && window.MandoAuth) {
+      const token = window.MandoAuth.getToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+    }
 
     const fetchOptions = {
       method,
@@ -85,6 +101,13 @@
 
         // 4xx: do not retry
         if (status >= 400 && status < 500) {
+          // Expired/invalid session: clear auth and send the user to login.
+          if (status === 401 && !isLoginCall && window.MandoAuth) {
+            window.MandoAuth.clearAuth();
+            if (!/login\.html$/.test(window.location.pathname)) {
+              window.location.href = window.MandoAuth.loginPageUrl();
+            }
+          }
           return { ok: false, status, data, error: data };
         }
 

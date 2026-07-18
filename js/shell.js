@@ -97,8 +97,11 @@
         </div>
         <div class="min-w-0">
           <p id="sidebar-user-name" class="font-body-md text-body-md text-on-surface font-semibold truncate">Learner</p>
-          <p id="sidebar-user-role" class="font-label-caps text-label-caps text-on-surface-variant truncate">HSK 4 Learner</p>
+          <p id="sidebar-user-role" class="font-label-caps text-label-caps text-on-surface-variant truncate">Mandarin Learner</p>
         </div>
+        <button type="button" id="sidebar-logout-btn" class="ml-auto shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-surface-container transition-colors" title="Log out" onclick="if (window.MandoAuth) window.MandoAuth.logout()">
+          <span class="material-symbols-outlined text-lg">logout</span>
+        </button>
       </div>
       <div class="mt-auto px-base py-md border-t border-outline-variant/30">
         <button class="w-full btn-gradient text-on-primary font-headline-md text-headline-md py-base rounded-xl shadow-md active:scale-95">
@@ -306,7 +309,7 @@
 
     const displayName = MandoUtils ? MandoUtils.getDisplayName() : 'Learner';
     nameEl.textContent = displayName;
-    roleEl.textContent = 'HSK 4 Learner';
+    roleEl.textContent = 'Mandarin Learner';
   }
 
   // ---------------------------------------------------------------------------

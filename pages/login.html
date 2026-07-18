@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Log In | MandoLearning</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../js/tailwind-config.js"></script>
+<link rel="stylesheet" href="../css/design-system.css" />
+<!-- Shared utilities, auth, and UI components -->
+<script src="../js/utils.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/ui-components.js"></script>
+<!-- API clients -->
+<script src="../js/api/client.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden">
+<!-- Cultural Background Pattern -->
+<div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
+<main class="min-h-screen flex items-center justify-center px-md relative z-10">
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-lg">
+<!-- Brand -->
+<div class="text-center mb-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">MandoLearning</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant tracking-wider mt-1 uppercase">Modern Mandarin Mastery</p>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mb-xs">Welcome back</h2>
+<p class="text-body-md text-on-surface-variant mb-md">Enter your AccountID to continue learning.</p>
+<form id="login-form" class="space-y-md" novalidate>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="account-id-input">AccountID</label>
+<div class="relative">
+<input id="account-id-input" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-full pl-10 pr-12 py-2 text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="mndo-…" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">key</span>
+<button type="button" id="account-id-toggle" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors" aria-label="Show AccountID">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+<p id="login-error" class="text-error text-sm mt-xs hidden"></p>
+</div>
+<button type="submit" id="login-submit" class="w-full btn-gradient text-on-primary font-headline-md text-headline-md py-base rounded-xl shadow-md active:scale-95 transition-transform disabled:opacity-60">
+Log In
+</button>
+</form>
+<div class="mt-md space-y-xs text-center">
+<p class="text-sm text-on-surface-variant">Save this AccountID. It cannot be recovered.</p>
+<p class="text-xs text-on-surface-variant/80">AccountIDs are issued by your administrator. There is no self-signup.</p>
+</div>
+</div>
+</main>
+<script src="../js/pages/login.js"></script>
+</body>
+</html>

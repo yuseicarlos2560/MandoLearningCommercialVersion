@@ -61,8 +61,10 @@
   // ---------------------------------------------------------------------------
 
   function getUserId() {
+    // Prefer the logged-in session; the ?userId= query param stays as a
+    // fallback (dev override) until Phase 3 removes it.
     const params = new URLSearchParams(window.location.search);
-    return params.get('userId') || safeLocalStorageGet('mando.userId') || null;
+    return safeLocalStorageGet('mando.userId') || params.get('userId') || null;
   }
 
   function deriveNameFromUserId(userId) {

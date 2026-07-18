@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="../css/design-system.css" />
 <!-- Shared utilities, shell, and UI components -->
 <script src="../js/utils.js"></script>
+<script src="../js/auth.js"></script>
 <script src="../js/shell.js"></script>
 <script src="../js/ui-components.js"></script>
 <script src="../js/pinyin-helper.js"></script>
@@ -47,6 +48,9 @@
 <!-- Side Navigation Bar -->
 <aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
 <script>
+  if (window.MandoAuth) {
+    window.MandoAuth.guard('pages');
+  }
   if (window.MandoShell) {
     window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'documents' });
   }

@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/design-system.css" />
 <!-- Shared utilities and shell -->
 <script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/shell.js"></script>
 <!-- API clients -->
 <script src="js/api/client.js"></script>
@@ -28,6 +29,9 @@
 <!-- SideNavBar (Shared Component) -->
 <aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
 <script>
+  if (window.MandoAuth) {
+    window.MandoAuth.guard('root');
+  }
   if (window.MandoShell) {
     window.MandoShell.renderSidebar({ pageRoot: 'root', activeNavItem: 'videos', includeVideoLibrary: false });
   }
