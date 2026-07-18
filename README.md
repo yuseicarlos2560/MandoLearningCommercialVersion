@@ -143,7 +143,7 @@ Full backend API documentation lives in the companion Java project (`~/IdeaProje
 | **Flashcards Hub** | `pages/flashcards.html`, `js/pages/flashcards.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `POST /api/textprocessing/{userId}/batch` |
 | **Flashcard Study** | `pages/study-mode.html`, `js/pages/study-mode.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `GET /api/textprocessing/{userId}/flashcard/deck/hsk/{level}`, `GET /api/textprocessing/{userId}/flashcard/deck/category/{category}`, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` |
 | **Deck Editor** | `pages/deck-editor.html`, `js/pages/deck-editor.js` | `GET /api/textprocessing/{userId}/flashcard/deck/all`, `GET /api/textprocessing/{userId}/flashcard/deck/category/{category}`, `POST /api/textprocessing/{userId}/batch` |
-| **Document Study** | `pages/document-study.html`, `js/pages/document-study.js` | `GET /api/documents` ⏳, `GET /api/documents/{id}` ⏳, `GET /api/textprocessing/{userId}/documents/{id}` ⏳, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` (⏳ = specified, backend pending — page degrades to demo/local mode) |
+| **Document Study** | `pages/document-study.html`, `js/pages/document-study.js` | `GET /api/documents/{userId}`, `GET /api/documents/{userId}/{documentId}`, `GET /api/textprocessing/{userId}/documents/{documentId}`, `POST /api/textprocessing/{userId}/batch`, `POST /api/stats/{userId}/events` |
 
 ### Missing shared modules
 
@@ -151,10 +151,6 @@ Modules planned in `HIGH_LEVEL_PLAN.md` that are still not created:
 
 - `js/main.js`
 - `js/state.js`
-<<<<<<< Updated upstream
-- `js/pages/document-study.js`
-=======
->>>>>>> Stashed changes
 
 Created and in use:
 
@@ -166,7 +162,7 @@ Created and in use:
 - `js/api/videos.js` — video catalog + script endpoints
 - `js/api/scripts.js` — script catalog + content + audio endpoints
 - `js/api/notes.js` — session, script-scoped, and document-scoped notes + details
-- `js/api/documents.js` — document library + upload/download (backend pending)
+- `js/api/documents.js` — document library + upload/download/delete, aligned with `MandoLearningDocuments_api_documentation.md`
 - `js/api/flashcards.js` — flashcard deck queries (all / HSK / category)
 - `js/api/batch.js` — TextProcessing batch flush
 - `js/api/stats.js` — stats aggregate / activity / events

@@ -24,9 +24,9 @@
   const ZOOM_STEP = 0.25;
 
   const DEMO_DOCUMENTS = [
-    { documentId: 'DOC_DEMO_001', fileName: 'HSK3 Reading Practice - Lesson 57.pdf', fileSizeBytes: 245000, mimeType: 'application/pdf', status: 'READY', createdAt: '2026-07-12T09:30:00Z' },
-    { documentId: 'DOC_DEMO_002', fileName: 'Travel Abroad Comprehension.pdf', fileSizeBytes: 188000, mimeType: 'application/pdf', status: 'READY', createdAt: '2026-07-08T14:10:00Z' },
-    { documentId: 'DOC_DEMO_003', fileName: 'Business Etiquette Guide.pdf', fileSizeBytes: 320000, mimeType: 'application/pdf', status: 'READY', createdAt: '2026-07-03T11:45:00Z' },
+    { documentId: 'DOC_DEMO_001', fileName: 'HSK3 Reading Practice - Lesson 57.pdf', fileSizeBytes: 245000, contentType: 'application/pdf', status: 'READY', createdAt: '2026-07-12T09:30:00Z' },
+    { documentId: 'DOC_DEMO_002', fileName: 'Travel Abroad Comprehension.pdf', fileSizeBytes: 188000, contentType: 'application/pdf', status: 'READY', createdAt: '2026-07-08T14:10:00Z' },
+    { documentId: 'DOC_DEMO_003', fileName: 'Business Etiquette Guide.pdf', fileSizeBytes: 320000, contentType: 'application/pdf', status: 'READY', createdAt: '2026-07-03T11:45:00Z' },
   ];
 
   const DEMO_DOCUMENT_ID = 'DOC_DEMO_001';
@@ -91,6 +91,7 @@
     mode: params.get('documentId') ? 'study' : 'library',
     // Library
     documents: [],
+    nextToken: null,
     backendDeployed: true,
     // Study
     documentId: params.get('documentId'),
@@ -208,8 +209,9 @@
     }
 
     if (res.ok && res.data) {
-      const items = res.data.documents || res.data.items || res.data.notes || [];
+      const items = res.data.documents || [];
       state.documents = Array.isArray(items) ? items : [];
+      state.nextToken = res.data.nextPageStateToken || null;
       state.backendDeployed = true;
     } else if (res.status === 404) {
       // Documents module not deployed yet: demo fixtures + notice.
@@ -225,8 +227,11 @@
     renderDocumentGrid();
   }
 
-  function documentCardHtml(doc) {
+  function documentCardHtml(doc, showDelete) {
     const badge = STATUS_BADGES[doc.status] || STATUS_BADGES.READY;
+    const deleteBtn = showDelete
+      ? `<button type="button" data-action="delete-doc" data-id="${escapeHtml(doc.documentId)}" class="p-2 text-outline hover:text-error transition-colors rounded-full hover:bg-error-container/10" title="Delete document"><span class="material-symbols-outlined text-[18px]">delete</span></button>`
+      : '';
     return `
       <div class="flex justify-between items-start mb-4">
         <div class="bg-primary-container/20 p-3 rounded-xl">
@@ -238,7 +243,10 @@
       <p class="text-label-caps text-on-surface-variant">${escapeHtml(formatBytes(doc.fileSizeBytes))}${doc.createdAt ? ' · ' + escapeHtml(formatDateShort(doc.createdAt)) : ''}</p>
       <div class="mt-lg pt-md border-t border-outline-variant/20 flex justify-between items-center">
         <span class="text-xs font-bold text-primary">Open</span>
-        <span class="material-symbols-outlined text-[18px] text-outline-variant group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        <div class="flex items-center gap-sm">
+          ${deleteBtn}
+          <span class="material-symbols-outlined text-[18px] text-outline-variant group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </div>
       </div>
     `;
   }
@@ -266,10 +274,18 @@
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'text-left group relative bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all duration-300 hover:border-primary hover:shadow-lg hover:-translate-y-1';
-      card.innerHTML = documentCardHtml(doc);
-      card.addEventListener('click', function () {
+      card.innerHTML = documentCardHtml(doc, isAdmin());
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('[data-action="delete-doc"]')) return;
         window.location.href = `document-study.html?documentId=${encodeURIComponent(doc.documentId)}`;
       });
+      const deleteBtn = card.querySelector('[data-action="delete-doc"]');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', async function (e) {
+          e.stopPropagation();
+          await deleteDocument(doc);
+        });
+      }
       grid.appendChild(card);
     });
   }
@@ -308,8 +324,8 @@
       try {
         const initRes = await window.MandoApi.documents.initiateUpload(state.userId, {
           fileName: file.name,
+          contentType: file.type || 'application/pdf',
           fileSizeBytes: file.size,
-          mimeType: file.type || 'application/pdf',
         });
 
         if (!initRes.ok) {
@@ -341,7 +357,7 @@
           return;
         }
 
-        const completeRes = await window.MandoApi.documents.completeUpload(documentId);
+        const completeRes = await window.MandoApi.documents.completeUpload(state.userId, documentId);
         if (!completeRes.ok) {
           if (MandoUi) MandoUi.toast('Upload verification failed. Please try again.', 'error');
           return;
@@ -356,6 +372,37 @@
         uploadBtn.disabled = false;
       }
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Library: admin delete document
+  // ---------------------------------------------------------------------------
+
+  async function deleteDocument(doc) {
+    if (!isAdmin()) return;
+    const proceed = MandoUi
+      ? await MandoUi.confirm('Delete this document?', `"${doc.fileName}" will be permanently removed.`, { okText: 'Delete' })
+      : true;
+    if (!proceed) return;
+
+    if (!state.backendDeployed) {
+      if (MandoUi) MandoUi.toast('Document deletion is unavailable until the documents backend is deployed.', 'error');
+      return;
+    }
+
+    try {
+      const res = await window.MandoApi.documents.remove(state.userId, doc.documentId);
+      if (res.ok || res.status === 404) {
+        state.documents = state.documents.filter(function (d) { return d.documentId !== doc.documentId; });
+        renderDocumentGrid();
+        if (res.ok && MandoUi) MandoUi.toast('Document deleted.', 'success');
+      } else {
+        if (MandoUi) MandoUi.toast('Could not delete the document. Please try again.', 'error');
+      }
+    } catch (err) {
+      console.error('Delete document failed', err);
+      if (MandoUi) MandoUi.toast('Could not delete the document. Please try again.', 'error');
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -808,26 +855,16 @@
   // ---------------------------------------------------------------------------
 
   const OP_TO_ARRAY = {
-    CREATE_DOCUMENT_NOTE: 'createDocumentNotes',
-    UPDATE_DOCUMENT_NOTE: 'updateDocumentNotes',
-    DELETE_DOCUMENT_NOTE: 'deleteDocumentNotes',
     CREATE_FLASHCARD: 'createFlashCards',
   };
 
   function buildBatchItem(change) {
     const d = change.data;
-    if (change.operation === 'CREATE_DOCUMENT_NOTE') {
-      return { documentId: d.documentId, character: d.character, pinyin: d.pinyin, hsk: d.hsk };
+    // Only flashcards go through the batch endpoint.
+    if (change.operation !== 'CREATE_FLASHCARD') {
+      return null;
     }
-    if (change.operation === 'UPDATE_DOCUMENT_NOTE') {
-      return { documentId: d.documentId, noteId: d.noteId, character: d.character, pinyin: d.pinyin };
-    }
-    if (change.operation === 'DELETE_DOCUMENT_NOTE') {
-      return { documentId: d.documentId, noteId: d.noteId };
-    }
-    // CREATE_FLASHCARD
-    const item = { character: d.character, pinyin: d.pinyin, meaning: d.meaning, hsk: d.hsk, category: d.category };
-    return item;
+    return { character: d.character, pinyin: d.pinyin, meaning: d.meaning, hsk: d.hsk, category: d.category };
   }
 
   function packChunks(changes) {
@@ -848,10 +885,45 @@
   }
 
   /**
-   * Flush one packed chunk. Returns 'ok' | 'error' | 'not-deployed'.
+   * Flush one document-note change through its single TextProcessing endpoint.
+   * Returns 'ok' | 'error' | 'not-deployed'.
+   */
+  async function flushDocumentNoteChange(change) {
+    const d = change.data;
+    try {
+      let res;
+      if (change.operation === 'CREATE_DOCUMENT_NOTE') {
+        res = await window.MandoApi.notes.createDocumentNote(state.userId, d.documentId, {
+          character: d.character,
+          pinyin: d.pinyin,
+          hsk: d.hsk,
+        });
+      } else if (change.operation === 'UPDATE_DOCUMENT_NOTE') {
+        res = await window.MandoApi.notes.updateDocumentNote(state.userId, d.documentId, d.noteId, {
+          character: d.character,
+          pinyin: d.pinyin,
+        });
+      } else if (change.operation === 'DELETE_DOCUMENT_NOTE') {
+        res = await window.MandoApi.notes.deleteDocumentNote(state.userId, d.documentId, d.noteId);
+      } else {
+        return 'ok';
+      }
+
+      if (res.ok) return 'ok';
+      if (res.status === 404) return 'not-deployed';
+      console.error('Document note flush failed', change.operation, res.error);
+      return 'error';
+    } catch (err) {
+      console.error('Document note flush error', change.operation, err);
+      return 'error';
+    }
+  }
+
+  /**
+   * Flush one packed flashcard chunk via the batch endpoint.
+   * Returns 'ok' | 'error' | 'not-deployed'.
    * Per-item results are matched when present; an ok response with no
-   * recognizable results resolves the whole chunk (best effort for the
-   * not-yet-specified document-note result format).
+   * recognizable results resolves the whole chunk.
    */
   async function flushChunk(payload, entries, resolved) {
     try {
@@ -901,22 +973,21 @@
       await flushChunk({ createFlashCards: chunk.createFlashCards }, chunk.entries, resolved);
     }
 
-    // 2. Document notes flush separately; a 404 here means "module not
-    //    deployed" and only affects note changes.
+    // 2. Document notes flush through single TextProcessing endpoints; a 404
+    //    here means "module not deployed" and only affects note changes.
     let hitNotes404 = false;
     const noteChanges = state.pendingChanges.filter(function (c) {
       return c.operation !== 'CREATE_FLASHCARD';
     });
-    for (const chunk of packChunks(noteChanges)) {
-      const payload = {};
-      ['createDocumentNotes', 'updateDocumentNotes', 'deleteDocumentNotes'].forEach(function (key) {
-        if (chunk[key] && chunk[key].length) payload[key] = chunk[key];
-      });
-      const outcome = await flushChunk(payload, chunk.entries, resolved);
-      if (outcome === 'not-deployed') {
+    for (const change of noteChanges) {
+      const outcome = await flushDocumentNoteChange(change);
+      if (outcome === 'ok') {
+        resolved.add(change._id);
+      } else if (outcome === 'not-deployed') {
         hitNotes404 = true;
         break;
       }
+      // 'error' leaves the change in the queue for retry.
     }
 
     state.pendingChanges = state.pendingChanges.filter(function (c) { return !resolved.has(c._id); });

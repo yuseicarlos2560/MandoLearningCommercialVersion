@@ -1,12 +1,12 @@
 /**
  * Documents API client.
- * Base path: /api/documents
+ * Base path: /api/documents/{userId}
  *
- * Wraps the user-private documents contract specified in
- * SCRIPTS_DOCUMENTS_LOW_LEVEL_PLAN.md §4.2.
+ * Wraps the user-private documents contract documented in
+ * ~/IdeaProjects/MandoLearning/MandoLearningDocuments_api_documentation.md.
  *
- * IMPORTANT: the backend documents module is specified but not yet deployed.
- * Every method can therefore return a 404 in practice — callers must treat
+ * IMPORTANT: the backend documents module may not be deployed in every
+ * environment. Every method can therefore return a 404 — callers must treat
  * 404 as "module not deployed" and degrade gracefully (see
  * DOCUMENTS_MVP_PLAN.md §3.4).
  *
@@ -25,52 +25,52 @@
   /**
    * Initiate an upload: creates PENDING_UPLOAD metadata and returns a
    * presigned S3 PUT URL.
-   * POST /api/documents
+   * POST /api/documents/{userId}
    *
    * @param {string} userId
-   * @param {{fileName: string, fileSizeBytes: number, mimeType: string}} data
+   * @param {{fileName: string, contentType: string, fileSizeBytes: number}} data
    */
   async function initiateUpload(userId, data) {
-    return window.MandoApi.post(`${BASE}?userId=${encode(userId)}`, data);
+    return window.MandoApi.post(`${BASE}/${encode(userId)}`, data);
   }
 
   /**
    * Mark an upload complete: verifies the S3 object and flips status to READY.
-   * POST /api/documents/{documentId}/complete
+   * POST /api/documents/{userId}/{documentId}/complete
    */
-  async function completeUpload(documentId) {
-    return window.MandoApi.post(`${BASE}/${encode(documentId)}/complete`, {});
+  async function completeUpload(userId, documentId) {
+    return window.MandoApi.post(`${BASE}/${encode(userId)}/${encode(documentId)}/complete`, {});
   }
 
   /**
    * List the caller's documents, newest first.
-   * GET /api/documents?userId&pageSize&nextToken
+   * GET /api/documents/{userId}?pageSize&nextToken
    *
    * @param {string} userId
    * @param {{pageSize?: number, nextToken?: string}} [options]
    */
   async function list(userId, options) {
     const params = new URLSearchParams();
-    params.set('userId', userId);
     if (options && options.pageSize) params.set('pageSize', String(options.pageSize));
     if (options && options.nextToken) params.set('nextToken', options.nextToken);
-    return window.MandoApi.get(`${BASE}?${params.toString()}`);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return window.MandoApi.get(`${BASE}/${encode(userId)}${query}`);
   }
 
   /**
    * Get document metadata + presigned download URL.
-   * GET /api/documents/{documentId}?userId
+   * GET /api/documents/{userId}/{documentId}
    */
   async function get(userId, documentId) {
-    return window.MandoApi.get(`${BASE}/${encode(documentId)}?userId=${encode(userId)}`);
+    return window.MandoApi.get(`${BASE}/${encode(userId)}/${encode(documentId)}`);
   }
 
   /**
    * Delete a document (metadata + S3 object).
-   * DELETE /api/documents/{documentId}?userId
+   * DELETE /api/documents/{userId}/{documentId}
    */
   async function remove(userId, documentId) {
-    return window.MandoApi.delete(`${BASE}/${encode(documentId)}?userId=${encode(userId)}`);
+    return window.MandoApi.delete(`${BASE}/${encode(userId)}/${encode(documentId)}`);
   }
 
   window.MandoApi = window.MandoApi || {};

@@ -91,8 +91,9 @@
   // Document-scoped notes (user-uploaded documents)
   // Base path: /api/textprocessing/{userId}/documents/{documentId}
   //
-  // Mirrors the script-scoped endpoints. The backend documents module is
-  // specified but not yet deployed — expect 404 until Phase 3/4 ships.
+  // Mirrors the script-scoped endpoints. Document-scoped notes are flushed
+  // through these single endpoints; the /batch endpoint does not support
+  // document-scoped note arrays (see DOCUMENTS_MODULE_LOW_LEVEL_PLAN.md §4.6).
   // ---------------------------------------------------------------------------
 
   async function listDocument(userId, documentId, details = true) {
