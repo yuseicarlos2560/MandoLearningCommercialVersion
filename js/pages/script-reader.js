@@ -1691,13 +1691,31 @@
   // Page initialization
   // ---------------------------------------------------------------------------
 
+  /** Newest published script id from the catalog, or null when empty/unreachable. */
+  async function fetchNewestScriptId() {
+    const res = await window.MandoApi.scripts.listReady({ pageSize: 1 });
+    if (res.ok && res.data && Array.isArray(res.data.scripts) && res.data.scripts.length > 0) {
+      return res.data.scripts[0].scriptId;
+    }
+    return null;
+  }
+
   async function initPage() {
-    // No user id or no specific script requested: run in demo mode so the
-    // page always renders useful content. The full catalog view is still a
-    // future TODO (see SCRIPTS_MVP_PLAN §5.3).
-    if (!state.userId || !state.scriptId) {
+    // No user id: run in demo mode so the page always renders useful content.
+    // A logged-in user with no scriptId gets the newest published script from
+    // the API. The full catalog view is still a future TODO (see
+    // SCRIPTS_MVP_PLAN §5.3).
+    if (!state.userId) {
       state.demoMode = true;
       state.scriptId = DEMO_SCRIPT_ID;
+    } else if (!state.scriptId) {
+      const newest = await fetchNewestScriptId();
+      if (newest) {
+        state.scriptId = newest;
+      } else {
+        state.demoMode = true;
+        state.scriptId = DEMO_SCRIPT_ID;
+      }
     }
 
     persistLastScriptId(state.scriptId);
@@ -1709,14 +1727,24 @@
     try {
       let metaOk = await loadScriptMeta();
 
-      // If the requested script does not exist on the backend, fall back to
-      // demo content rather than rendering a broken reader.
+      // If the requested script does not exist on the backend (e.g. a stale
+      // demo id from mando.lastScriptId), fall back to the newest published
+      // script first, and only then to demo content.
       if (!metaOk && !state.demoMode) {
-        console.warn(`Script ${state.scriptId} not found; falling back to demo.`);
-        state.demoMode = true;
-        state.scriptId = DEMO_SCRIPT_ID;
-        persistLastScriptId(state.scriptId);
-        metaOk = await loadScriptMeta();
+        const newest = await fetchNewestScriptId();
+        if (newest && newest !== state.scriptId) {
+          console.warn(`Script ${state.scriptId} not found; loading newest script ${newest}.`);
+          state.scriptId = newest;
+          persistLastScriptId(state.scriptId);
+          metaOk = await loadScriptMeta();
+        }
+        if (!metaOk) {
+          console.warn('No published scripts available; falling back to demo.');
+          state.demoMode = true;
+          state.scriptId = DEMO_SCRIPT_ID;
+          persistLastScriptId(state.scriptId);
+          metaOk = await loadScriptMeta();
+        }
       }
 
       await Promise.all([
