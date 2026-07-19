@@ -143,6 +143,7 @@
     thumbnailUrl,
     getStoredProgress,
     speak,
+    convertChinese,
   } = window.MandoUtils;
 
   const MandoUi = window.MandoUi;
@@ -183,6 +184,55 @@
 
   function isS3Video(video) {
     return video && video.sourceType !== 'YOUTUBE' && videoSourceUrl(video);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Chinese display variant (Simplified/Traditional) — render-time only
+  //
+  // The user's preference lives in localStorage under `mando.subtitles.variant`
+  // ('original' | 'simplified' | 'traditional', default 'simplified').
+  // Conversion happens ONLY when text is rendered; state.scriptLines always
+  // keeps the original characters, so notes, TTS and API payloads are unaffected.
+  // ---------------------------------------------------------------------------
+
+  const SCRIPT_VARIANTS = ['original', 'simplified', 'traditional'];
+
+  function getScriptVariant() {
+    const stored = safeLocalStorageGet('mando.subtitles.variant');
+    return SCRIPT_VARIANTS.includes(stored) ? stored : 'simplified';
+  }
+
+  // Re-render guard: many lines may request a re-render once the lazy-loaded
+  // converter is ready; collapse them into a single render pass.
+  let variantRerenderQueued = false;
+
+  function queueVariantRerender() {
+    if (variantRerenderQueued) return;
+    variantRerenderQueued = true;
+    Promise.resolve().then(function () {
+      variantRerenderQueued = false;
+      renderScript();
+      refreshSubtitle();
+    });
+  }
+
+  function displayChinese(text) {
+    return convertChinese(text, getScriptVariant(), queueVariantRerender);
+  }
+
+  function refreshSubtitle() {
+    let current = 0;
+    if (youtubePlayer && typeof youtubePlayer.getCurrentTime === 'function') {
+      try {
+        current = youtubePlayer.getCurrentTime() || 0;
+      } catch (e) {
+        current = 0;
+      }
+    } else {
+      const video = $('video-player');
+      current = video && video.currentTime ? video.currentTime : 0;
+    }
+    updateSubtitleOverlay(current);
   }
 
   // ---------------------------------------------------------------------------
@@ -819,6 +869,8 @@
     const sizeBtn = $('subtitle-size-btn');
     const sizeMenu = $('subtitle-size-menu');
     const pinyinBtn = $('subtitle-pinyin-btn');
+    const variantBtn = $('subtitle-variant-btn');
+    const variantMenu = $('subtitle-variant-menu');
     const overlay = $('video-subtitle-overlay');
     if (!overlay) return;
 
@@ -833,9 +885,10 @@
           visible: visible !== 'false',
           size: SIZES.includes(size) ? size : 'md',
           pinyin: pinyin !== 'false',
+          variant: getScriptVariant(),
         };
       } catch (e) {
-        return { visible: true, size: 'md', pinyin: true };
+        return { visible: true, size: 'md', pinyin: true, variant: 'simplified' };
       }
     }
 
@@ -843,6 +896,7 @@
       safeLocalStorageSet('mando.subtitles.visible', prefs.visible ? 'true' : 'false');
       safeLocalStorageSet('mando.subtitles.size', prefs.size);
       safeLocalStorageSet('mando.subtitles.pinyin', prefs.pinyin ? 'true' : 'false');
+      safeLocalStorageSet('mando.subtitles.variant', prefs.variant);
     }
 
     function applyPrefs(prefs) {
@@ -866,6 +920,16 @@
       if (sizeMenu) {
         sizeMenu.querySelectorAll('.subtitle-size-option').forEach(function (btn) {
           if (btn.dataset.size === prefs.size) {
+            btn.classList.add('font-semibold', 'bg-surface-container');
+          } else {
+            btn.classList.remove('font-semibold', 'bg-surface-container');
+          }
+        });
+      }
+
+      if (variantMenu) {
+        variantMenu.querySelectorAll('.subtitle-variant-option').forEach(function (btn) {
+          if (btn.dataset.variant === prefs.variant) {
             btn.classList.add('font-semibold', 'bg-surface-container');
           } else {
             btn.classList.remove('font-semibold', 'bg-surface-container');
@@ -914,6 +978,34 @@
         prefs.pinyin = !prefs.pinyin;
         applyPrefs(prefs);
         saveSubtitlePrefs(prefs);
+      });
+    }
+
+    if (variantBtn && variantMenu) {
+      variantBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        variantMenu.classList.toggle('hidden');
+      });
+
+      variantMenu.querySelectorAll('.subtitle-variant-option').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const variant = btn.dataset.variant;
+          if (SCRIPT_VARIANTS.includes(variant)) {
+            prefs.variant = variant;
+            applyPrefs(prefs);
+            saveSubtitlePrefs(prefs);
+            // Re-render visible text immediately. If the converter for this
+            // variant is still loading, displayChinese() returns the original
+            // text now and triggers queueVariantRerender() once it is ready.
+            queueVariantRerender();
+          }
+          variantMenu.classList.add('hidden');
+        });
+      });
+
+      document.addEventListener('click', function () {
+        variantMenu.classList.add('hidden');
       });
     }
   }
@@ -1098,7 +1190,7 @@
       }
     }
 
-    hanzi.textContent = active ? active.zh : '';
+    hanzi.textContent = active ? displayChinese(active.zh) : '';
     pinyin.textContent = active ? active.py : '';
   }
 
@@ -1540,7 +1632,7 @@
             <span class="text-[10px] text-on-surface-variant font-medium mt-xs">${escapeHtml(formatTime(line.t))}</span>
           </div>
           <div class="flex-1">
-            <p class="script-zh font-body-md text-on-surface ${zhDisplay}">${escapeHtml(line.zh)}</p>
+            <p class="script-zh font-body-md text-on-surface ${zhDisplay}">${escapeHtml(displayChinese(line.zh))}</p>
             <p class="script-py font-body-md text-on-surface-variant italic mt-xs ${pyDisplay}">${escapeHtml(line.py)}</p>
             <p class="script-en font-body-md text-on-surface-variant mt-xs ${enDisplay}">${escapeHtml(line.en)}</p>
           </div>

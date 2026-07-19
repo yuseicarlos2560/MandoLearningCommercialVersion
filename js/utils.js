@@ -9,6 +9,8 @@
  * - localStorage, identity, UUID, date/formatting, DOM helpers
  * - `MandoUtils.speak(text, { id })` / `MandoUtils.stopSpeaking()` for
  *   browser-based Mandarin text-to-speech with per-line play/stop toggle
+ * - `MandoUtils.convertChinese(text, target, onReady)` for display-time
+ *   Simplified/Traditional conversion via opencc-js (lazy-loaded from CDN)
  */
 
 (function (window) {
@@ -239,6 +241,102 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Chinese script conversion (Simplified <-> Traditional) via opencc-js
+  //
+  // The opencc-js bundles are large (dictionary data), so they are NEVER loaded
+  // up front: the first `convertChinese` call for a non-'original' target
+  // injects the matching directional UMD bundle from jsDelivr and returns the
+  // original text in the meantime. Once the bundle is ready, the optional
+  // `onReady` callback fires so renderers can re-render with converted text.
+  // 'original' is a pure passthrough and never triggers any loading.
+  //
+  // Bundles (opencc-js@1.4.1, UMD global `OpenCC`):
+  // - t2cn.js (~100KB): Traditional -> Simplified, Converter({ from: 'tw', to: 'cn' })
+  // - cn2t.js (~1MB):   Simplified -> Traditional, Converter({ from: 'cn', to: 'tw' })
+  // Each bundle overwrites window.OpenCC, so the converter instance is created
+  // immediately on load and cached per target variant.
+  // ---------------------------------------------------------------------------
+
+  const OPENCC_BUNDLE_URLS = {
+    simplified: 'https://cdn.jsdelivr.net/npm/opencc-js@1.4.1/dist/umd/t2cn.js',
+    traditional: 'https://cdn.jsdelivr.net/npm/opencc-js@1.4.1/dist/umd/cn2t.js',
+  };
+
+  const OPENCC_CONVERTER_OPTIONS = {
+    simplified: { from: 'tw', to: 'cn' },
+    traditional: { from: 'cn', to: 'tw' },
+  };
+
+  const openccConverters = {}; // variant -> converter function
+  const openccLoading = {}; // variant -> in-flight Promise (null after failure)
+
+  function loadOpenCC(variant) {
+    if (openccLoading[variant]) return openccLoading[variant];
+
+    openccLoading[variant] = new Promise(function (resolve, reject) {
+      const script = document.createElement('script');
+      script.src = OPENCC_BUNDLE_URLS[variant];
+      script.async = true;
+
+      script.onload = function () {
+        try {
+          if (!window.OpenCC || typeof window.OpenCC.Converter !== 'function') {
+            throw new Error('OpenCC global not found after script load');
+          }
+          openccConverters[variant] = window.OpenCC.Converter(OPENCC_CONVERTER_OPTIONS[variant]);
+          resolve(openccConverters[variant]);
+        } catch (err) {
+          openccLoading[variant] = null; // Allow retry on next call.
+          reject(err);
+        }
+      };
+
+      script.onerror = function () {
+        openccLoading[variant] = null; // Allow retry on next call.
+        reject(new Error('Failed to load OpenCC bundle for ' + variant));
+      };
+
+      document.head.appendChild(script);
+    });
+
+    return openccLoading[variant];
+  }
+
+  /**
+   * Converts Chinese text between Simplified and Traditional for DISPLAY ONLY.
+   *
+   * @param {string} text   Original text (never mutated; data stays as-is).
+   * @param {string} target 'original' | 'simplified' | 'traditional'.
+   * @param {function} [onReady] Called once the lazy-loaded converter becomes
+   *   available, so callers can re-render with converted output.
+   * @returns {string} Converted text, or the original text when the target is
+   *   'original', unknown, or the converter has not finished loading yet.
+   */
+  function convertChinese(text, target, onReady) {
+    if (!text || target === 'original') return text;
+    if (target !== 'simplified' && target !== 'traditional') return text;
+
+    const converter = openccConverters[target];
+    if (converter) {
+      try {
+        return converter(text);
+      } catch (e) {
+        return text;
+      }
+    }
+
+    loadOpenCC(target)
+      .then(function () {
+        if (typeof onReady === 'function') onReady();
+      })
+      .catch(function (err) {
+        console.warn('Chinese conversion unavailable:', err);
+      });
+
+    return text;
+  }
+
+  // ---------------------------------------------------------------------------
   // Text-to-speech helper
   // ---------------------------------------------------------------------------
 
@@ -364,5 +462,6 @@
     speak,
     stopSpeaking,
     isSpeaking,
+    convertChinese,
   };
 })(window);

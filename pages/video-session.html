@@ -115,6 +115,16 @@
 <button id="subtitle-pinyin-btn" class="p-1.5 rounded-md text-white hover:bg-white/20 transition-colors" title="Toggle pinyin">
 <span class="material-symbols-outlined text-sm">abc</span>
 </button>
+<div class="relative">
+<button id="subtitle-variant-btn" class="p-1.5 rounded-md text-white hover:bg-white/20 transition-colors" title="Chinese variant (Simplified/Traditional)">
+<span class="material-symbols-outlined text-sm">translate</span>
+</button>
+<div id="subtitle-variant-menu" class="hidden absolute top-full right-0 mt-1 bg-surface rounded-lg shadow-lg border border-outline-variant p-1 min-w-[120px] z-30">
+<button data-variant="original" class="subtitle-variant-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">Original</button>
+<button data-variant="simplified" class="subtitle-variant-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded font-semibold">Simplified</button>
+<button data-variant="traditional" class="subtitle-variant-option w-full text-left px-sm py-xs text-sm text-on-surface hover:bg-surface-container rounded">Traditional</button>
+</div>
+</div>
 </div>
 <div id="video-custom-controls" class="absolute bottom-0 left-0 right-0 p-md bg-gradient-to-t from-black/60 to-transparent">
 <div class="w-full h-1.5 bg-white/30 rounded-full mb-md overflow-hidden relative cursor-pointer" id="video-progress-container">
