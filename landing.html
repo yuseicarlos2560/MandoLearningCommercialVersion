@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MandoLearning — Master Mandarin with the Content You Love</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="css/design-system.css" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&amp;family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+      }
+      .hsk-level-1 { border-bottom: 3px solid #2b6485; cursor: pointer; }
+      .hsk-level-2 { border-bottom: 3px solid #336366; cursor: pointer; }
+
+      .seigaiha-bg {
+        background-color: #f3fcf0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='30' viewBox='0 0 100 30'%3E%3Cpath d='M0 30h100V0H0v30zM50 20c-8.284 0-15-6.716-15-15h30c0 8.284-6.716 15-15 15zm-25 0c-8.284 0-15-6.716-15-15h30c0 8.284-6.716 15-15 15zm50 0c-8.284 0-15-6.716-15-15h30c0 8.284-6.716 15-15 15z' fill='%23b7102a' fill-opacity='0.02'/%3E%3C/svg%3E");
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(228, 190, 188, 0.3);
+      }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+    if (window.MandoAuth && window.MandoAuth.isAuthenticated()) {
+        window.location.replace('index.html');
+    }
+</script>
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30">
+<div class="flex justify-between items-center h-16 px-gutter max-w-max-width mx-auto">
+<a class="font-headline-md text-headline-md font-bold text-primary" href="landing.html">MandoLearning</a>
+<div class="hidden md:flex items-center gap-md">
+<a class="font-body-md text-body-md text-primary border-b-2 border-primary pb-1 transition-colors" href="#features">Features</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#flashcards">Flashcards</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#hsk-levels">HSK Levels</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#analytics">Analytics</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="pricing.html">Pricing</a>
+</div>
+<div class="flex items-center gap-sm">
+<a class="px-sm py-xs text-secondary font-semibold hover:opacity-80 transition-all" href="pages/login.html">Login</a>
+<a class="bg-primary text-on-primary px-md py-xs rounded-lg font-semibold hover:scale-95 transition-all duration-150 shadow-lg" href="pages/login.html">Get Started</a>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="pt-32 pb-xl px-gutter max-w-max-width mx-auto seigaiha-bg min-h-[819px] flex flex-col lg:flex-row items-center gap-xl">
+<div class="flex-1 space-y-md">
+<h1 class="font-headline-lg text-headline-lg text-on-surface max-w-xl">
+                Master <span class="text-primary">Mandarin</span> with the Content You Already Love.
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
+                Learn Chinese by watching YouTube: interactive AI-powered scripts, HSK tracking, and smart flashcards.
+            </p>
+<div class="flex gap-md pt-base">
+<a class="bg-primary text-on-primary h-[48px] px-lg rounded-full font-bold text-body-md shadow-xl hover:shadow-2xl transition-all inline-flex items-center" href="pages/login.html">Start Learning</a>
+<a class="border-2 border-secondary text-secondary h-[48px] px-lg rounded-full font-bold text-body-md hover:bg-secondary/5 transition-all inline-flex items-center" href="pricing.html">See Pricing</a>
+</div>
+</div>
+<div class="flex-1 relative">
+<div class="rounded-xl overflow-hidden shadow-2xl border-4 border-white transform lg:rotate-2 hover:rotate-0 transition-transform duration-500">
+<img class="w-full h-auto" data-alt="A cinematic, high-fidelity scene of a modern minimalist study space. A digital tablet rests on a light wood desk, displaying a vibrant YouTube video of a travel vlog in China with a side-by-side Mandarin script overlay. The lighting is warm and morning-like, filtering through a window with soft plants in the background. The aesthetic is clean, professional, and optimistic, matching a high-end educational SaaS product." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmA2ghieL66uH4LQONO7vAoWTaGw-Ghgf6RHTGr9SdUeusSTss7QqmSh6pkzC6mPpD-sQRDWWzPFFM12jcmxycpDMCgUJ_ZiZryau_BI4J9mWi4lQ3k7v64qKOAhzWd9Hqvb7qKLRc8R2kC6b_6T9jslz2lydK9vtLsu42wqznPMjdn21mCggUIUXxLfpm_58BfIN4zt86WoQECjOVEmjYxwcQ35LFlYigrYuKFUvw3nZZ-ooZShnpm2C9rC3jpjwxnty038uUDq4"/>
+</div>
+<div class="absolute -bottom-6 -left-6 glass-card p-md rounded-xl shadow-lg border border-outline-variant animate-bounce-slow">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<div>
+<p class="text-label-caps font-bold text-secondary">Daily Streak</p>
+<p class="text-headline-md font-bold text-on-surface">14 Days</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- YouTube Interactive Player Section -->
+<section id="features" class="bg-surface-container-low py-xl px-gutter">
+<div class="max-w-max-width mx-auto">
+<div class="text-center mb-xl">
+<span class="text-label-caps text-primary font-bold uppercase tracking-widest">Interactive Video</span>
+<h2 class="font-headline-lg text-headline-lg mt-sm">Your Personal Language Laboratory</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+<!-- Video Player Mock -->
+<div class="lg:col-span-2 space-y-md">
+<div class="aspect-video bg-black rounded-xl overflow-hidden relative shadow-2xl group">
+<div class="w-full h-full bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A high-resolution screenshot of a YouTube video player showing a cinematic shot of Beijing streets at dusk. The UI elements include a red progress bar and custom language learning controls overlaid on the bottom of the video. The lighting is atmospheric with neon signs reflecting on the street, and the overall quality is crisp and professional." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAeAv4GaA-duX4zFKPd_rWhyaZ53YTLLoKkna_xAMgpzyW7UpW3CsbHkTCmy4k8eqeZP68PuwgCSBL7yuzw0MihrtM2m-HBCv1GOCOfACfoivZxXzsOc9jubIwwnHMUFZcytJ2KOuWRxfXXfPhHRPKWSCWwMwA9znS7n7FFDXX3lHVNuaYU8Us_ekz3lh-9RcrXk_cxTmAQ6EQfQca3HCeEOb2srq-rGhDDUUlZ0yMXXQj8s8TEZYVfDY9xPErtBZC5St-wcvqCXnU')"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<button class="w-20 h-20 bg-primary/90 text-on-primary rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-xl">
+<span class="material-symbols-outlined !text-4xl">play_arrow</span>
+</button>
+</div>
+</div>
+<div class="flex justify-between items-center bg-surface p-md rounded-xl shadow-sm border border-outline-variant">
+<div class="flex gap-md">
+<button class="flex items-center gap-xs text-secondary font-semibold hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">speed</span>
+                                Slow Down AI Audio
+                            </button>
+<button class="flex items-center gap-xs text-secondary font-semibold hover:text-primary transition-colors">
+<span class="material-symbols-outlined">mic</span>
+                                Practice Speaking
+                                <span class="text-label-caps bg-tertiary-fixed text-on-tertiary-fixed-variant px-xs py-xs rounded-full ml-xs">Coming soon</span>
+</button>
+</div>
+<div class="text-label-caps text-on-surface-variant font-medium">HSK Level 3 Content</div>
+</div>
+</div>
+<!-- Interactive Script -->
+<div class="bg-surface rounded-xl shadow-lg border border-outline-variant flex flex-col max-h-[600px]">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest sticky top-0">
+<h3 class="font-bold text-on-surface">Interactive Script</h3>
+<div class="flex gap-xs">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+</div>
+</div>
+<div class="p-md overflow-y-auto space-y-md custom-scrollbar">
+<div class="p-sm hover:bg-surface-container rounded-lg transition-colors cursor-pointer group">
+<p class="text-label-caps text-on-surface-variant mb-xs">00:12</p>
+<p class="font-character-display text-2xl leading-relaxed">
+<span class="hsk-level-1">我</span> <span class="hsk-level-2">非常</span> <span class="hsk-level-1">喜欢</span> <span class="hsk-level-1">这</span><span class="hsk-level-1">个</span> <span class="hsk-level-2">地方</span>。
+                            </p>
+<p class="text-body-md text-on-surface-variant/70 mt-xs italic group-hover:text-on-surface transition-colors">"I really like this place."</p>
+</div>
+<div class="p-sm bg-primary/5 border-l-4 border-primary rounded-r-lg">
+<p class="text-label-caps text-primary mb-xs">00:15 (Current)</p>
+<p class="font-character-display text-2xl leading-relaxed">
+<span class="hsk-level-1">你</span> <span class="hsk-level-1">也</span> <span class="hsk-level-2">准备</span> <span class="hsk-level-1">好</span> <span class="hsk-level-1">了</span> <span class="hsk-level-1">吗</span>？
+                            </p>
+<p class="text-body-md text-on-surface font-medium mt-xs">"Are you ready too?"</p>
+</div>
+<div class="p-sm hover:bg-surface-container rounded-lg transition-colors cursor-pointer group">
+<p class="text-label-caps text-on-surface-variant mb-xs">00:18</p>
+<p class="font-character-display text-2xl leading-relaxed">
+<span class="hsk-level-1">我们</span> <span class="hsk-level-2">出发</span> <span class="hsk-level-1">吧</span>。
+                            </p>
+<p class="text-body-md text-on-surface-variant/70 mt-xs italic group-hover:text-on-surface transition-colors">"Let's go."</p>
+</div>
+</div>
+<div class="p-md bg-surface-container-high rounded-b-xl">
+<button class="w-full bg-secondary text-on-secondary py-sm rounded-lg font-bold flex items-center justify-center gap-sm hover:brightness-110 transition-all">
+<span class="material-symbols-outlined">save</span>
+                            Save all to Flashcards
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- HSK Highlighting Section -->
+<section id="hsk-levels" class="py-xl px-gutter max-w-max-width mx-auto">
+<div class="flex flex-col lg:flex-row items-center gap-xl">
+<div class="flex-1">
+<span class="text-label-caps text-secondary font-bold uppercase tracking-widest">Progressive Decoding</span>
+<h2 class="font-headline-lg text-headline-lg mt-sm mb-md">Know what you know. Learn what you don't.</h2>
+<p class="text-body-lg text-on-surface-variant mb-xl">Our intelligent highlighting system color-codes every character based on its HSK level. This allows you to instantly visualize the difficulty of any content and focus your energy where it matters most.</p>
+<div class="space-y-sm">
+<div class="flex items-center gap-md p-md bg-white border border-outline-variant rounded-xl shadow-sm hover:translate-x-2 transition-transform">
+<div class="w-4 h-12 bg-secondary rounded-full"></div>
+<div>
+<p class="font-bold text-secondary">HSK Level 1 (Beginner)</p>
+<p class="text-body-md text-on-surface-variant">Essential words for basic daily communication.</p>
+</div>
+</div>
+<div class="flex items-center gap-md p-md bg-white border border-outline-variant rounded-xl shadow-sm hover:translate-x-2 transition-transform">
+<div class="w-4 h-12 bg-tertiary rounded-full"></div>
+<div>
+<p class="font-bold text-tertiary">HSK Level 2 (Elementary)</p>
+<p class="text-body-md text-on-surface-variant">Simple sentences and personal information.</p>
+</div>
+</div>
+<div class="flex items-center gap-md p-md bg-white border border-outline-variant rounded-xl shadow-sm hover:translate-x-2 transition-transform">
+<div class="w-4 h-12 bg-primary rounded-full opacity-50"></div>
+<div>
+<p class="font-bold text-primary">HSK Level 3+ (Intermediate)</p>
+<p class="text-body-md text-on-surface-variant">Complex topics and workplace discussion.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-1 w-full">
+<div class="glass-card p-xl rounded-3xl shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 right-0 p-md opacity-10">
+<span class="material-symbols-outlined !text-[120px]">translate</span>
+</div>
+<h3 class="font-label-caps text-on-surface-variant mb-md font-bold uppercase tracking-widest">Highlighting Preview</h3>
+<div class="space-y-md">
+<div class="font-character-display text-4xl lg:text-5xl leading-loose">
+<span class="hsk-level-1">今天</span>
+<span class="hsk-level-1">天气</span>
+<span class="hsk-level-2">非常</span>
+<span class="hsk-level-1">好</span>，
+                            <span class="hsk-level-1">我们</span>
+<span class="hsk-level-1">去</span>
+<span class="hsk-level-2">公园</span>
+<span class="hsk-level-2">跑步</span>
+<span class="hsk-level-1">吧</span>。
+                        </div>
+<div class="pt-md border-t border-outline-variant/30 text-body-lg text-on-surface-variant italic">
+                            "The weather is very nice today, let's go running in the park."
+                        </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Flashcard Management & Modes -->
+<section id="flashcards" class="bg-surface-container py-xl px-gutter">
+<div class="max-w-max-width mx-auto">
+<div class="flex justify-between items-end mb-xl">
+<div>
+<span class="text-label-caps text-primary font-bold uppercase tracking-widest">Review System</span>
+<h2 class="font-headline-lg text-headline-lg mt-sm">Your Digital Brain</h2>
+</div>
+<div class="flex gap-sm">
+<button class="bg-surface h-[40px] px-md rounded-lg border border-outline-variant flex items-center gap-xs font-semibold hover:bg-surface-bright transition-all">
+<span class="material-symbols-outlined">add</span> New Deck
+                    </button>
+<button class="bg-primary text-on-primary h-[40px] px-md rounded-lg font-semibold shadow-md hover:scale-95 transition-all">Study Now</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Mode Selector Bento Item -->
+<div class="lg:row-span-2 bg-surface p-lg rounded-2xl shadow-lg border border-outline-variant space-y-md">
+<h3 class="font-headline-md text-on-surface">Practice Modes</h3>
+<p class="text-on-surface-variant">Three focused study modes to ensure you never forget a word.</p>
+<div class="space-y-sm pt-md">
+<div class="flex justify-between items-center p-sm bg-secondary/10 border-l-4 border-secondary rounded-r-lg">
+<span class="flex items-center gap-md font-bold text-secondary"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span> Spaced Repetition</span>
+<span class="text-label-caps bg-secondary text-on-secondary px-xs rounded font-bold">Recommended</span>
+</div>
+<div class="flex justify-between items-center p-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border border-transparent hover:border-outline-variant">
+<span class="flex items-center gap-md font-semibold"><span class="material-symbols-outlined text-secondary">shuffle</span> Random Mix</span>
+<span class="text-label-caps text-on-surface-variant px-xs">Shuffle your cards</span>
+</div>
+<div class="flex justify-between items-center p-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border border-transparent hover:border-outline-variant">
+<span class="flex items-center gap-md font-semibold"><span class="material-symbols-outlined text-secondary">speed</span> Speed Blitz</span>
+<span class="text-label-caps text-on-surface-variant px-xs">2-minute timed review</span>
+</div>
+</div>
+</div>
+<!-- Deck Cards -->
+<div class="bg-surface-bright p-md rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-secondary-container rounded-xl flex items-center justify-center text-secondary mb-md">
+<span class="material-symbols-outlined">flight</span>
+</div>
+<h4 class="font-bold text-on-surface">Travel Essentials</h4>
+<p class="text-label-caps text-on-surface-variant uppercase mt-xs">120 Cards • HSK 2-3</p>
+<div class="mt-md h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-2/3"></div>
+</div>
+</div>
+<div class="bg-surface-bright p-md rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center text-primary mb-md">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<h4 class="font-bold text-on-surface">Food &amp; Dining</h4>
+<p class="text-label-caps text-on-surface-variant uppercase mt-xs">85 Cards • HSK 1-2</p>
+<div class="mt-md h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/4"></div>
+</div>
+</div>
+<div class="bg-surface-bright p-md rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-tertiary-fixed rounded-xl flex items-center justify-center text-tertiary mb-md">
+<span class="material-symbols-outlined">business_center</span>
+</div>
+<h4 class="font-bold text-on-surface">Business Mandarin</h4>
+<p class="text-label-caps text-on-surface-variant uppercase mt-xs">210 Cards • HSK 4-5</p>
+<div class="mt-md h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-1/2"></div>
+</div>
+</div>
+<div class="bg-surface-bright p-md rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="w-12 h-12 bg-on-surface-variant rounded-xl flex items-center justify-center text-white mb-md">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<h4 class="font-bold text-on-surface">Philosophical Terms</h4>
+<p class="text-label-caps text-on-surface-variant uppercase mt-xs">45 Cards • HSK 6</p>
+<div class="mt-md h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-on-surface-variant w-[5%]"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Analytics Journey Section -->
+<section id="analytics" class="py-xl px-gutter max-w-max-width mx-auto">
+<div class="text-center mb-xl">
+<span class="text-label-caps text-secondary font-bold uppercase tracking-widest">Performance Dashboard</span>
+<h2 class="font-headline-lg text-headline-lg mt-sm">Your Journey to Fluency</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="bg-surface p-lg rounded-2xl border border-outline-variant shadow-sm text-center space-y-sm">
+<div class="w-16 h-16 bg-surface-container-high rounded-full mx-auto flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined !text-3xl">add_circle</span>
+</div>
+<p class="font-bold text-headline-md">2,450</p>
+<p class="font-label-caps text-on-surface-variant uppercase tracking-wider">Words Added</p>
+<div class="pt-md">
+<div class="h-1 bg-surface-container-highest rounded-full w-full">
+<div class="h-full bg-on-surface-variant w-full"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface p-lg rounded-2xl border-2 border-secondary shadow-lg text-center space-y-sm relative transform scale-105">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-on-secondary px-sm py-xs rounded-full text-label-caps font-bold">MOST ACTIVE</div>
+<div class="w-16 h-16 bg-secondary-container rounded-full mx-auto flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined !text-3xl" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+<p class="font-bold text-headline-md">1,120</p>
+<p class="font-label-caps text-secondary uppercase tracking-wider">Words Memorized</p>
+<div class="pt-md">
+<div class="h-1 bg-surface-container-highest rounded-full w-full">
+<div class="h-full bg-secondary w-1/2"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface p-lg rounded-2xl border border-outline-variant shadow-sm text-center space-y-sm">
+<div class="w-16 h-16 bg-tertiary-fixed rounded-full mx-auto flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined !text-3xl">local_library</span>
+</div>
+<p class="font-bold text-headline-md">568</p>
+<p class="font-label-caps text-on-surface-variant uppercase tracking-wider">Currently Learning</p>
+<div class="pt-md">
+<div class="h-1 bg-surface-container-highest rounded-full w-full">
+<div class="h-full bg-tertiary w-1/3"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-xl glass-card p-xl rounded-3xl border border-outline-variant">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-bold">Weekly Study Hours</h3>
+<div class="flex items-center gap-sm">
+<span class="flex items-center gap-xs text-label-caps"><div class="w-3 h-3 rounded-full bg-secondary"></div> Watch Time</span>
+<span class="flex items-center gap-xs text-label-caps"><div class="w-3 h-3 rounded-full bg-primary"></div> Flashcards</span>
+</div>
+</div>
+<!-- Mock Chart -->
+<div class="flex items-end justify-between h-48 gap-xs">
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary/20 rounded-t h-20 relative"><div class="absolute bottom-0 w-full bg-secondary h-12 rounded-t"></div></div>
+<span class="text-label-caps text-on-surface-variant">Mon</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary/20 rounded-t h-32 relative"><div class="absolute bottom-0 w-full bg-secondary h-24 rounded-t"></div></div>
+<span class="text-label-caps text-on-surface-variant">Tue</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary/20 rounded-t h-16 relative"><div class="absolute bottom-0 w-full bg-secondary h-10 rounded-t"></div></div>
+<span class="text-label-caps text-on-surface-variant">Wed</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary/20 rounded-t h-40 relative"><div class="absolute bottom-0 w-full bg-secondary h-36 rounded-t"></div></div>
+<span class="text-label-caps text-on-surface-variant">Thu</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary/20 rounded-t h-24 relative"><div class="absolute bottom-0 w-full bg-secondary h-20 rounded-t"></div></div>
+<span class="text-label-caps text-on-surface-variant">Fri</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary/20 rounded-t h-12 relative"><div class="absolute bottom-0 w-full bg-secondary h-8 rounded-t"></div></div>
+<span class="text-label-caps text-on-surface-variant">Sat</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-xs">
+<div class="w-full bg-secondary/20 rounded-t h-8 relative"><div class="absolute bottom-0 w-full bg-secondary h-4 rounded-t"></div></div>
+<span class="text-label-caps text-on-surface-variant">Sun</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Alpha Access Request Section -->
+<section class="bg-surface-container-low py-xl px-gutter">
+<div class="max-w-xl mx-auto text-center space-y-md">
+<span class="text-label-caps text-primary font-bold uppercase tracking-widest">Alpha access</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Want in? Drop your contact.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Accounts are provisioned by the MandoLearning team during alpha. Leave your email or phone number and we will send you an AccountID.</p>
+<form id="request-access-form" class="flex gap-sm" action="https://api.web3forms.com/submit" method="POST">
+<input type="hidden" name="access_key" value="de4acdba-c105-474c-9319-c1ec0fba89e2"/>
+<input type="hidden" name="subject" value="MandoLearning alpha access request (landing)"/>
+<input type="hidden" name="redirect" value="https://alpha.mandolearning.com/landing.html?sent=1"/>
+<input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off"/>
+<input type="text" name="contact" required maxlength="320" placeholder="Email or phone number" class="flex-1 rounded-lg border-outline-variant bg-surface focus:ring-primary focus:border-primary px-md py-sm w-full"/>
+<button type="submit" class="bg-primary text-on-primary px-lg rounded-lg font-bold hover:opacity-90 transition-all whitespace-nowrap">Request access</button>
+</form>
+<p id="request-access-sent" class="hidden text-body-md font-semibold text-secondary">Thanks! We have your request — we will be in touch soon.</p>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface-container dark:bg-surface-container-high w-full py-lg border-t border-outline-variant/30">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-md px-gutter max-w-max-width mx-auto">
+<div class="col-span-2 space-y-sm">
+<div class="font-headline-md text-headline-md font-bold text-primary">MandoLearning</div>
+<p class="text-body-md text-on-surface-variant max-w-xs">
+                    Master Mandarin by watching what you love.
+                </p>
+<p class="text-label-caps text-on-surface-variant mt-md">© 2026 MandoLearning.</p>
+</div>
+<div class="space-y-sm">
+<h4 class="font-bold text-on-surface">Product</h4>
+<ul class="space-y-xs text-on-surface-variant text-body-md">
+<li><a class="hover:text-primary transition-colors" href="#features">Features</a></li>
+<li><a class="hover:text-primary transition-colors" href="#hsk-levels">HSK Levels</a></li>
+<li><a class="hover:text-primary transition-colors" href="pricing.html">Pricing</a></li>
+</ul>
+</div>
+<div class="space-y-sm">
+<h4 class="font-bold text-on-surface">Support</h4>
+<ul class="space-y-xs text-on-surface-variant text-body-md">
+<li><a class="hover:text-primary transition-colors" href="#">Help Center</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Contact Us</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+</ul>
+</div>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for HSK highlighting simulation
+        document.querySelectorAll('.hsk-level-1, .hsk-level-2').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                el.style.backgroundColor = 'rgba(183, 16, 42, 0.1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.backgroundColor = 'transparent';
+            });
+        });
+    </script>
+<script>
+        // Show the success message after Web3Forms redirects back with ?sent=1
+        if (new URLSearchParams(location.search).get('sent') === '1') {
+            document.getElementById('request-access-form').classList.add('hidden');
+            document.getElementById('request-access-sent').classList.remove('hidden');
+        }
+    </script>
+</body></html>
