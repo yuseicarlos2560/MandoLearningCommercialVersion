@@ -21,6 +21,7 @@
 <script src="../js/auth.js"></script>
 <script src="../js/shell.js"></script>
 <script src="../js/ui-components.js"></script>
+<script src="../js/pinyin-helper.js"></script>
 <!-- API clients -->
 <script src="../js/api/client.js"></script>
 <script src="../js/api/videos.js"></script>
@@ -162,6 +163,9 @@
 <button id="new-note-btn" class="flex items-center gap-xs px-md py-xs bg-surface-container-high text-on-surface rounded-lg font-body-md hover:bg-surface-dim transition-all border border-outline-variant">
 <span class="material-symbols-outlined text-sm">add</span> New Note
                             </button>
+<button id="save-word-btn" class="flex items-center gap-xs px-md py-xs bg-surface-container-high text-on-surface rounded-lg font-body-md hover:bg-surface-dim transition-all border border-outline-variant">
+<span class="material-symbols-outlined text-sm">edit_note</span> Save Word
+                            </button>
 <button id="save-notes-btn" class="flex items-center gap-xs px-md py-xs bg-primary text-on-primary rounded-lg font-body-md hover:bg-primary-dim transition-all shadow-md">
 <span class="material-symbols-outlined text-sm">save</span> Save (Ctrl+S)
                             </button>
@@ -204,6 +208,53 @@
 </section>
 </div>
 </main>
+<!-- Save Word Modal -->
+<div id="save-word-modal" class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm items-center justify-center p-md hidden">
+<div class="bg-surface rounded-3xl shadow-2xl w-full max-w-md p-lg border border-outline-variant" role="dialog" aria-modal="true" aria-labelledby="sw-title">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary text-2xl">edit_note</span>
+<h3 id="sw-title" class="font-headline-md text-headline-md text-on-surface">Save Word</h3>
+</div>
+<form id="sw-form" class="space-y-md">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-character">Chinese <span class="text-primary">*</span></label>
+<input id="sw-character" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs font-character-display text-xl text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. 留学" type="text" maxlength="25" required/>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-pinyin">Pinyin <span class="text-on-surface-variant/70 normal-case">(auto-filled)</span></label>
+<input id="sw-pinyin" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="Auto-filled" type="text" maxlength="250"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-hsk">HSK Level <span class="text-primary">*</span></label>
+<select id="sw-hsk" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+<option value="HSK1">HSK 1</option>
+<option value="HSK2">HSK 2</option>
+<option value="HSK3" selected>HSK 3</option>
+<option value="HSK4">HSK 4</option>
+<option value="HSK5">HSK 5</option>
+<option value="HSK6">HSK 6</option>
+</select>
+</div>
+</div>
+<div id="sw-deck-fields">
+<div class="mb-md">
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-meaning">English Meaning</label>
+<input id="sw-meaning" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="e.g. to study abroad" type="text" maxlength="150"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs" for="sw-category">Deck (for flashcard)</label>
+<input id="sw-category" class="w-full bg-surface-container-low border border-outline-variant/50 rounded-lg px-sm py-xs text-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="Miscellaneous" type="text" maxlength="50"/>
+</div>
+</div>
+<p id="sw-error" class="text-error text-sm hidden"></p>
+<div class="flex justify-end gap-sm pt-sm">
+<button type="button" id="sw-cancel" class="px-md py-xs rounded-lg border border-outline-variant text-on-surface font-body-md hover:bg-surface-container transition-all">Cancel</button>
+<button type="submit" id="sw-submit" class="px-md py-xs rounded-lg bg-primary text-on-primary font-body-md hover:bg-primary-dim transition-all shadow-md">Save Word</button>
+</div>
+</form>
+</div>
+</div>
 <script src="../js/pages/video-session.js"></script>
 </body>
 </html>
