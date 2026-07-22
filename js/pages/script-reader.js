@@ -401,7 +401,7 @@
     const label = count > 0 ? `Save (${count})` : 'Save';
     btn.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> ${escapeHtml(label)} (Ctrl+S)`;
 
-    // The Save Word FAB queues notes/flashcards into the same save flow, so
+    // The Save Word FAB queues flashcards into the same save flow, so
     // hide it in demo mode where saving is refused.
     const fab = $('fab-save-word');
     if (fab) {
@@ -1628,7 +1628,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Save Word modal (quick note + optional flashcard)
+  // Save Word modal (quick flashcard)
   // ---------------------------------------------------------------------------
 
   let saveWordPinyin = { reset: function () {} };
@@ -1644,8 +1644,6 @@
     setVal('sw-category', '');
     const hsk = $('sw-hsk');
     if (hsk) hsk.value = 'HSK3';
-    const addToDeck = $('sw-add-to-deck');
-    if (addToDeck) addToDeck.checked = true;
     const error = $('sw-error');
     if (error) {
       error.classList.add('hidden');
@@ -1682,48 +1680,21 @@
     const meaning = ($('sw-meaning') ? $('sw-meaning').value : '').trim();
     const hsk = $('sw-hsk') ? $('sw-hsk').value : 'HSK3';
     const categoryRaw = ($('sw-category') ? $('sw-category').value : '').trim();
-    const addToDeck = $('sw-add-to-deck') ? $('sw-add-to-deck').checked : false;
 
     if (!character) {
       showSaveWordError('Chinese character(s) are required.');
       return;
     }
 
-    // Optimistic note insert, mirroring createPrefilledNote.
-    const tempId = 'TEMP_' + uuid();
-    const newNote = {
-      noteId: tempId,
-      contentType: 'SCRIPT',
-      contentId: state.scriptId,
+    queueChange('CREATE_FLASHCARD', {
       character: character,
-      pinyin: pinyin || generatePinyin(character),
+      pinyin: pinyin,
+      meaning: meaning,
       hsk: hsk,
-      parentNoteId: null,
-      timestamp: new Date().toISOString(),
-      _pendingCreate: true,
-    };
-
-    state.notes.push(newNote);
-    queueChange('CREATE_NOTE', {
-      _tempId: tempId,
-      character: newNote.character,
-      pinyin: newNote.pinyin,
-      hsk: newNote.hsk,
-      parentNoteId: newNote.parentNoteId,
+      category: (categoryRaw || 'Miscellaneous').toUpperCase().replace(/\s+/g, '_'),
     });
 
-    if (addToDeck) {
-      queueChange('CREATE_FLASHCARD', {
-        character: character,
-        pinyin: pinyin,
-        meaning: meaning,
-        hsk: hsk,
-        category: (categoryRaw || 'Miscellaneous').toUpperCase().replace(/\s+/g, '_'),
-      });
-    }
-
     closeSaveWordModal();
-    renderNotes();
     MandoUi.toast(`"${character}" queued. Click Save to persist.`, 'success');
   }
 

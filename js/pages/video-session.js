@@ -1926,7 +1926,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Save Word modal (quick note + optional flashcard)
+  // Save Word modal (quick flashcard)
   // ---------------------------------------------------------------------------
 
   let saveWordPinyin = { reset: function () {} };
@@ -1942,8 +1942,6 @@
     setVal('sw-category', '');
     const hsk = $('sw-hsk');
     if (hsk) hsk.value = 'HSK3';
-    const addToDeck = $('sw-add-to-deck');
-    if (addToDeck) addToDeck.checked = true;
     const error = $('sw-error');
     if (error) {
       error.classList.add('hidden');
@@ -1980,45 +1978,21 @@
     const meaning = ($('sw-meaning') ? $('sw-meaning').value : '').trim();
     const hsk = $('sw-hsk') ? $('sw-hsk').value : 'HSK3';
     const categoryRaw = ($('sw-category') ? $('sw-category').value : '').trim();
-    const addToDeck = $('sw-add-to-deck') ? $('sw-add-to-deck').checked : false;
 
     if (!character) {
       showSaveWordError('Chinese character(s) are required.');
       return;
     }
 
-    const tempId = 'TEMP_' + uuid();
-    state.notes.push({
-      noteId: tempId,
-      sessionId: state.sessionId,
+    queueChange('CREATE_FLASHCARD', {
       character: character,
       pinyin: pinyin,
+      meaning: meaning,
       hsk: hsk,
-      parentNoteId: null,
-      timestamp: new Date().toISOString(),
-      _pendingCreate: true,
+      category: (categoryRaw || 'Miscellaneous').toUpperCase().replace(/\s+/g, '_'),
     });
-    queueChange('CREATE_NOTE', {
-      _tempId: tempId,
-      sessionId: state.sessionId,
-      character: character,
-      pinyin: pinyin,
-      hsk: hsk,
-      parentNoteId: null,
-    });
-
-    if (addToDeck) {
-      queueChange('CREATE_FLASHCARD', {
-        character: character,
-        pinyin: pinyin,
-        meaning: meaning,
-        hsk: hsk,
-        category: (categoryRaw || 'Miscellaneous').toUpperCase().replace(/\s+/g, '_'),
-      });
-    }
 
     closeSaveWordModal();
-    renderNotes();
     MandoUi.toast(`"${character}" queued. Click Save to persist.`, 'success');
   }
 
@@ -2108,7 +2082,7 @@
       });
     }
 
-    // Save Word modal (documents-style quick note + flashcard). The FAB only
+    // Save Word modal (documents-style quick flashcard). The FAB only
     // makes sense with a backend session to save into, so it stays hidden in
     // demo mode.
     const fabSaveWord = $('fab-save-word');
