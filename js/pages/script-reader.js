@@ -400,11 +400,6 @@
     btn.disabled = count === 0 || state.isSaving || state.demoMode;
     const label = count > 0 ? `Save (${count})` : 'Save';
     btn.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> ${escapeHtml(label)} (Ctrl+S)`;
-
-    // Flashcards flush through the same queue, so block queueing in demo mode
-    // the same way the save button is blocked.
-    const saveWordBtn = $('save-word-btn');
-    if (saveWordBtn) saveWordBtn.disabled = state.demoMode;
   }
 
   function validatePendingChanges() {
@@ -422,10 +417,17 @@
         }
       }
       if (change.operation === 'CREATE_FLASHCARD') {
-        // Only the character is required; the batch endpoint accepts empty
-        // pinyin/meaning, and category falls back to MISCELLANEOUS.
         if (!change.data.character || !change.data.character.trim()) {
           errors.push('Flashcard character cannot be empty.');
+        }
+        if (!change.data.pinyin || !change.data.pinyin.trim()) {
+          errors.push('Flashcard pinyin cannot be empty.');
+        }
+        if (!change.data.meaning || !change.data.meaning.trim()) {
+          errors.push('Flashcard meaning cannot be empty.');
+        }
+        if (!change.data.category || !change.data.category.trim()) {
+          errors.push('Flashcard category cannot be empty.');
         }
       }
     });
@@ -899,9 +901,6 @@
               <button class="script-lookup-line inline-block ml-sm text-primary hover:scale-110 transition-transform align-middle" data-index="${index}" title="Look up word">
                 <span class="material-symbols-outlined text-[20px]">search</span>
               </button>
-              <button class="script-flashcard-line inline-block ml-xs text-secondary hover:scale-110 transition-transform align-middle ${state.demoMode ? 'hidden' : ''}" data-index="${index}" title="Save as flashcard">
-                <span class="material-symbols-outlined text-[20px]">style</span>
-              </button>
             </div>
             <div class="script-pinyin font-body-md text-secondary mt-1 ${pyDisplay} ${classes.pinyin}">${escapeHtml(line.pinyin)}</div>
             <div class="script-english font-body-md text-on-surface-variant italic mt-1 ${enDisplay} ${classes.english}">
@@ -915,7 +914,7 @@
     // Attach line interactions.
     container.querySelectorAll('.script-line').forEach(function (lineEl) {
       lineEl.addEventListener('click', function (e) {
-        if (e.target.closest('.script-play-line') || e.target.closest('.script-lookup-line') || e.target.closest('.script-flashcard-line')) return;
+        if (e.target.closest('.script-play-line') || e.target.closest('.script-lookup-line')) return;
         const index = parseInt(lineEl.dataset.index, 10);
         setActiveLine(index);
       });
@@ -934,14 +933,6 @@
         e.stopPropagation();
         const index = parseInt(btn.dataset.index, 10);
         createPrefilledNote(state.lines[index].chinese, state.lines[index].pinyin);
-      });
-    });
-
-    container.querySelectorAll('.script-flashcard-line').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        const index = parseInt(btn.dataset.index, 10);
-        openSaveWordModal({ character: state.lines[index].chinese, pinyin: state.lines[index].pinyin });
       });
     });
   }
@@ -1636,77 +1627,6 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Save Word modal (quick flashcard)
-  // ---------------------------------------------------------------------------
-
-  let saveWordPinyin = { reset: function () {} };
-
-  function openSaveWordModal(prefill) {
-    const modal = $('save-word-modal');
-    if (!modal) return;
-
-    const setVal = function (id, value) { const el = $(id); if (el) el.value = value; };
-    setVal('sw-character', prefill && prefill.character ? prefill.character : '');
-    setVal('sw-pinyin', prefill && prefill.pinyin ? prefill.pinyin : '');
-    setVal('sw-meaning', '');
-    setVal('sw-category', '');
-    const hsk = $('sw-hsk');
-    if (hsk) hsk.value = 'HSK3';
-    const error = $('sw-error');
-    if (error) {
-      error.classList.add('hidden');
-      error.textContent = '';
-    }
-
-    saveWordPinyin.reset({ auto: true });
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    const charInput = $('sw-character');
-    if (charInput) charInput.focus();
-  }
-
-  function closeSaveWordModal() {
-    const modal = $('save-word-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-  }
-
-  function showSaveWordError(message) {
-    const error = $('sw-error');
-    if (!error) return;
-    error.textContent = message;
-    error.classList.remove('hidden');
-  }
-
-  function submitSaveWord(event) {
-    event.preventDefault();
-
-    const character = ($('sw-character') ? $('sw-character').value : '').trim();
-    const pinyin = ($('sw-pinyin') ? $('sw-pinyin').value : '').trim();
-    const meaning = ($('sw-meaning') ? $('sw-meaning').value : '').trim();
-    const hsk = $('sw-hsk') ? $('sw-hsk').value : 'HSK3';
-    const categoryRaw = ($('sw-category') ? $('sw-category').value : '').trim();
-
-    if (!character) {
-      showSaveWordError('Chinese character(s) are required.');
-      return;
-    }
-
-    queueChange('CREATE_FLASHCARD', {
-      character: character,
-      pinyin: pinyin,
-      meaning: meaning,
-      hsk: hsk,
-      category: (categoryRaw || 'Miscellaneous').toUpperCase().replace(/\s+/g, '_'),
-    });
-
-    closeSaveWordModal();
-    MandoUi.toast(`"${character}" queued. Click Save to persist.`, 'success');
-  }
-
-  // ---------------------------------------------------------------------------
   // Event listeners
   // ---------------------------------------------------------------------------
 
@@ -1740,32 +1660,6 @@
     const saveBtn = $('save-notes-btn');
     if (saveBtn) {
       saveBtn.addEventListener('click', flushPendingChanges);
-    }
-
-    // Save Word modal.
-    const saveWordBtn = $('save-word-btn');
-    if (saveWordBtn) {
-      saveWordBtn.addEventListener('click', function () {
-        openSaveWordModal();
-      });
-    }
-    const swCancel = $('sw-cancel');
-    if (swCancel) {
-      swCancel.addEventListener('click', closeSaveWordModal);
-    }
-    const swForm = $('sw-form');
-    if (swForm) {
-      swForm.addEventListener('submit', submitSaveWord);
-    }
-    const swModal = $('save-word-modal');
-    if (swModal) {
-      swModal.addEventListener('click', function (e) {
-        if (e.target === swModal) closeSaveWordModal();
-      });
-    }
-
-    if (window.MandoPinyin) {
-      saveWordPinyin = window.MandoPinyin.autoFill($('sw-character'), $('sw-pinyin'));
     }
 
     // Ctrl/Cmd + S shortcut.
