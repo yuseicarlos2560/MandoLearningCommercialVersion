@@ -322,15 +322,6 @@
         if (!change.data.character || !change.data.character.trim()) {
           errors.push('Flashcard character cannot be empty.');
         }
-        if (!change.data.pinyin || !change.data.pinyin.trim()) {
-          errors.push('Flashcard pinyin cannot be empty.');
-        }
-        if (!change.data.meaning || !change.data.meaning.trim()) {
-          errors.push('Flashcard meaning cannot be empty.');
-        }
-        if (!change.data.category || !change.data.category.trim()) {
-          errors.push('Flashcard category cannot be empty.');
-        }
       }
     });
 
@@ -1935,6 +1926,103 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Save Word modal (quick note + optional flashcard)
+  // ---------------------------------------------------------------------------
+
+  let saveWordPinyin = { reset: function () {} };
+
+  function openSaveWordModal() {
+    const modal = $('save-word-modal');
+    if (!modal) return;
+
+    const setVal = function (id, value) { const el = $(id); if (el) el.value = value; };
+    setVal('sw-character', '');
+    setVal('sw-pinyin', '');
+    setVal('sw-meaning', '');
+    setVal('sw-category', '');
+    const hsk = $('sw-hsk');
+    if (hsk) hsk.value = 'HSK3';
+    const addToDeck = $('sw-add-to-deck');
+    if (addToDeck) addToDeck.checked = true;
+    const error = $('sw-error');
+    if (error) {
+      error.classList.add('hidden');
+      error.textContent = '';
+    }
+
+    saveWordPinyin.reset({ auto: true });
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    const charInput = $('sw-character');
+    if (charInput) charInput.focus();
+  }
+
+  function closeSaveWordModal() {
+    const modal = $('save-word-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  function showSaveWordError(message) {
+    const error = $('sw-error');
+    if (!error) return;
+    error.textContent = message;
+    error.classList.remove('hidden');
+  }
+
+  function submitSaveWord(event) {
+    event.preventDefault();
+
+    const character = ($('sw-character') ? $('sw-character').value : '').trim();
+    const pinyin = ($('sw-pinyin') ? $('sw-pinyin').value : '').trim();
+    const meaning = ($('sw-meaning') ? $('sw-meaning').value : '').trim();
+    const hsk = $('sw-hsk') ? $('sw-hsk').value : 'HSK3';
+    const categoryRaw = ($('sw-category') ? $('sw-category').value : '').trim();
+    const addToDeck = $('sw-add-to-deck') ? $('sw-add-to-deck').checked : false;
+
+    if (!character) {
+      showSaveWordError('Chinese character(s) are required.');
+      return;
+    }
+
+    const tempId = 'TEMP_' + uuid();
+    state.notes.push({
+      noteId: tempId,
+      sessionId: state.sessionId,
+      character: character,
+      pinyin: pinyin,
+      hsk: hsk,
+      parentNoteId: null,
+      timestamp: new Date().toISOString(),
+      _pendingCreate: true,
+    });
+    queueChange('CREATE_NOTE', {
+      _tempId: tempId,
+      sessionId: state.sessionId,
+      character: character,
+      pinyin: pinyin,
+      hsk: hsk,
+      parentNoteId: null,
+    });
+
+    if (addToDeck) {
+      queueChange('CREATE_FLASHCARD', {
+        character: character,
+        pinyin: pinyin,
+        meaning: meaning,
+        hsk: hsk,
+        category: (categoryRaw || 'Miscellaneous').toUpperCase().replace(/\s+/g, '_'),
+      });
+    }
+
+    closeSaveWordModal();
+    renderNotes();
+    MandoUi.toast(`"${character}" queued. Click Save to persist.`, 'success');
+  }
+
+  // ---------------------------------------------------------------------------
   // Keyboard shortcuts
   // ---------------------------------------------------------------------------
 
@@ -2018,6 +2106,36 @@
       saveNotesBtn.addEventListener('click', function () {
         flushPendingChanges();
       });
+    }
+
+    // Save Word modal (documents-style quick note + flashcard). The FAB only
+    // makes sense with a backend session to save into, so it stays hidden in
+    // demo mode.
+    const fabSaveWord = $('fab-save-word');
+    if (fabSaveWord) {
+      if (state.userId) {
+        fabSaveWord.classList.remove('hidden');
+        fabSaveWord.classList.add('flex');
+      }
+      fabSaveWord.addEventListener('click', openSaveWordModal);
+    }
+    const swCancel = $('sw-cancel');
+    if (swCancel) {
+      swCancel.addEventListener('click', closeSaveWordModal);
+    }
+    const swForm = $('sw-form');
+    if (swForm) {
+      swForm.addEventListener('submit', submitSaveWord);
+    }
+    const swModal = $('save-word-modal');
+    if (swModal) {
+      swModal.addEventListener('click', function (e) {
+        if (e.target === swModal) closeSaveWordModal();
+      });
+    }
+
+    if (window.MandoPinyin) {
+      saveWordPinyin = window.MandoPinyin.autoFill($('sw-character'), $('sw-pinyin'));
     }
 
     renderMeta();
