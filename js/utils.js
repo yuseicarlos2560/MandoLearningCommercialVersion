@@ -200,6 +200,30 @@
     return 'Advanced';
   }
 
+  /**
+   * Extract a clean domain from a URL, e.g. "https://finance.caixin.com/..." → "caixin.com".
+   */
+  function getDomainFromUrl(url) {
+    if (!url) return '';
+    try {
+      const hostname = new URL(url).hostname;
+      return hostname.replace(/^www\./, '');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  /**
+   * Estimate reading time in minutes from character count.
+   * Uses a conservative 200 CPM for intermediate Mandarin learners.
+   */
+  function estimateReadTime(script) {
+    const chars = (script.chinese || script.title || '').length;
+    if (!chars) return null;
+    const minutes = Math.max(1, Math.round(chars / 200));
+    return `${minutes} min read`;
+  }
+
   // ---------------------------------------------------------------------------
   // Video thumbnail helper
   // ---------------------------------------------------------------------------
@@ -454,6 +478,8 @@
     extractHsk,
     inferHskLabel,
     difficultyFromHsk,
+    getDomainFromUrl,
+    estimateReadTime,
     thumbnailUrl,
     $,
     setText,

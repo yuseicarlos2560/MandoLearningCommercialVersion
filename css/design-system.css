@@ -197,6 +197,16 @@ body {
 .hsk-beyond { --hsk-color: #64748b; --hsk-bg: #e2e8f0; }
 .hsk-modern { --hsk-color: #14b8a6; --hsk-bg: #ccfbf1; }
 
+.hsk1, .hsk2, .hsk3, .hsk4, .hsk5, .hsk6, .beyond, .modern { background-color: currentColor; }
+.hsk1 { background-color: #22c55e; }
+.hsk2 { background-color: #0ea5e9; }
+.hsk3 { background-color: #f59e0b; }
+.hsk4 { background-color: #f97316; }
+.hsk5 { background-color: #8b5cf6; }
+.hsk6 { background-color: #ec4899; }
+.beyond { background-color: #64748b; }
+.modern { background-color: #14b8a6; }
+
 .hsk-token {
     display: inline;
     white-space: normal;

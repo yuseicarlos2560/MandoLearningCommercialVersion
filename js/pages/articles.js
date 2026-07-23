@@ -240,10 +240,11 @@
     }
 
     const createCard = window.MandoComponents && window.MandoComponents.createArticleCard;
+    const userLevel = state.filters.level !== 'ALL' ? state.filters.level : (safeLocalStorageGet('mando.userHskLevel') || '');
 
     state.filtered.forEach(function (script) {
       if (createCard) {
-        grid.appendChild(createCard(script, { rootPath: '../' }));
+        grid.appendChild(createCard(script, { rootPath: '../', userLevel: userLevel }));
       } else {
         // Fallback if component isn't loaded.
         const link = document.createElement('a');
@@ -274,6 +275,43 @@
         ? 'type-filter-btn px-md py-xs rounded-full text-xs font-medium bg-primary-container text-on-primary-container border border-outline-variant transition-all'
         : 'type-filter-btn px-md py-xs rounded-full text-xs font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all';
     });
+
+    const clearBtn = $('clear-filters-btn');
+    if (clearBtn) {
+      const hasFilters = state.filters.level !== 'ALL' || state.filters.type !== 'ALL' || state.filters.search;
+      if (hasFilters) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+    }
+  }
+
+  function renderLegend() {
+    const container = $('articles-hsk-legend');
+    if (!container || !window.MandoComponents || !window.MandoComponents.renderHskLegend) return;
+    window.MandoComponents.renderHskLegend(container, { mode: 'all' });
+  }
+
+  function renderSubtitle() {
+    const subtitle = $('articles-subtitle');
+    if (!subtitle) return;
+    const stored = safeLocalStorageGet('mando.userHskLevel');
+    if (stored && HSK_LEVELS.indexOf(stored) !== -1) {
+      subtitle.textContent = `Recommended articles for your ${stored.replace('HSK', 'HSK ')} level.`;
+    } else {
+      subtitle.textContent = 'Browse graded reading at your level.';
+    }
+  }
+
+  function clearFilters() {
+    state.filters.level = 'ALL';
+    state.filters.type = 'ALL';
+    state.filters.search = '';
+    const searchInput = $('article-search');
+    if (searchInput) searchInput.value = '';
+    renderFilterButtons();
+    applyFilters();
   }
 
   // ---------------------------------------------------------------------------
@@ -313,6 +351,11 @@
       });
     }
 
+    const clearBtn = $('clear-filters-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearFilters);
+    }
+
     const retryBtn = $('articles-retry');
     if (retryBtn) {
       retryBtn.addEventListener('click', loadArticles);
@@ -349,6 +392,8 @@
 
     applyUserLevelPreference();
     renderFilterButtons();
+    renderLegend();
+    renderSubtitle();
     initEventListeners();
     await loadArticles();
   }

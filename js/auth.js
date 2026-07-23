@@ -91,9 +91,16 @@
    *
    * @param {'root'|'pages'} pageRoot which directory the current page lives in
    */
+  function isLocalPreview() {
+    const host = window.location.hostname;
+    return host === 'localhost' || host === '127.0.0.1' || host === '' || window.location.protocol === 'file:';
+  }
+
   function guard(pageRoot) {
     if (isLoginPage()) return;
     if (isAuthenticated()) return;
+    // Allow ?demo=1 to bypass the login screen during local development/preview.
+    if (isLocalPreview() && /[?&]demo=1(?:&|$)/.test(window.location.search)) return;
     const target = pageRoot === 'pages' ? 'login.html' : 'pages/login.html';
     window.location.replace(target);
   }

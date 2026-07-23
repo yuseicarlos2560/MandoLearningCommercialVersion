@@ -21,14 +21,14 @@
   const NAV_ITEMS = {
     root: [
       { id: 'videos', label: 'Videos', icon: 'play_circle', href: 'index.html' },
-      { id: 'scripts', label: 'Scripts', icon: 'description', href: 'pages/script-reader.html' },
+      { id: 'articles', label: 'Articles', icon: 'description', href: 'pages/articles.html' },
       { id: 'documents', label: 'Documents', icon: 'folder_open', href: 'pages/document-study.html' },
       { id: 'flashcards', label: 'Flashcards', icon: 'quiz', href: 'pages/flashcards.html' },
       { id: 'stats', label: 'Stats', icon: 'query_stats', href: 'pages/stats.html' },
     ],
     pages: [
       { id: 'videos', label: 'Videos', icon: 'play_circle', href: '../index.html' },
-      { id: 'scripts', label: 'Scripts', icon: 'description', href: 'script-reader.html' },
+      { id: 'articles', label: 'Articles', icon: 'description', href: 'articles.html' },
       { id: 'documents', label: 'Documents', icon: 'folder_open', href: 'document-study.html' },
       { id: 'flashcards', label: 'Flashcards', icon: 'quiz', href: 'flashcards.html' },
       { id: 'stats', label: 'Stats', icon: 'query_stats', href: 'stats.html' },
@@ -41,7 +41,7 @@
    * @param {Object} options
    * @param {string} options.containerId         DOM id of the sidebar container (default 'sidebar')
    * @param {'root'|'pages'} options.pageRoot    Which directory the current page lives in (default 'root')
-   * @param {string} options.activeNavItem       Nav item id to mark active ('videos', 'scripts', etc.)
+   * @param {string} options.activeNavItem       Nav item id to mark active ('videos', 'articles', etc.)
    * @param {boolean} options.includeVideoLibrary Show the Video Library collapsible section (default false)
    * @param {boolean} options.includeScriptLibrary Show the Scripts Library collapsible section (default false)
    */

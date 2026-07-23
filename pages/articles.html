@@ -60,7 +60,7 @@
       window.MandoAuth.guard('pages');
     }
     if (window.MandoShell) {
-      window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'scripts', includeScriptLibrary: true });
+      window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'articles', includeScriptLibrary: true });
     }
   </script>
 
@@ -71,11 +71,11 @@
       <!-- Header -->
       <div class="mb-lg">
         <h1 class="font-headline-lg text-headline-lg text-on-surface">Articles</h1>
-        <p class="text-body-lg text-on-surface-variant mt-xs">Browse graded reading at your level.</p>
+        <p id="articles-subtitle" class="text-body-lg text-on-surface-variant mt-xs">Browse graded reading at your level.</p>
       </div>
 
       <!-- Glass filter bar -->
-      <div class="glass-panel rounded-2xl border border-outline-variant p-md mb-lg">
+      <div class="glass-panel rounded-2xl border border-outline-variant p-md mb-md">
         <div class="flex flex-col lg:flex-row gap-md">
           <!-- Search -->
           <div class="relative flex-1">
@@ -104,8 +104,12 @@
             <button type="button" data-type="SPEECH" class="type-filter-btn px-md py-xs rounded-full text-xs font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">Speech</button>
           </div>
 
-          <!-- Sort dropdown -->
+          <!-- Sort dropdown + clear filters -->
           <div class="flex items-center gap-xs ml-auto">
+            <button id="clear-filters-btn" type="button" class="hidden flex items-center gap-xs px-sm py-xs rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+              <span class="material-symbols-outlined text-sm">filter_alt_off</span>
+              Clear
+            </button>
             <span class="material-symbols-outlined text-on-surface-variant text-sm">sort</span>
             <select id="article-sort" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-sm py-xs text-sm text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
               <option value="newest">Newest</option>
@@ -115,6 +119,9 @@
           </div>
         </div>
       </div>
+
+      <!-- HSK legend -->
+      <div id="articles-hsk-legend" class="mb-lg flex flex-wrap items-center gap-x-md gap-y-xs"></div>
 
       <!-- Loading state -->
       <div id="articles-loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
