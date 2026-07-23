@@ -345,6 +345,10 @@
    * Render a Chinese line as a sequence of token spans when tokens are available.
    * Wraps idiom matches in idiom-chip spans. Falls back to plain text when
    * tokens are missing.
+   *
+   * Tokens are matched in order against the original Chinese string. Any text
+   * between or after tokens (English words, numbers, punctuation the tokenizer
+   * skipped, etc.) is rendered as plain escaped text so nothing is dropped.
    */
   function renderTokenizedChinese(line) {
     const chinese = line.chinese || '';
@@ -355,16 +359,36 @@
       return wrapIdiomsInText(chinese, idioms);
     }
 
-    return tokens.map(function (token) {
+    let html = '';
+    let pos = 0;
+
+    tokens.forEach(function (token) {
       const text = token.text || '';
+      if (!text) return;
+
+      const idx = chinese.indexOf(text, pos);
+      if (idx === -1) return;
+
+      if (idx > pos) {
+        html += escapeHtml(chinese.slice(pos, idx));
+      }
+
       const level = normalizeLevel(token.level);
       const levelClass = level ? 'hsk-' + level.toLowerCase() : '';
       const levelAttr = level ? `data-level="${level}"` : '';
       const titleAttr = level ? `title="${escapeHtml(text)} — ${level.replace('HSK', 'HSK ')}"` : '';
       const spanClass = ['hsk-token', levelClass].filter(Boolean).join(' ');
       const wrapped = wrapIdiomsInText(text, idioms);
-      return `<span class="${spanClass}" ${levelAttr} ${titleAttr}>${wrapped}</span>`;
-    }).join('');
+      html += `<span class="${spanClass}" ${levelAttr} ${titleAttr}>${wrapped}</span>`;
+
+      pos = idx + text.length;
+    });
+
+    if (pos < chinese.length) {
+      html += escapeHtml(chinese.slice(pos));
+    }
+
+    return html;
   }
 
   /**
