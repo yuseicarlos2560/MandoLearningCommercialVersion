@@ -25,9 +25,22 @@
 
   const DEMO_SCRIPT = {
     scriptId: DEMO_SCRIPT_ID,
+    articleGroupId: 'ARTICLE_DEMO_001',
+    version: 'ORIGINAL',
     title: 'Discuss returning home after studying abroad',
     description: 'Focus on emotional vocabulary and cultural nuances of returning to one\'s roots.',
     scriptType: 'ARTICLE',
+    sourceUrl: 'https://example.com/original-article',
+    hskLevel: 'HSK4',
+    hskStats: { hsk4: 45.0, hsk5: 30.0, hsk6: 15.0, beyond: 10.0 },
+    idioms: [
+      { line: 0, text: '回国', type: 'chengyu', meaning: 'return to one\'s home country' },
+    ],
+    versions: [
+      { scriptId: DEMO_SCRIPT_ID, version: 'ORIGINAL', hskLevel: 'HSK4' },
+      { scriptId: 'SCRIPT_DEMO_HSK5', version: 'HSK5', hskLevel: 'HSK5' },
+      { scriptId: 'SCRIPT_DEMO_HSK6', version: 'HSK6', hskLevel: 'HSK6' },
+    ],
     status: 'READY',
     authorUserId: 'USR_000789',
     thumbnailUrl: null,
@@ -42,30 +55,58 @@
       chinese: '是啊，你就说来我们公司面试的这几个吧……',
       pinyin: 'Shì a, nǐ jiù shuō lái wǒmen gōngsī miànshì de zhè jǐ gè ba.',
       english: 'Yeah, just take these few people who came to our company for interviews as an example...',
+      tokens: [
+        { text: '是', level: 'HSK1' }, { text: '啊', level: 'HSK1' }, { text: '，', level: null },
+        { text: '你', level: 'HSK1' }, { text: '就', level: 'HSK2' }, { text: '说', level: 'HSK1' },
+        { text: '来', level: 'HSK1' }, { text: '我们', level: 'HSK1' }, { text: '公司', level: 'HSK2' },
+        { text: '面试', level: 'HSK4' }, { text: '的', level: 'HSK1' }, { text: '这', level: 'HSK1' },
+        { text: '几个', level: 'HSK2' }, { text: '吧', level: 'HSK2' }, { text: '……', level: null },
+      ],
     },
     {
       lineNumber: 2,
       chinese: '行，我先说第一个。',
       pinyin: 'Xíng, wǒ xiān shuō dì yī gè.',
       english: 'Okay, I will start with the first one.',
+      tokens: [
+        { text: '行', level: 'HSK1' }, { text: '，', level: null }, { text: '我', level: 'HSK1' },
+        { text: '先', level: 'HSK2' }, { text: '说', level: 'HSK1' }, { text: '第一', level: 'HSK2' },
+        { text: '个', level: 'HSK1' }, { text: '。', level: null },
+      ],
     },
     {
       lineNumber: 3,
       chinese: '他的简历看起来不错。',
       pinyin: 'Tā de jiǎnlì kàn qǐlái búcuò.',
       english: 'His resume looks pretty good.',
+      tokens: [
+        { text: '他', level: 'HSK1' }, { text: '的', level: 'HSK1' }, { text: '简历', level: 'HSK4' },
+        { text: '看', level: 'HSK1' }, { text: '起来', level: 'HSK2' }, { text: '不错', level: 'HSK3' },
+        { text: '。', level: null },
+      ],
     },
     {
       lineNumber: 4,
       chinese: '不过，他的中文水平怎么样？',
       pinyin: 'Búguò, tā de Zhōngwén shuǐpíng zěnme yàng?',
       english: 'But how is his Chinese level?',
+      tokens: [
+        { text: '不过', level: 'HSK4' }, { text: '，', level: null }, { text: '他', level: 'HSK1' },
+        { text: '的', level: 'HSK1' }, { text: '中文', level: 'HSK1' }, { text: '水平', level: 'HSK3' },
+        { text: '怎么', level: 'HSK1' }, { text: '样', level: 'HSK1' }, { text: '？', level: null },
+      ],
     },
     {
       lineNumber: 5,
       chinese: '回国之后，我想要更多的时间陪父母。',
       pinyin: 'Huíguó zhīhòu, wǒ xiǎng yào gèng duō de shíjiān péi fùmǔ.',
       english: 'After returning home, I want more time to accompany my parents.',
+      tokens: [
+        { text: '回国', level: 'HSK4' }, { text: '之后', level: 'HSK3' }, { text: '，', level: null },
+        { text: '我', level: 'HSK1' }, { text: '想', level: 'HSK1' }, { text: '要', level: 'HSK1' },
+        { text: '更多', level: 'HSK3' }, { text: '的', level: 'HSK1' }, { text: '时间', level: 'HSK1' },
+        { text: '陪', level: 'HSK4' }, { text: '父母', level: 'HSK3' }, { text: '。', level: null },
+      ],
     },
   ];
 
@@ -224,9 +265,9 @@
    * Normalize the structured ScriptLine array returned by the API.
    *
    * The backend now stores scripts as `lines: ScriptLine[]` with
-   * lineNumber, chinese, pinyin, and english. We ensure each line has a
-   * fallback pinyin (auto-generated) and english (placeholder) when the
-   * admin did not provide them.
+   * lineNumber, chinese, pinyin, english, and optional tokens. We ensure each
+   * line has a fallback pinyin (auto-generated) and english (placeholder) when
+   * the admin did not provide them, while preserving tokens for HSK highlighting.
    */
   function normalizeScriptLines(lines) {
     if (!Array.isArray(lines)) return [];
@@ -245,8 +286,115 @@
         chinese: chinese,
         pinyin: pinyin,
         english: english,
+        tokens: Array.isArray(line.tokens) ? line.tokens : null,
       };
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // HSK + idiom helpers
+  // ---------------------------------------------------------------------------
+
+  const VERSION_ORDER = ['ORIGINAL', 'HSK4', 'HSK5', 'HSK6'];
+
+  function normalizeLevel(level) {
+    if (!level) return '';
+    return String(level).toUpperCase().replace(/\s+/g, '');
+  }
+
+  function levelNumber(level) {
+    const match = String(level || '').match(/(\d)/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  function focusedHskBand(scriptLevel) {
+    const n = levelNumber(scriptLevel);
+    if (n >= 4) return ['hsk4', 'hsk5', 'hsk6', 'beyond'];
+    return ['hsk1', 'hsk2', 'hsk3'];
+  }
+
+  function hskStatPercent(stats, key) {
+    if (!stats || typeof stats !== 'object') return 0;
+    const value = stats[key];
+    return typeof value === 'number' ? value : 0;
+  }
+
+  function getScriptIdioms() {
+    const script = state.script || {};
+    return Array.isArray(script.idioms) ? script.idioms : [];
+  }
+
+  /**
+   * Build a sorted list of idioms with longest text first so overlapping
+   * matches prefer the longer idiom.
+   */
+  function getSortedIdioms() {
+    return getScriptIdioms()
+      .slice()
+      .sort(function (a, b) { return (b.text || '').length - (a.text || '').length; });
+  }
+
+  /**
+   * Normalize punctuation so idioms like "人山人海。" still match "人山人海".
+   */
+  function stripPunctuation(text) {
+    return String(text || '').replace(/[\u3000-\u303F\uFF00-\uFFEF\u2000-\u206F\u2010-\u201F·.,;!?。，；！？、：:""''（）()\[\]【】]/g, '');
+  }
+
+  /**
+   * Render a Chinese line as a sequence of token spans when tokens are available.
+   * Wraps idiom matches in idiom-chip spans. Falls back to plain text when
+   * tokens are missing.
+   */
+  function renderTokenizedChinese(line) {
+    const chinese = line.chinese || '';
+    const tokens = line.tokens;
+    const idioms = getSortedIdioms();
+
+    if (!Array.isArray(tokens) || tokens.length === 0) {
+      return wrapIdiomsInText(chinese, idioms);
+    }
+
+    return tokens.map(function (token) {
+      const text = token.text || '';
+      const level = normalizeLevel(token.level);
+      const levelClass = level ? 'hsk-' + level.toLowerCase() : '';
+      const levelAttr = level ? `data-level="${level}"` : '';
+      const titleAttr = level ? `title="${escapeHtml(text)} — ${level.replace('HSK', 'HSK ')}"` : '';
+      const spanClass = ['hsk-token', levelClass].filter(Boolean).join(' ');
+      const wrapped = wrapIdiomsInText(text, idioms);
+      return `<span class="${spanClass}" ${levelAttr} ${titleAttr}>${wrapped}</span>`;
+    }).join('');
+  }
+
+  /**
+   * Recursively wrap idiom occurrences inside a raw text snippet with
+   * idiom-chip spans, then HTML-escape the remaining text. Longest idioms
+   * are matched first so overlapping matches behave predictably.
+   */
+  function wrapIdiomsInText(text, idioms) {
+    if (!idioms || idioms.length === 0) return escapeHtml(text);
+    const normalizedText = stripPunctuation(text);
+
+    for (let i = 0; i < idioms.length; i++) {
+      const idiom = idioms[i];
+      const idiomText = idiom.text || '';
+      if (!idiomText) continue;
+      const normalizedIdiom = stripPunctuation(idiomText);
+      const idx = normalizedText.indexOf(normalizedIdiom);
+      if (idx !== -1) {
+        const typeLabel = idiom.type === 'xiehouyu' ? '歇后语' : '成语';
+        const meaning = escapeHtml(idiom.meaning || 'No meaning provided.');
+        const escapedIdiom = escapeHtml(idiomText);
+        const before = text.slice(0, idx);
+        const matched = text.slice(idx, idx + idiomText.length);
+        const after = text.slice(idx + idiomText.length);
+        return escapeHtml(before) +
+          `<span class="idiom-chip" data-idiom-text="${escapedIdiom}" data-idiom-type="${escapeHtml(typeLabel)}" data-idiom-meaning="${meaning}" title="${escapedIdiom} — ${escapeHtml(typeLabel)}: ${meaning}">${escapeHtml(matched)}</span>` +
+          wrapIdiomsInText(after, idioms);
+      }
+    }
+    return escapeHtml(text);
   }
 
   /**
@@ -351,6 +499,8 @@
     playbackProgress: 0,
     relatedScripts: [],
     relatedVideos: [],
+    versions: [],
+    hskHighlightEnabled: safeLocalStorageGet('mando.hskHighlightEnabled') !== 'false',
   };
 
   // Persist userId and lastScriptId for subsequent visits.
@@ -621,16 +771,19 @@
   async function loadScriptMeta() {
     if (state.demoMode) {
       state.script = { ...DEMO_SCRIPT };
+      state.versions = [];
       return true;
     }
 
     const res = await window.MandoApi.scripts.getReady(state.scriptId);
     if (res.ok && res.data && res.data.script) {
       state.script = res.data.script;
+      state.versions = Array.isArray(res.data.script.versions) ? res.data.script.versions : [];
       return true;
     }
 
     state.script = { ...DEMO_SCRIPT, scriptId: state.scriptId };
+    state.versions = [];
     return false;
   }
 
@@ -850,6 +1003,225 @@
     setText('script-title', script.title || 'Untitled Script');
     setText('script-description', script.description || '');
     document.title = `MandoLearning | ${script.title || 'Script Reader'}`;
+
+    renderVersionSwitcher();
+    renderHskToggle();
+    renderHskLegend();
+    renderSourceAttribution();
+    renderStatsPanel();
+  }
+
+  function versionMap() {
+    const map = {};
+    state.versions.forEach(function (v) {
+      if (v && v.version) {
+        map[normalizeLevel(v.version)] = v.scriptId;
+      }
+    });
+    // Always include the current script in case versions array is empty or missing.
+    if (state.script && state.script.version) {
+      map[normalizeLevel(state.script.version)] = state.scriptId;
+    }
+    return map;
+  }
+
+  function renderVersionSwitcher() {
+    const container = $('version-switcher');
+    if (!container) return;
+
+    const currentVersion = normalizeLevel((state.script || {}).version);
+    const map = versionMap();
+
+    container.querySelectorAll('.version-btn').forEach(function (btn) {
+      const version = normalizeLevel(btn.dataset.version);
+      const isActive = version === currentVersion;
+      const targetId = map[version];
+
+      btn.className = isActive
+        ? 'version-btn px-md py-xs rounded-full text-sm font-medium bg-primary-container text-on-primary-container border border-outline-variant transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+        : 'version-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all disabled:opacity-50 disabled:cursor-not-allowed';
+
+      if (targetId && targetId !== state.scriptId) {
+        btn.disabled = false;
+        btn.title = `Switch to ${btn.textContent}`;
+        btn.onclick = function () { switchVersion(targetId); };
+      } else if (isActive) {
+        btn.disabled = true;
+        btn.title = 'Currently viewing this version';
+        btn.onclick = null;
+      } else {
+        btn.disabled = true;
+        btn.title = `${btn.textContent} version not available yet`;
+        btn.onclick = null;
+      }
+    });
+  }
+
+  async function switchVersion(newScriptId) {
+    if (!newScriptId || newScriptId === state.scriptId) return;
+
+    // Save scroll position to avoid jump.
+    const scrollY = window.scrollY;
+
+    // Clear pending changes: notes are per-version.
+    state.pendingChanges = [];
+    state.scriptId = newScriptId;
+    persistLastScriptId(newScriptId);
+
+    // Reset line state.
+    state.lines = [];
+    state.activeLineIndex = -1;
+
+    await loadScriptMeta();
+    await Promise.all([
+      loadScriptContent(),
+      loadAudioUrl(),
+      loadNotes(),
+    ]);
+
+    renderHeader();
+    renderAccentChar();
+    renderLines();
+    renderReaderModeToggles();
+    renderNotes();
+    updateToolbarVisibility();
+    initAudio();
+    updateSaveButtonState();
+
+    // Restore scroll position on next frame.
+    requestAnimationFrame(function () {
+      window.scrollTo(0, scrollY);
+    });
+  }
+
+  function renderHskToggle() {
+    const btn = $('hsk-highlight-toggle');
+    const label = $('hsk-highlight-label');
+    if (!btn || !label) return;
+
+    label.textContent = state.hskHighlightEnabled ? 'HSK Highlight: On' : 'HSK Highlight: Off';
+    btn.classList.toggle('bg-primary-container', state.hskHighlightEnabled);
+    btn.classList.toggle('text-on-primary-container', state.hskHighlightEnabled);
+    btn.classList.toggle('bg-surface-container-high', !state.hskHighlightEnabled);
+    btn.classList.toggle('text-on-surface', !state.hskHighlightEnabled);
+  }
+
+  function setHskHighlightEnabled(enabled) {
+    state.hskHighlightEnabled = !!enabled;
+    safeLocalStorageSet('mando.hskHighlightEnabled', String(state.hskHighlightEnabled));
+    renderHskToggle();
+    renderLines();
+    renderHskLegend();
+  }
+
+  function renderHskLegend() {
+    const legend = $('hsk-legend');
+    if (!legend || !window.MandoComponents || !window.MandoComponents.renderHskLegend) return;
+    window.MandoComponents.renderHskLegend(legend, {
+      mode: 'focused',
+      hskLevel: (state.script || {}).hskLevel,
+      highlightEnabled: state.hskHighlightEnabled,
+    });
+  }
+
+  function renderSourceAttribution() {
+    const script = state.script || {};
+    const container = $('source-attribution');
+    const link = $('source-link');
+    if (!container || !link) return;
+
+    if (script.sourceUrl) {
+      container.classList.remove('hidden');
+      link.href = script.sourceUrl;
+    } else {
+      container.classList.add('hidden');
+    }
+  }
+
+  function renderStatsPanel() {
+    const script = state.script || {};
+    const hskLevel = script.hskLevel || '';
+    const stats = script.hskStats || {};
+    const idioms = getScriptIdioms();
+
+    const badge = $('stats-hsk-badge');
+    if (badge) badge.textContent = hskLevel ? hskLevel.replace('HSK', 'HSK ') : '—';
+
+    const bar = $('stats-hsk-bar');
+    if (bar) {
+      const band = focusedHskBand(hskLevel);
+      bar.innerHTML = band.map(function (key) {
+        const percent = hskStatPercent(stats, key);
+        if (percent <= 0) return '';
+        return `<span class="${key}" style="width:${percent.toFixed(1)}%" title="${key}: ${percent.toFixed(1)}%"></span>`;
+      }).join('') || '<span class="beyond" style="width:100%"></span>';
+    }
+
+    const legend = $('stats-hsk-legend');
+    if (legend) {
+      legend.innerHTML = '<div class="flex flex-wrap gap-x-md gap-y-xs">' + focusedHskBand(hskLevel).map(function (key) {
+        const percent = hskStatPercent(stats, key);
+        return `<span class="inline-flex items-center gap-xs"><span class="w-2 h-2 rounded-full ${key}"></span> ${escapeHtml(key.toUpperCase().replace('HSK', 'HSK '))} ${percent.toFixed(1)}%</span>`;
+      }).join('') + '</div>';
+    }
+
+    const idiomList = $('stats-idiom-list');
+    if (idiomList) {
+      if (idioms.length === 0) {
+        idiomList.innerHTML = '<li class="text-on-surface-variant">No idioms detected.</li>';
+      } else {
+        idiomList.innerHTML = idioms.map(function (idiom) {
+          const typeLabel = idiom.type === 'xiehouyu' ? '歇后语' : '成语';
+          const lineLabel = typeof idiom.line === 'number' ? `Line ${idiom.line + 1}` : '';
+          return `<li class="border-b border-outline-variant/20 pb-xs last:border-0">
+            <span class="font-medium text-on-surface">${escapeHtml(idiom.text || '')}</span>
+            <span class="text-xs text-on-surface-variant ml-xs">${escapeHtml(typeLabel)}${lineLabel ? ' · ' + lineLabel : ''}</span>
+            <p class="text-xs text-on-surface-variant/80">${escapeHtml(idiom.meaning || '')}</p>
+          </li>`;
+        }).join('');
+      }
+    }
+
+    const lineCountEl = $('stats-line-count');
+    if (lineCountEl) lineCountEl.textContent = `Lines: ${state.lines.length}`;
+
+    const wordCountEl = $('stats-word-count');
+    if (wordCountEl) {
+      const total = state.lines.reduce(function (sum, line) {
+        return sum + (line.chinese || '').length;
+      }, 0);
+      wordCountEl.textContent = `Characters: ${total}`;
+    }
+
+    const sourceRow = $('stats-source-row');
+    const sourceLink = $('stats-source-link');
+    if (sourceRow && sourceLink) {
+      if (script.sourceUrl) {
+        sourceRow.classList.remove('hidden');
+        sourceLink.href = script.sourceUrl;
+      } else {
+        sourceRow.classList.add('hidden');
+      }
+    }
+  }
+
+  function toggleStatsPanel(open) {
+    const panel = $('stats-panel');
+    const overlay = $('stats-panel-overlay');
+    if (!panel) return;
+
+    const isOpen = panel.classList.contains('open');
+    const shouldOpen = open !== undefined ? !!open : !isOpen;
+
+    if (shouldOpen) {
+      panel.classList.add('open');
+      if (overlay) overlay.classList.add('open');
+      document.body.classList.add('overflow-hidden');
+    } else {
+      panel.classList.remove('open');
+      if (overlay) overlay.classList.remove('open');
+      document.body.classList.remove('overflow-hidden');
+    }
   }
 
   function renderAccentChar() {
@@ -889,16 +1261,19 @@
 
     container.dataset.fontSize = fontSize;
 
+    const highlightClass = state.hskHighlightEnabled ? 'hsk-highlight-enabled' : '';
+
     container.innerHTML = state.lines.map(function (line, index) {
       const isActive = index === state.activeLineIndex;
+      const tokenizedChinese = renderTokenizedChinese(line);
       return `
         <div class="script-line group cursor-pointer py-2 px-md hover:bg-surface-container-low rounded-xl transition-all duration-200 ${isActive ? 'bg-surface-container-low' : ''}" data-index="${index}">
           <div class="flex flex-col items-center text-center">
-            <div class="script-chinese font-character-display text-on-surface leading-relaxed text-center ${zhDisplay} ${classes.chinese}">
+            <div class="script-chinese font-character-display text-on-surface leading-relaxed text-center ${zhDisplay} ${classes.chinese} ${highlightClass}">
               <button class="script-play-line inline-block mr-sm text-primary hover:scale-110 transition-transform align-middle" data-index="${index}" title="Play sentence audio">
                 <span class="material-symbols-outlined text-[20px]">play_circle</span>
               </button>
-              ${escapeHtml(line.chinese)}
+              ${tokenizedChinese}
               <button class="script-lookup-line inline-block ml-sm text-primary hover:scale-110 transition-transform align-middle" data-index="${index}" title="Look up word">
                 <span class="material-symbols-outlined text-[20px]">search</span>
               </button>
@@ -936,6 +1311,26 @@
         createPrefilledNote(state.lines[index].chinese, state.lines[index].pinyin);
       });
     });
+
+    // Idiom hover / tap tooltips.
+    container.querySelectorAll('.idiom-chip').forEach(function (chip) {
+      chip.addEventListener('mouseenter', showIdiomTooltip);
+      chip.addEventListener('mouseleave', hideIdiomTooltip);
+      chip.addEventListener('focus', showIdiomTooltip);
+      chip.addEventListener('blur', hideIdiomTooltip);
+      chip.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleIdiomTooltip(chip);
+      });
+    });
+
+    // Token hover tooltip.
+    container.querySelectorAll('.hsk-token[data-level]').forEach(function (token) {
+      token.addEventListener('mouseenter', showTokenTooltip);
+      token.addEventListener('mouseleave', hideTokenTooltip);
+      token.addEventListener('focus', showTokenTooltip);
+      token.addEventListener('blur', hideTokenTooltip);
+    });
   }
 
   function renderReaderModeToggles() {
@@ -957,6 +1352,95 @@
   function setActiveLine(index) {
     state.activeLineIndex = index;
     renderLines();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Inline tooltips
+  // ---------------------------------------------------------------------------
+
+  function ensureTooltipContainer() {
+    let container = document.querySelector('.mando-tooltip');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'mando-tooltip';
+      document.body.appendChild(container);
+    }
+    return container;
+  }
+
+  function positionTooltip(tooltip, target) {
+    const rect = target.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    let top = rect.top - tooltipRect.height - 8;
+    let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+
+    if (left < 8) left = 8;
+    if (left + tooltipRect.width > window.innerWidth - 8) {
+      left = window.innerWidth - tooltipRect.width - 8;
+    }
+    if (top < 8) {
+      top = rect.bottom + 8;
+    }
+
+    tooltip.style.top = `${top + window.scrollY}px`;
+    tooltip.style.left = `${left + window.scrollX}px`;
+  }
+
+  function showTokenTooltip(e) {
+    if (e.target.closest && e.target.closest('.idiom-chip')) return;
+    const token = e.currentTarget;
+    const level = token.dataset.level || '';
+    const text = token.textContent || '';
+    const tooltip = ensureTooltipContainer();
+    tooltip.innerHTML = `<div class="tooltip-title">${escapeHtml(text)}</div><div class="tooltip-meta">${escapeHtml(level.replace('HSK', 'HSK '))}</div>`;
+    tooltip.classList.add('visible');
+    requestAnimationFrame(function () { positionTooltip(tooltip, token); });
+  }
+
+  function hideTokenTooltip() {
+    const tooltip = document.querySelector('.mando-tooltip');
+    if (tooltip) tooltip.classList.remove('visible');
+  }
+
+  function showIdiomTooltip(e) {
+    const chip = e.currentTarget;
+    const text = chip.dataset.idiomText || '';
+    const type = chip.dataset.idiomType || '';
+    const meaning = chip.dataset.idiomMeaning || '';
+    const tooltip = ensureTooltipContainer();
+    tooltip.innerHTML = `<div class="tooltip-title">${escapeHtml(text)} · ${escapeHtml(type)}</div><div class="tooltip-meta">${escapeHtml(meaning)}</div>`;
+    tooltip.classList.add('visible');
+    requestAnimationFrame(function () { positionTooltip(tooltip, chip); });
+  }
+
+  function hideIdiomTooltip() {
+    const tooltip = document.querySelector('.mando-tooltip');
+    if (tooltip) tooltip.classList.remove('visible');
+  }
+
+  function toggleIdiomTooltip(chip) {
+    const tooltip = ensureTooltipContainer();
+    if (tooltip.classList.contains('visible') && tooltip._activeChip === chip) {
+      tooltip.classList.remove('visible');
+      tooltip._activeChip = null;
+      return;
+    }
+    tooltip._activeChip = chip;
+    const text = chip.dataset.idiomText || '';
+    const type = chip.dataset.idiomType || '';
+    const meaning = chip.dataset.idiomMeaning || '';
+    tooltip.innerHTML = `<div class="tooltip-title">${escapeHtml(text)} · ${escapeHtml(type)}</div><div class="tooltip-meta">${escapeHtml(meaning)}</div>`;
+    tooltip.classList.add('visible');
+    requestAnimationFrame(function () { positionTooltip(tooltip, chip); });
+
+    function outsideClick(e) {
+      if (!chip.contains(e.target) && !tooltip.contains(e.target)) {
+        tooltip.classList.remove('visible');
+        tooltip._activeChip = null;
+        document.removeEventListener('click', outsideClick);
+      }
+    }
+    setTimeout(function () { document.addEventListener('click', outsideClick); }, 0);
   }
 
   // ---------------------------------------------------------------------------
@@ -1710,6 +2194,30 @@
       });
     });
 
+    // HSK highlight toggle.
+    const hskToggle = $('hsk-highlight-toggle');
+    if (hskToggle) {
+      hskToggle.addEventListener('click', function () {
+        setHskHighlightEnabled(!state.hskHighlightEnabled);
+      });
+    }
+
+    // Info button opens stats panel.
+    const infoBtn = $('reader-info-btn');
+    if (infoBtn) {
+      infoBtn.addEventListener('click', function () { toggleStatsPanel(true); });
+    }
+
+    // Stats panel close actions.
+    const statsClose = $('stats-panel-close');
+    if (statsClose) {
+      statsClose.addEventListener('click', function () { toggleStatsPanel(false); });
+    }
+    const statsOverlay = $('stats-panel-overlay');
+    if (statsOverlay) {
+      statsOverlay.addEventListener('click', function () { toggleStatsPanel(false); });
+    }
+
     // Font size controls.
     const fontSizeDecrease = $('font-size-decrease');
     if (fontSizeDecrease) {
@@ -1798,12 +2306,20 @@
     return null;
   }
 
+  function isDemoMode() {
+    return window.location.search.indexOf('demo=1') !== -1;
+  }
+
   async function initPage() {
-    // No user id: run in demo mode so the page always renders useful content.
-    // A logged-in user with no scriptId gets the newest published script from
-    // the API. The full catalog view is still a future TODO (see
-    // SCRIPTS_MVP_PLAN §5.3).
-    if (!state.userId) {
+    // ?demo=1 forces demo mode for UI previews.
+    if (isDemoMode()) {
+      state.demoMode = true;
+      state.scriptId = DEMO_SCRIPT_ID;
+    } else if (!state.userId) {
+      // No user id: run in demo mode so the page always renders useful content.
+      // A logged-in user with no scriptId gets the newest published script from
+      // the API. The full catalog view is still a future TODO (see
+      // SCRIPTS_MVP_PLAN §5.3).
       state.demoMode = true;
       state.scriptId = DEMO_SCRIPT_ID;
     } else if (!state.scriptId) {

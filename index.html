@@ -19,7 +19,9 @@
 <!-- API clients -->
 <script src="js/api/client.js"></script>
 <script src="js/api/videos.js"></script>
+<script src="js/api/scripts.js"></script>
 <script src="js/api/stats.js"></script>
+<script src="js/components/article-card.js"></script>
 </head>
 <body class="font-body-md overflow-x-hidden">
 <!-- Cultural Background Pattern -->
@@ -220,6 +222,36 @@
 </div>
 </div>
 </div>
+<!-- Articles Section -->
+<section class="col-span-12 mt-lg">
+<div class="flex justify-between items-end mb-md">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Articles</h3>
+<p class="text-body-md text-on-surface-variant">Continue reading or explore graded articles</p>
+</div>
+<a id="articles-view-all" class="text-primary font-bold hover:underline flex items-center gap-xs" href="pages/articles.html">
+                            Browse All Articles <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div id="continue-reading-card" class="hidden mb-md bg-surface-container-lowest rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-all">
+<div class="flex flex-col sm:flex-row gap-md items-start">
+<div id="continue-reading-thumbnail" class="w-full sm:w-48 aspect-video bg-surface-container-high rounded-lg flex items-center justify-center shrink-0">
+<span class="font-character-display text-[48px] text-primary/20 select-none">文</span>
+</div>
+<div class="flex-1">
+<span class="font-label-caps text-label-caps text-secondary bg-secondary-container px-sm py-xs rounded">Continue Reading</span>
+<h4 id="continue-reading-title" class="font-bold text-on-surface text-lg leading-tight mt-xs">Article Title</h4>
+<p id="continue-reading-description" class="text-sm text-on-surface-variant mt-xs line-clamp-2">Article description goes here.</p>
+<a id="continue-reading-link" href="#" class="inline-flex items-center gap-xs mt-md text-primary font-bold text-sm hover:underline">
+                                Resume Reading <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Article cards rendered dynamically -->
+</div>
+</section>
 <!-- Learning Statistics Small Widget -->
 <div class="col-span-12 mt-lg">
 <div class="bg-surface-container/50 rounded-xl p-md border border-outline-variant/30 backdrop-blur-sm">

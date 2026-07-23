@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>MandoLearning | Articles</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Noto+Serif+SC:wght@500;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="../js/tailwind-config.js"></script>
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="../css/design-system.css" />
+  <!-- Shared utilities and shell -->
+  <script src="../js/utils.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/shell.js"></script>
+  <script src="../js/ui-components.js"></script>
+  <!-- API clients -->
+  <script src="../js/api/client.js"></script>
+  <script src="../js/api/scripts.js"></script>
+  <!-- Components -->
+  <script src="../js/components/article-card.js"></script>
+  <script src="../js/components/hsk-legend.js"></script>
+</head>
+<body class="font-body-md text-body-md text-on-surface overflow-x-hidden">
+  <!-- Cultural accent -->
+  <div class="fixed inset-0 seigaiha-pattern pointer-events-none z-0"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="fixed top-0 left-0 right-0 header-with-sidebar z-30 glass-nav bg-surface/90 border-b border-outline-variant">
+    <div class="flex justify-between items-center w-full px-lg py-md max-w-[1200px] mx-auto">
+      <div class="flex items-center gap-md">
+        <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface" aria-label="Open menu">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <a class="text-headline-md font-headline-md font-bold text-primary" href="../index.html">MandoLearning</a>
+      </div>
+      <div class="flex items-center gap-md">
+        <button id="topnav-back" class="flex items-center gap-xs px-md py-xs rounded-lg text-on-surface font-medium border border-outline-variant hover:bg-surface-container transition-all">
+          <span class="material-symbols-outlined text-sm">arrow_back</span>
+          <span class="hidden sm:inline">Dashboard</span>
+        </button>
+        <div class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-container overflow-hidden">
+          <img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsrRoKkSh1mdiUmCO2UMQiBGx1DJu4tptOsAcEaRvhjQkafyyHlpb2W-HJoPLRss6aqK5JeJgeM0MOGyR-Pt0KlBFiv_QHmenxt6GLq5RLKe0mhuF4GSoIml5Ua7U9b9gWXvB3x1KME_I0iBPdTt0P-21xqCnPTi002fxbMP_Bq5m2Mb2nZ5C140B4sB2Wt9swpvpAvpGbayrVcbf3ESQncRkOHlVe6MWP30mVrYl4qH-XL5-zSpf8wkJUbzrQenxf028edm9V6gU"/>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile drawer overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden md:hidden"></div>
+
+  <!-- Side Navigation Bar -->
+  <aside id="sidebar" class="sidebar w-[280px] h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high flex flex-col py-md px-base z-40 -translate-x-full md:translate-x-0 transition-transform duration-300"></aside>
+  <script>
+    if (window.MandoAuth) {
+      window.MandoAuth.guard('pages');
+    }
+    if (window.MandoShell) {
+      window.MandoShell.renderSidebar({ pageRoot: 'pages', activeNavItem: 'scripts', includeScriptLibrary: true });
+    }
+  </script>
+
+  <!-- Main Content -->
+  <main class="pt-[88px] min-h-screen main-with-sidebar transition-all duration-300 relative z-10">
+    <div class="px-lg max-w-[1200px] mx-auto py-xl">
+
+      <!-- Header -->
+      <div class="mb-lg">
+        <h1 class="font-headline-lg text-headline-lg text-on-surface">Articles</h1>
+        <p class="text-body-lg text-on-surface-variant mt-xs">Browse graded reading at your level.</p>
+      </div>
+
+      <!-- Glass filter bar -->
+      <div class="glass-panel rounded-2xl border border-outline-variant p-md mb-lg">
+        <div class="flex flex-col lg:flex-row gap-md">
+          <!-- Search -->
+          <div class="relative flex-1">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+            <input id="article-search" type="text" class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl pl-10 pr-4 py-2 text-sm text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" placeholder="Search articles..."/>
+          </div>
+
+          <!-- HSK level pills -->
+          <div id="hsk-filter-pills" class="flex flex-wrap items-center gap-xs">
+            <button type="button" data-level="ALL" class="hsk-filter-btn px-md py-xs rounded-full text-sm font-medium bg-primary-container text-on-primary-container border border-outline-variant transition-all">All</button>
+            <button type="button" data-level="HSK1" class="hsk-filter-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">HSK 1</button>
+            <button type="button" data-level="HSK2" class="hsk-filter-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">HSK 2</button>
+            <button type="button" data-level="HSK3" class="hsk-filter-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">HSK 3</button>
+            <button type="button" data-level="HSK4" class="hsk-filter-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">HSK 4</button>
+            <button type="button" data-level="HSK5" class="hsk-filter-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">HSK 5</button>
+            <button type="button" data-level="HSK6" class="hsk-filter-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">HSK 6</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-md mt-md pt-md border-t border-outline-variant/30">
+          <!-- Type chips -->
+          <div id="type-filter-chips" class="flex flex-wrap items-center gap-xs">
+            <button type="button" data-type="ALL" class="type-filter-btn px-md py-xs rounded-full text-xs font-medium bg-primary-container text-on-primary-container border border-outline-variant transition-all">All Types</button>
+            <button type="button" data-type="ARTICLE" class="type-filter-btn px-md py-xs rounded-full text-xs font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">Article</button>
+            <button type="button" data-type="NEWS" class="type-filter-btn px-md py-xs rounded-full text-xs font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">News</button>
+            <button type="button" data-type="SPEECH" class="type-filter-btn px-md py-xs rounded-full text-xs font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all">Speech</button>
+          </div>
+
+          <!-- Sort dropdown -->
+          <div class="flex items-center gap-xs ml-auto">
+            <span class="material-symbols-outlined text-on-surface-variant text-sm">sort</span>
+            <select id="article-sort" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-sm py-xs text-sm text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none">
+              <option value="newest">Newest</option>
+              <option value="easiest">Easiest</option>
+              <option value="hardest">Hardest</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="articles-loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+        <div class="bg-surface-container-lowest rounded-2xl h-80 animate-pulse"></div>
+        <div class="bg-surface-container-lowest rounded-2xl h-80 animate-pulse"></div>
+        <div class="bg-surface-container-lowest rounded-2xl h-80 animate-pulse"></div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="articles-empty" class="hidden text-center py-xl">
+        <span class="material-symbols-outlined text-6xl text-on-surface-variant/40 mb-md">menu_book</span>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-xs">No articles found</h3>
+        <p id="articles-empty-message" class="text-on-surface-variant max-w-md mx-auto">Try adjusting your filters or check back later for new content.</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="articles-error" class="hidden text-center py-xl">
+        <span class="material-symbols-outlined text-6xl text-error/60 mb-md">wifi_off</span>
+        <h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Backend not reachable</h3>
+        <p class="text-on-surface-variant max-w-md mx-auto mb-md">We couldn't load the article catalog. Make sure the backend is running or try again.</p>
+        <button id="articles-retry" type="button" class="px-md py-xs bg-primary text-on-primary rounded-lg hover:bg-primary-dim transition-all">Retry</button>
+      </div>
+
+      <!-- Article grid -->
+      <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md"></div>
+
+    </div>
+  </main>
+
+  <script src="../js/pages/articles.js"></script>
+</body>
+</html>

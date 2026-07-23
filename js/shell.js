@@ -71,7 +71,7 @@
       : '';
 
     const scriptLibrarySection = includeScriptLibrary
-      ? renderCollapsibleLibrarySection('Script Library', 'script-library-container', false)
+      ? renderCollapsibleLibrarySection('Script Library', 'script-library-container', false, { headerHref: 'pages/articles.html', headerLinkLabel: 'Browse All' })
       : '';
 
     container.innerHTML = `
@@ -185,15 +185,21 @@
    * Build a collapsible library section (Video/Script) for the sidebar.
    * State is persisted per section under `mando.sidebar.{containerId}.collapsed`.
    */
-  function renderCollapsibleLibrarySection(title, containerId, defaultCollapsed) {
+  function renderCollapsibleLibrarySection(title, containerId, defaultCollapsed, options) {
+    options = options || {};
     const storageKey = 'mando.sidebar.' + containerId + '.collapsed';
     const stored = MandoUtils ? MandoUtils.safeLocalStorageGet(storageKey) : null;
     const collapsed = stored === null ? !!defaultCollapsed : stored === 'true';
+
+    const headerLink = options.headerHref
+      ? `<a href="${options.headerHref}" class="text-xs text-primary hover:underline font-medium ml-auto mr-sm" onclick="if(window.MandoShell) window.MandoShell.closeMobileDrawer()">${MandoUtils ? MandoUtils.escapeHtml(options.headerLinkLabel || 'Browse All') : (options.headerLinkLabel || 'Browse All')}</a>`
+      : '';
 
     return `
       <div class="mt-md px-base">
         <button type="button" class="sidebar-collapsible-toggle w-full flex items-center justify-between gap-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-container-id="${containerId}" aria-expanded="${!collapsed}">
           <h3 class="font-label-caps text-label-caps tracking-wider uppercase">${title}</h3>
+          ${headerLink}
           <span class="material-symbols-outlined text-sm transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}">expand_more</span>
         </button>
         <div id="${containerId}" class="space-y-1 overflow-y-auto custom-scrollbar pr-xs ${collapsed ? 'hidden' : 'max-h-[35vh]'}">

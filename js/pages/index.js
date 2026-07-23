@@ -17,6 +17,42 @@
 
   const DAILY_GOAL_TARGET = 15;
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const FALLBACK_ARTICLES = [
+    {
+      scriptId: 'DEMO_ARTICLE_001',
+      title: 'Professional Emails & Etiquette',
+      description: 'Master the art of formal correspondence in a Chinese business environment.',
+      scriptType: 'ARTICLE',
+      hskLevel: 'HSK4',
+      hskStats: { hsk4: 45, hsk5: 30, hsk6: 15, beyond: 10 },
+      idioms: [],
+      hasAudio: false,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      scriptId: 'DEMO_ARTICLE_002',
+      title: 'Ordering at the Night Market',
+      description: 'Survival Chinese for navigating the delicious world of street food and vendors.',
+      scriptType: 'ARTICLE',
+      hskLevel: 'HSK3',
+      hskStats: { hsk1: 35, hsk2: 40, hsk3: 20 },
+      idioms: [],
+      hasAudio: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      scriptId: 'DEMO_ARTICLE_003',
+      title: 'Traveling by High-Speed Rail',
+      description: 'Learn vocabulary for booking tickets and navigating modern travel hubs in China.',
+      scriptType: 'ARTICLE',
+      hskLevel: 'HSK4',
+      hskStats: { hsk4: 50, hsk5: 25, hsk6: 15, beyond: 10 },
+      idioms: [],
+      hasAudio: false,
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
   const FALLBACK_VIDEOS = [
     {
       videoId: 'DEMO_001',
@@ -191,6 +227,87 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Rendering: articles
+  // ---------------------------------------------------------------------------
+
+  function normalizeLevel(level) {
+    return String(level || '').toUpperCase().replace(/\s+/g, '');
+  }
+
+  function levelNumber(level) {
+    const match = String(level || '').match(/(\d)/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  function renderContinueReadingArticle(articles) {
+    const lastScriptId = safeLocalStorageGet('mando.lastScriptId');
+    const container = $('continue-reading-card');
+    if (!container) return;
+
+    if (!lastScriptId) {
+      container.classList.add('hidden');
+      return;
+    }
+
+    const article = articles.find(function (a) { return a.scriptId === lastScriptId; });
+    if (!article) {
+      container.classList.add('hidden');
+      return;
+    }
+
+    container.classList.remove('hidden');
+    setText('continue-reading-title', article.title || 'Untitled');
+    setText('continue-reading-description', article.description || '');
+
+    const thumb = $('continue-reading-thumbnail');
+    if (thumb) {
+      if (article.thumbnailUrl) {
+        thumb.innerHTML = `<img class="w-full h-full object-cover rounded-lg" src="${escapeHtml(article.thumbnailUrl)}" alt="${escapeHtml(article.title)}">`;
+      } else {
+        thumb.innerHTML = '<span class="font-character-display text-[48px] text-primary/20 select-none">文</span>';
+      }
+    }
+
+    const link = $('continue-reading-link');
+    if (link) {
+      link.href = `pages/script-reader.html?scriptId=${encodeURIComponent(article.scriptId)}`;
+    }
+  }
+
+  function renderArticleRecommendations(articles) {
+    const grid = $('articles-grid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+
+    const createCard = window.MandoComponents && window.MandoComponents.createArticleCard;
+    const lastScriptId = safeLocalStorageGet('mando.lastScriptId');
+    const candidates = articles.filter(function (a) { return a.scriptId !== lastScriptId; });
+    const list = candidates.length > 0 ? candidates : articles;
+
+    list.slice(0, 3).forEach(function (script) {
+      if (createCard) {
+        grid.appendChild(createCard(script, { rootPath: '' }));
+      } else {
+        const link = document.createElement('a');
+        link.href = `pages/script-reader.html?scriptId=${encodeURIComponent(script.scriptId || '')}`;
+        link.className = 'bg-surface-container-lowest rounded-xl p-md border border-outline-variant shadow-sm hover:shadow-md transition-all';
+        link.innerHTML = `
+          <h4 class="font-bold text-on-surface text-base">${escapeHtml(script.title)}</h4>
+          <p class="text-sm text-on-surface-variant mt-xs line-clamp-2">${escapeHtml(script.description || '')}</p>
+        `;
+        grid.appendChild(link);
+      }
+    });
+  }
+
+  function renderArticlesSection(state) {
+    const articles = state.articles.length > 0 ? state.articles : FALLBACK_ARTICLES;
+    renderContinueReadingArticle(articles);
+    renderArticleRecommendations(articles);
+  }
+
+  // ---------------------------------------------------------------------------
   // Rendering: recommendations
   // ---------------------------------------------------------------------------
 
@@ -295,7 +412,7 @@
     const todayStr = today();
 
     try {
-      const [aggregateRes, activityRes, videosRes, activeRes] = await Promise.all([
+      const [aggregateRes, activityRes, videosRes, scriptsRes, activeRes] = await Promise.all([
         window.MandoApi.stats.getAggregate(state.userId),
         window.MandoApi.stats.getActivity(state.userId, {
           granularity: 'daily',
@@ -303,6 +420,7 @@
           end: todayStr,
         }),
         window.MandoApi.videos.listReady({ pageSize: 4 }),
+        window.MandoApi.scripts.listReady({ pageSize: 10 }),
         window.MandoApi.stats.recordEvent(state.userId, {
           eventId: uuid(),
           eventType: 'USER_ACTIVE',
@@ -326,6 +444,10 @@
         const videos = videosRes.data.videos;
         state.videos.hero = videos[0] || null;
         state.videos.recommended = videos.slice(1, 4);
+      }
+
+      if (scriptsRes.ok && scriptsRes.data && Array.isArray(scriptsRes.data.scripts)) {
+        state.articles = scriptsRes.data.scripts;
       }
 
       if (!activeRes.ok) {
@@ -383,6 +505,7 @@
         hero: null,
         recommended: [],
       },
+      articles: [],
     };
 
     // Persist userId if it came from URL.
@@ -401,6 +524,7 @@
       renderContinueLearning(state);
       renderDailyGoal(state);
       renderRecommendations(state);
+      renderArticlesSection(state);
       renderWeeklyChart(state);
 
       // Then load backend data and re-render.
@@ -410,6 +534,7 @@
       renderContinueLearning(state);
       renderDailyGoal(state);
       renderRecommendations(state);
+      renderArticlesSection(state);
       renderWeeklyChart(state);
     } catch (err) {
       console.error('Dashboard init failed:', err);
