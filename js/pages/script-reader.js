@@ -1039,7 +1039,6 @@
     if (badge) badge.textContent = typeLabel;
 
     setText('script-title', script.title || 'Untitled Script');
-    setText('script-description', script.description || '');
     document.title = `MandoLearning | ${script.title || 'Script Reader'}`;
 
     renderVersionSwitcher();
@@ -1063,45 +1062,59 @@
     return map;
   }
 
+  const VERSION_LABELS = { ORIGINAL: 'Original', HSK4: 'HSK 4', HSK5: 'HSK 5', HSK6: 'HSK 6' };
+
+  /**
+   * Render the version dropdown in the unified toolbar. Hidden entirely when
+   * only the current version exists. Menu items are rebuilt from the version
+   * map on every render; clicking one switches version and closes the menu.
+   */
   function renderVersionSwitcher() {
     const container = $('version-switcher');
     if (!container) return;
+    const menu = $('version-dropdown-menu');
+    const label = $('version-current-label');
+    const divider = $('toolbar-divider-version');
 
     const currentVersion = normalizeLevel((state.script || {}).version);
     const map = versionMap();
+    const available = VERSION_ORDER.filter(function (v) { return map[v]; });
 
-    container.querySelectorAll('.version-btn').forEach(function (btn) {
-      const version = normalizeLevel(btn.dataset.version);
-      const isActive = version === currentVersion;
-      const targetId = map[version];
+    if (available.length <= 1) {
+      container.classList.add('hidden');
+      if (divider) divider.classList.add('hidden');
+      return;
+    }
 
-      btn.className = isActive
-        ? 'version-btn px-md py-xs rounded-full text-sm font-medium bg-primary-container text-on-primary-container border border-outline-variant transition-all disabled:opacity-50 disabled:cursor-not-allowed'
-        : 'version-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all disabled:opacity-50 disabled:cursor-not-allowed';
+    container.classList.remove('hidden');
+    if (divider) divider.classList.remove('hidden');
+    if (label) label.textContent = VERSION_LABELS[currentVersion] || 'Original';
 
-      if (targetId && targetId !== state.scriptId) {
-        btn.disabled = false;
-        btn.title = `Switch to ${btn.textContent}`;
-        btn.onclick = function () { switchVersion(targetId); };
-      } else if (isActive) {
-        btn.disabled = true;
-        btn.title = 'Currently viewing this version';
-        btn.onclick = null;
-      } else {
-        // Versions not in the map are hidden rather than disabled.
-        btn.classList.add('hidden');
-        btn.disabled = true;
-        btn.title = '';
-        btn.onclick = null;
-      }
-    });
+    if (menu) {
+      menu.innerHTML = available.map(function (v) {
+        const isActive = v === currentVersion;
+        return `<button type="button" data-version="${v}" class="version-menu-item w-full flex items-center justify-between gap-sm px-md py-xs rounded-lg text-sm ${isActive ? 'bg-primary-container text-on-primary-container font-semibold' : 'text-on-surface hover:bg-surface-container'} transition-colors">${VERSION_LABELS[v]}${isActive ? '<span class="material-symbols-outlined text-sm">check</span>' : ''}</button>`;
+      }).join('');
 
-    // Hide the whole switcher when only the current version exists.
-    let visibleCount = 0;
-    container.querySelectorAll('.version-btn').forEach(function (btn) {
-      if (!btn.classList.contains('hidden')) visibleCount++;
-    });
-    container.classList.toggle('hidden', visibleCount <= 1);
+      menu.querySelectorAll('.version-menu-item').forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          e.stopPropagation();
+          toggleVersionDropdown(false);
+          const targetId = map[item.dataset.version];
+          if (targetId && targetId !== state.scriptId) {
+            switchVersion(targetId);
+          }
+        });
+      });
+    }
+  }
+
+  function toggleVersionDropdown(open) {
+    const menu = $('version-dropdown-menu');
+    if (!menu) return;
+    const isOpen = !menu.classList.contains('hidden');
+    const shouldOpen = open !== undefined ? !!open : !isOpen;
+    menu.classList.toggle('hidden', !shouldOpen);
   }
 
   async function switchVersion(newScriptId) {
@@ -1438,8 +1451,8 @@
     document.querySelectorAll('.reader-mode-btn').forEach(function (btn) {
       const isActive = btn.dataset.mode === state.readerMode;
       btn.className = isActive
-        ? 'reader-mode-btn w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs'
-        : 'reader-mode-btn w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs';
+        ? 'reader-mode-btn w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs'
+        : 'reader-mode-btn w-9 h-9 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs';
     });
   }
 
@@ -2169,6 +2182,21 @@
       });
     });
 
+    // Version dropdown in the unified toolbar.
+    const versionDropdownBtn = $('version-dropdown-btn');
+    if (versionDropdownBtn) {
+      versionDropdownBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleVersionDropdown();
+      });
+    }
+    const versionDropdownMenu = $('version-dropdown-menu');
+    if (versionDropdownMenu) {
+      versionDropdownMenu.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+    }
+
     // Highlight button opens the level-selection popover.
     const highlightBtn = $('highlight-btn');
     if (highlightBtn) {
@@ -2185,13 +2213,15 @@
       });
     }
 
-    // Close the highlight popover on outside click and Esc.
+    // Close the dropdown and highlight popover on outside click and Esc.
     document.addEventListener('click', function () {
       toggleHighlightPopover(false);
+      toggleVersionDropdown(false);
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         toggleHighlightPopover(false);
+        toggleVersionDropdown(false);
       }
     });
 
@@ -2358,7 +2388,6 @@
 
     // Show skeletons or loading state.
     setText('script-title', 'Loading script…');
-    setText('script-description', 'Please wait while we load the script.');
 
     try {
       let metaOk = await loadScriptMeta();

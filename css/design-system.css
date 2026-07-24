@@ -150,6 +150,16 @@ body {
     text-orientation: mixed;
 }
 
+/* Gentle nudge on the rail's expand chevron, inviting the user to open it */
+@keyframes script-rail-hint {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-3px); }
+}
+
+.script-rail-hint {
+    animation: script-rail-hint 1.8s ease-in-out infinite;
+}
+
 /* Glass panel used by floating toolbars and headers */
 .glass-panel {
     background: rgba(255, 244, 244, 0.85);

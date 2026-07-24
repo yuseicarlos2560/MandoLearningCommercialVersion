@@ -200,13 +200,13 @@
 <div class="mt-xs text-right"><span id="script-completion-text" class="font-label-caps text-label-caps text-primary">0% Complete</span></div>
 </div>
 </div>
-<!-- Slim rail shown when the script panel is collapsed (desktop only) -->
-<div id="script-rail" class="hidden h-full w-14 rounded-3xl border border-outline-variant bg-surface-container-low flex-col items-center justify-between py-md mx-auto">
-<span class="script-rail-label font-label-caps text-label-caps text-on-surface-variant">Script</span>
-<button id="script-expand-btn" class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center hover:bg-surface-container transition-colors" title="Expand script">
+<!-- Slim rail shown when the script panel is collapsed (desktop only). The whole rail is a button; the chevron at the top nudges to invite opening. -->
+<button id="script-rail" type="button" class="hidden h-full w-14 rounded-3xl border border-outline-variant bg-surface-container-low flex-col items-center gap-md py-md mx-auto cursor-pointer hover:bg-surface-container hover:border-primary/40 transition-all" title="Expand script">
+<span class="script-rail-hint w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-sm">
 <span class="material-symbols-outlined text-sm">chevron_left</span>
+</span>
+<span class="script-rail-label font-label-caps text-label-caps text-on-surface-variant">Script</span>
 </button>
-</div>
 </div>
 </div>
 <!-- Related Content Sections -->

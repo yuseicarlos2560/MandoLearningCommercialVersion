@@ -74,53 +74,62 @@
     <div class="px-lg max-w-[1200px] mx-auto py-xl">
 
       <!-- Header -->
-      <div class="text-center mb-xl w-full">
+      <div class="text-center mb-lg w-full">
         <span id="script-type-badge" class="font-label-caps text-label-caps text-secondary bg-secondary-container px-base py-xs rounded-full mb-md inline-block">Script</span>
         <h1 id="script-title" class="font-headline-lg text-headline-lg text-on-surface mb-sm">Loading script…</h1>
-        <p id="script-description" class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Please wait while we load the script.</p>
-
-        <!-- Version switcher -->
-        <div id="version-switcher" class="flex flex-wrap items-center justify-center gap-xs mt-md empty:hidden">
-          <button type="button" data-version="ORIGINAL" class="version-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all disabled:opacity-50 disabled:cursor-not-allowed">Original</button>
-          <button type="button" data-version="HSK4" class="version-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all disabled:opacity-50 disabled:cursor-not-allowed">HSK 4</button>
-          <button type="button" data-version="HSK5" class="version-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all disabled:opacity-50 disabled:cursor-not-allowed">HSK 5</button>
-          <button type="button" data-version="HSK6" class="version-btn px-md py-xs rounded-full text-sm font-medium bg-surface-container-highest text-on-surface-variant border border-outline-variant transition-all disabled:opacity-50 disabled:cursor-not-allowed">HSK 6</button>
-        </div>
-
-        <!-- Highlight selector + info -->
-        <div class="flex flex-wrap items-center justify-center gap-md mt-md">
-          <div class="relative">
-            <button id="highlight-btn" type="button" class="flex items-center gap-xs px-md py-xs rounded-full text-sm font-medium bg-surface-container-high text-on-surface border border-outline-variant hover:bg-surface-dim transition-all" title="Choose HSK levels to highlight">
-              <span class="material-symbols-outlined text-sm">palette</span>
-              Highlight
-            </button>
-            <div id="highlight-popover" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-xs z-40 w-[240px] bg-surface border border-outline-variant rounded-2xl shadow-xl p-md">
-              <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs text-left">Highlight levels</p>
-              <div id="highlight-pills" class="flex flex-wrap gap-xs"></div>
-            </div>
-          </div>
-          <button id="reader-info-btn" type="button" class="flex items-center gap-xs px-md py-xs rounded-full text-sm font-medium bg-surface-container-high text-on-surface border border-outline-variant hover:bg-surface-dim transition-all" title="Article info">
-            <span class="material-symbols-outlined text-sm">info</span>
-            Info
-          </button>
-        </div>
       </div>
 
-      <!-- Reader Toolbar (inline) -->
-      <div class="flex flex-wrap items-center justify-center gap-md mb-xl">
-        <div class="flex items-center gap-xs bg-surface-container-high rounded-full p-1 border border-outline-variant w-fit">
-          <button id="reader-mode-zh" class="reader-mode-btn w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs" data-mode="zh">中</button>
-          <button id="reader-mode-py" class="reader-mode-btn w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="py">ǎ</button>
-          <button id="reader-mode-en" class="reader-mode-btn w-10 h-10 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="en">EN</button>
+      <!-- Unified reader toolbar: version → display mode → highlight → text size → info -->
+      <div class="flex flex-wrap items-center justify-center gap-xs mb-xl mx-auto w-fit max-w-full bg-surface-container-high rounded-full px-sm py-1 border border-outline-variant">
+        <!-- Version dropdown -->
+        <div id="version-switcher" class="relative hidden">
+          <button id="version-dropdown-btn" type="button" class="flex items-center gap-xs px-md py-xs rounded-full text-sm font-medium text-on-surface hover:bg-surface-dim transition-all" title="Switch version">
+            <span id="version-current-label">Original</span>
+            <span class="material-symbols-outlined text-sm">expand_more</span>
+          </button>
+          <div id="version-dropdown-menu" class="hidden absolute left-0 top-full mt-xs z-40 min-w-[140px] bg-surface border border-outline-variant rounded-2xl shadow-xl p-xs"></div>
         </div>
-        <div class="flex items-center gap-xs bg-surface-container-high rounded-full p-1 border border-outline-variant w-fit" title="Text size">
-          <button id="font-size-decrease" class="w-9 h-9 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center hover:bg-surface-dim transition-colors" aria-label="Decrease text size">
+        <div id="toolbar-divider-version" class="hidden h-6 w-px bg-outline-variant"></div>
+
+        <!-- Display mode -->
+        <div class="flex items-center gap-xs">
+          <button id="reader-mode-zh" class="reader-mode-btn w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs" data-mode="zh">中</button>
+          <button id="reader-mode-py" class="reader-mode-btn w-9 h-9 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="py">ǎ</button>
+          <button id="reader-mode-en" class="reader-mode-btn w-9 h-9 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs" data-mode="en">EN</button>
+        </div>
+
+        <div class="h-6 w-px bg-outline-variant"></div>
+
+        <!-- Highlight selector -->
+        <div class="relative">
+          <button id="highlight-btn" type="button" class="flex items-center gap-xs px-md py-xs rounded-full text-sm font-medium text-on-surface hover:bg-surface-dim transition-all" title="Choose HSK levels to highlight">
+            <span class="material-symbols-outlined text-sm">palette</span>
+            Highlight
+          </button>
+          <div id="highlight-popover" class="hidden absolute left-1/2 -translate-x-1/2 top-full mt-xs z-40 w-[240px] bg-surface border border-outline-variant rounded-2xl shadow-xl p-md">
+            <p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-xs text-left">Highlight levels</p>
+            <div id="highlight-pills" class="flex flex-wrap gap-xs"></div>
+          </div>
+        </div>
+
+        <div class="h-6 w-px bg-outline-variant"></div>
+
+        <!-- Text size -->
+        <div class="flex items-center gap-xs" title="Text size">
+          <button id="font-size-decrease" class="w-9 h-9 rounded-full text-on-surface-variant flex items-center justify-center hover:bg-surface-dim hover:text-on-surface transition-colors" aria-label="Decrease text size">
             <span class="material-symbols-outlined text-sm">text_decrease</span>
           </button>
-          <button id="font-size-increase" class="w-9 h-9 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center hover:bg-surface-dim transition-colors" aria-label="Increase text size">
+          <button id="font-size-increase" class="w-9 h-9 rounded-full text-on-surface-variant flex items-center justify-center hover:bg-surface-dim hover:text-on-surface transition-colors" aria-label="Increase text size">
             <span class="material-symbols-outlined text-sm">text_increase</span>
           </button>
         </div>
+
+        <div class="h-6 w-px bg-outline-variant"></div>
+
+        <!-- Article info -->
+        <button id="reader-info-btn" type="button" class="w-9 h-9 rounded-full text-on-surface-variant flex items-center justify-center hover:bg-surface-dim hover:text-on-surface transition-all" title="Article info">
+          <span class="material-symbols-outlined text-sm">info</span>
+        </button>
       </div>
 
       <!-- Loading / Error States -->

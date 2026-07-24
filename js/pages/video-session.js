@@ -1783,7 +1783,7 @@
 
   function initScriptView() {
     const collapseBtn = $('script-collapse-btn');
-    const expandBtn = $('script-expand-btn');
+    const scriptRail = $('script-rail');
     const theaterBtn = $('video-theater-btn');
 
     if (collapseBtn) {
@@ -1792,8 +1792,9 @@
       });
     }
 
-    if (expandBtn) {
-      expandBtn.addEventListener('click', function () {
+    // The whole rail is a button: clicking anywhere on it expands the panel.
+    if (scriptRail) {
+      scriptRail.addEventListener('click', function () {
         setScriptView('normal');
       });
     }
