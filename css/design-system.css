@@ -144,6 +144,12 @@ body {
     max-height: 60vh;
 }
 
+/* Vertically rotated label inside the collapsed script rail */
+.script-rail-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
 /* Glass panel used by floating toolbars and headers */
 .glass-panel {
     background: rgba(255, 244, 244, 0.85);
@@ -219,18 +225,13 @@ body {
     border-radius: 2px;
 }
 
-.hsk-highlight-enabled .hsk-token[data-level] {
-    border-bottom-color: var(--hsk-color);
-}
-
-.hsk-highlight-enabled .hsk-token[data-level="HSK1"] { --hsk-color: #22c55e; }
-.hsk-highlight-enabled .hsk-token[data-level="HSK2"] { --hsk-color: #0ea5e9; }
-.hsk-highlight-enabled .hsk-token[data-level="HSK3"] { --hsk-color: #f59e0b; }
-.hsk-highlight-enabled .hsk-token[data-level="HSK4"] { --hsk-color: #f97316; }
-.hsk-highlight-enabled .hsk-token[data-level="HSK5"] { --hsk-color: #8b5cf6; }
-.hsk-highlight-enabled .hsk-token[data-level="HSK6"] { --hsk-color: #ec4899; }
-.hsk-highlight-enabled .hsk-token[data-level="BEYOND"] { --hsk-color: #64748b; }
-.hsk-highlight-enabled .hsk-token[data-level="MODERN"] { --hsk-color: #14b8a6; }
+.hsk-highlight-enabled.hl-hsk1 .hsk-token[data-level="HSK1"] { border-bottom-color: #22c55e; }
+.hsk-highlight-enabled.hl-hsk2 .hsk-token[data-level="HSK2"] { border-bottom-color: #0ea5e9; }
+.hsk-highlight-enabled.hl-hsk3 .hsk-token[data-level="HSK3"] { border-bottom-color: #f59e0b; }
+.hsk-highlight-enabled.hl-hsk4 .hsk-token[data-level="HSK4"] { border-bottom-color: #f97316; }
+.hsk-highlight-enabled.hl-hsk5 .hsk-token[data-level="HSK5"] { border-bottom-color: #8b5cf6; }
+.hsk-highlight-enabled.hl-hsk6 .hsk-token[data-level="HSK6"] { border-bottom-color: #ec4899; }
+.hsk-highlight-enabled.hl-beyond .hsk-token[data-level="BEYOND"] { border-bottom-color: #64748b; }
 
 .hsk-token:hover {
     background-color: rgba(175, 35, 48, 0.06);
@@ -283,6 +284,15 @@ body {
 .mando-tooltip .tooltip-meta {
     opacity: 0.85;
     font-size: 12px;
+}
+
+/* Hierarchical notes: touch reveal for hover-only actions ------------------ */
+.note-node.note-actions-visible .note-actions {
+    opacity: 1;
+}
+
+.note-node.note-actions-visible .note-add-child-fab {
+    opacity: 1;
 }
 
 /* Stats panel ------------------------------------------------------------ */

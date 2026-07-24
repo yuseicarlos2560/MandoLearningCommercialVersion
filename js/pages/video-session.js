@@ -10,6 +10,7 @@
  * UI features:
  * - Script panel below the video with per-line synthetic-voice play buttons
  *   (uses `MandoUtils.speak`; pressing again stops playback)
+ * - Script panel view modes: normal / slim rail (persisted) / theater (session-only)
  * - Collapsible Video Library in the shared sidebar
  *
  * Keeps all markup intact; only dynamic text/attributes are updated via ids.
@@ -253,6 +254,8 @@
     relatedVideos: [],
     scriptMode: 'zh',
     activeScriptIndex: -1,
+    scriptView: 'normal',
+    previousScriptView: 'normal',
     demoMode: false,
     scriptLines: [],
   };
@@ -293,11 +296,25 @@
 
   function updateSaveButtonState() {
     const btn = $('save-notes-btn');
-    if (!btn) return;
-    const count = state.pendingChanges.length;
-    btn.disabled = count === 0 || state.isSaving;
-    const label = count > 0 ? `Save (${count})` : 'Save';
-    btn.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> ${escapeHtml(label)} (Ctrl+S)`;
+    if (btn) {
+      const count = state.pendingChanges.length;
+      btn.disabled = count === 0 || state.isSaving;
+      const label = count > 0 ? `Save (${count})` : 'Save';
+      btn.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> ${escapeHtml(label)} (Ctrl+S)`;
+    }
+
+    updatePendingWordsChip();
+  }
+
+  function updatePendingWordsChip() {
+    const chip = $('pending-words-chip');
+    if (!chip) return;
+    const count = state.pendingChanges.filter(function (c) {
+      return c.operation === 'CREATE_FLASHCARD';
+    }).length;
+    chip.textContent = `${count} pending words`;
+    chip.classList.toggle('hidden', count === 0);
+    chip.classList.toggle('flex', count > 0);
   }
 
   function validatePendingChanges() {
@@ -1243,14 +1260,14 @@
     const safeId = note.noteId.replace(/[^a-zA-Z0-9_-]/g, '_');
 
     const wrapper = document.createElement('div');
-    wrapper.className = `note-node rounded-2xl border transition-all ${
+    wrapper.className = `note-node relative group/node rounded-2xl border transition-all ${
       isPending
         ? 'border-primary/40 bg-primary-container/10'
         : 'border-outline-variant/40 bg-surface-container-lowest'
     } ${depth > 0 ? 'ml-md mt-xs' : ''}`;
 
     const content = document.createElement('div');
-    content.className = 'p-sm';
+    content.className = 'relative group p-sm';
 
     const detailIcon = hasDetail ? 'sticky_note' : 'sticky_note_2';
     const autoPinyin = generatePinyin(note.character || '');
@@ -1265,16 +1282,31 @@
             ${autoPinyin && autoPinyin !== (note.pinyin || '').trim() ? `<span class="text-[10px] text-on-surface-variant whitespace-nowrap">↳ ${escapeHtml(autoPinyin)}</span>` : ''}
           </div>
         </div>
-        <div class="flex items-start gap-xs pt-1 shrink-0">
-          ${!isChild ? `<button class="note-detail-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" title="Details"><span class="material-symbols-outlined text-sm">${detailIcon}</span></button>` : ''}
-          ${!isChild && !note._pendingCreate ? `<button class="note-add-child-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" title="Add child note"><span class="material-symbols-outlined text-sm">add</span></button>` : ''}
-          <button class="note-delete-btn p-xs rounded-lg hover:bg-error-container transition-colors text-on-surface-variant hover:text-error" title="Delete"><span class="material-symbols-outlined text-sm">delete</span></button>
-        </div>
+      </div>
+      <div class="note-actions absolute top-xs right-xs flex items-center gap-xs opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        ${!isChild ? `<button class="note-detail-btn p-xs rounded-lg bg-surface hover:bg-surface-container transition-colors text-on-surface-variant" title="Details"><span class="material-symbols-outlined text-sm">${detailIcon}</span></button>` : ''}
+        <button class="note-delete-btn p-xs rounded-lg bg-surface hover:bg-error-container transition-colors text-on-surface-variant hover:text-error" title="Delete"><span class="material-symbols-outlined text-sm">close</span></button>
       </div>
       ${hasDetail && (detail.detailedNote || detail.exampleSentence) ? `
         <div class="mt-xs text-xs">
           ${detail.detailedNote ? `<p class="text-on-surface-variant line-clamp-2">${escapeHtml(detail.detailedNote)}</p>` : ''}
           ${detail.exampleSentence ? `<p class="text-primary italic mt-xs">${escapeHtml(detail.exampleSentence)}</p>` : ''}
+        </div>
+      ` : ''}
+      ${!isChild ? `
+        <div class="note-detail-area hidden mt-sm space-y-sm">
+          <div>
+            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Explanation</label>
+            <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="3" maxlength="1000" placeholder="Add a longer explanation...">${escapeHtml((detail && detail.detailedNote) || '')}</textarea>
+          </div>
+          <div>
+            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Example Sentence</label>
+            <input class="detail-example w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" type="text" maxlength="100" value="${escapeHtml((detail && detail.exampleSentence) || '')}" placeholder="Add an example sentence...">
+          </div>
+          <div class="detail-error text-error text-sm hidden"></div>
+          <div class="flex justify-end pt-xs">
+            <button class="detail-save px-sm py-xs rounded-lg bg-primary text-on-primary font-body-md text-sm hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save details</button>
+          </div>
         </div>
       ` : ''}
     `;
@@ -1291,11 +1323,22 @@
       wrapper.appendChild(childWrap);
     }
 
+    // Hover-revealed "+" at the bottom edge for adding a child note (roots only).
+    if (!isChild && !note._pendingCreate) {
+      wrapper.insertAdjacentHTML('beforeend', `
+        <button class="note-add-child-fab absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-surface border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary shadow-sm flex items-center justify-center opacity-0 group-hover/node:opacity-100 transition-opacity z-10" title="Add child note"><span class="material-symbols-outlined text-sm">add</span></button>
+      `);
+    }
+
     // Bind inputs
     const charInput = content.querySelector(`#note-char-${safeId}`);
     const pyInput = content.querySelector(`#note-py-${safeId}`);
+    let charBeforeFocus = note.character || '';
 
     if (charInput) {
+      charInput.addEventListener('focus', function () {
+        charBeforeFocus = charInput.value;
+      });
       charInput.addEventListener('input', function () {
         updateNoteField(note.noteId, 'character', charInput.value);
         // Auto-fill pinyin if the user hasn't manually edited it yet.
@@ -1304,6 +1347,19 @@
           pyInput.value = generated;
           updateNoteField(note.noteId, 'pinyin', generated);
         }
+      });
+      charInput.addEventListener('blur', function () {
+        if (charInput.value.trim() !== '') return;
+        const liveChildren = (childrenMap[note.noteId] || []).filter(function (child) {
+          return !child._pendingDelete;
+        });
+        if (liveChildren.length > 0) {
+          charInput.value = charBeforeFocus;
+          updateNoteField(note.noteId, 'character', charBeforeFocus);
+          MandoUi.toast('Delete all child notes first.', 'info');
+          return;
+        }
+        deleteNote(note.noteId);
       });
     }
     if (pyInput) {
@@ -1315,15 +1371,23 @@
 
     // Bind actions
     const detailBtn = content.querySelector('.note-detail-btn');
-    if (detailBtn) {
+    const detailArea = content.querySelector('.note-detail-area');
+    if (detailBtn && detailArea) {
       detailBtn.addEventListener('click', function () {
-        openDetailPopover(note.noteId, detailBtn);
+        detailArea.classList.toggle('hidden');
       });
     }
 
-    const addChildBtn = content.querySelector('.note-add-child-btn');
-    if (addChildBtn) {
-      addChildBtn.addEventListener('click', function () {
+    const saveDetailBtn = content.querySelector('.detail-save');
+    if (saveDetailBtn && detailArea) {
+      saveDetailBtn.addEventListener('click', function () {
+        saveNoteDetail(note.noteId, detailArea);
+      });
+    }
+
+    const addChildFab = wrapper.querySelector(':scope > .note-add-child-fab');
+    if (addChildFab) {
+      addChildFab.addEventListener('click', function () {
         createEmptyNote(note.noteId);
       });
     }
@@ -1331,9 +1395,14 @@
     const deleteBtn = content.querySelector('.note-delete-btn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', function () {
-        promptDeleteNote(note.noteId);
+        deleteNote(note.noteId);
       });
     }
+
+    // Touch devices: first tap reveals the hover-only actions.
+    content.addEventListener('touchstart', function () {
+      wrapper.classList.toggle('note-actions-visible');
+    }, { passive: true });
 
     return wrapper;
   }
@@ -1403,195 +1472,96 @@
     if (input) input.focus();
   }
 
-  function promptDeleteNote(noteId) {
-    const note = state.notes.find(function (n) {
-      return n.noteId === noteId;
-    });
-    if (!note) return;
-
-    MandoUi.confirm(
-      `Delete "${note.character || 'this note'}"?`,
-      'This will also remove any child notes. You can undo by clicking away until you save.'
-    ).then(function (confirmed) {
-      if (confirmed) confirmDeleteNote(noteId);
-    });
-  }
-
-  function confirmDeleteNote(noteId) {
+  function deleteNote(noteId) {
     const note = state.notes.find(function (n) {
       return n.noteId === noteId;
     });
     if (!note) return;
 
     const children = state.notes.filter(function (n) {
-      return n.parentNoteId === noteId;
+      return n.parentNoteId === noteId && !n._pendingDelete;
     });
-
-    // Helper to remove a single note and its pending changes.
-    function removeNoteAndChanges(id, isExisting) {
-      state.notes = state.notes.filter(function (n) {
-        return n.noteId !== id;
-      });
-      state.pendingChanges = state.pendingChanges.filter(function (c) {
-        return !((c.operation === 'CREATE_NOTE' && c.data._tempId === id) ||
-                 (c.operation === 'UPDATE_NOTE' && c.data.noteId === id));
-      });
-      if (isExisting) {
-        queueChange('DELETE_NOTE', { sessionId: state.sessionId, noteId: id });
-      }
+    if (children.length > 0) {
+      MandoUi.toast('Delete all child notes first.', 'info');
+      return;
     }
+
+    // Drop any queued CREATE/UPDATE for this note.
+    state.pendingChanges = state.pendingChanges.filter(function (c) {
+      return !((c.operation === 'CREATE_NOTE' && c.data._tempId === noteId) ||
+               (c.operation === 'UPDATE_NOTE' && c.data.noteId === noteId));
+    });
 
     if (note._pendingCreate) {
-      removeNoteAndChanges(note.noteId, false);
+      state.notes = state.notes.filter(function (n) {
+        return n.noteId !== noteId;
+      });
     } else {
       note._pendingDelete = true;
-      removeNoteAndChanges(note.noteId, true);
+      state.notes = state.notes.filter(function (n) {
+        return n.noteId !== noteId;
+      });
+      queueChange('DELETE_NOTE', { sessionId: state.sessionId, noteId: noteId });
     }
-
-    children.forEach(function (child) {
-      if (child._pendingCreate) {
-        removeNoteAndChanges(child.noteId, false);
-      } else {
-        child._pendingDelete = true;
-        removeNoteAndChanges(child.noteId, true);
-      }
-    });
 
     renderNotes();
     updateSaveButtonState();
   }
 
   // ---------------------------------------------------------------------------
-  // Note detail modal
+  // Note detail inline editor
   // ---------------------------------------------------------------------------
 
-  function openDetailPopover(noteId, anchorBtn) {
+  async function saveNoteDetail(noteId, area) {
     const note = state.notes.find(function (n) {
       return n.noteId === noteId;
     });
-    if (!note || !anchorBtn) return;
+    if (!note || !area) return;
 
     const existing = state.noteDetails[noteId] || {};
+    const explanation = area.querySelector('.detail-explanation').value.trim();
+    const example = area.querySelector('.detail-example').value.trim();
+    const errorEl = area.querySelector('.detail-error');
 
-    // Remove any existing popover first.
-    const existingPopover = document.querySelector('.mando-detail-popover');
-    if (existingPopover) existingPopover.remove();
-
-    const popover = document.createElement('div');
-    popover.className = 'mando-detail-popover fixed z-[70] bg-surface rounded-2xl shadow-2xl w-80 p-md border border-outline-variant';
-    popover.innerHTML = `
-      <div class="flex items-center justify-between mb-sm">
-        <h3 class="font-headline-sm text-headline-sm text-on-surface">${escapeHtml(note.character || 'Note')} Details</h3>
-        <button class="detail-close p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">close</span></button>
-      </div>
-      <div class="space-y-sm">
-        <div>
-          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Explanation</label>
-          <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="3" maxlength="1000" placeholder="Add a longer explanation...">${escapeHtml(existing.detailedNote || '')}</textarea>
-        </div>
-        <div>
-          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Example Sentence</label>
-          <textarea class="detail-example w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="2" maxlength="100" placeholder="Add an example sentence...">${escapeHtml(existing.exampleSentence || '')}</textarea>
-        </div>
-        <div class="detail-error text-error text-sm hidden"></div>
-        <div class="flex justify-end gap-sm pt-xs">
-          <button class="detail-cancel px-sm py-xs rounded-lg border border-outline-variant text-on-surface font-body-md text-sm hover:bg-surface-container transition-all">Cancel</button>
-          <button class="detail-save px-sm py-xs rounded-lg bg-primary text-on-primary font-body-md text-sm hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(popover);
-
-    function positionPopover() {
-      const rect = anchorBtn.getBoundingClientRect();
-      const popoverRect = popover.getBoundingClientRect();
-      let top = rect.bottom + 8;
-      let left = rect.left;
-
-      // Keep inside viewport horizontally.
-      if (left + popoverRect.width > window.innerWidth - 16) {
-        left = window.innerWidth - popoverRect.width - 16;
-      }
-      if (left < 16) left = 16;
-
-      // If too close to bottom, show above the button.
-      if (top + popoverRect.height > window.innerHeight - 16) {
-        top = rect.top - popoverRect.height - 8;
-      }
-
-      popover.style.top = `${top}px`;
-      popover.style.left = `${left}px`;
+    if (!explanation) {
+      errorEl.textContent = 'Explanation is required.';
+      errorEl.classList.remove('hidden');
+      return;
     }
 
-    // Position after render.
-    requestAnimationFrame(positionPopover);
-
-    function close() {
-      popover.remove();
-      document.removeEventListener('click', outsideClickHandler);
-    }
-
-    function outsideClickHandler(e) {
-      if (!popover.contains(e.target) && e.target !== anchorBtn) {
-        close();
-      }
-    }
-
-    popover.querySelector('.detail-close').addEventListener('click', close);
-    popover.querySelector('.detail-cancel').addEventListener('click', close);
-
-    // Attach outside click listener next tick so the opening click doesn't close it.
-    setTimeout(function () {
-      document.addEventListener('click', outsideClickHandler);
-    }, 0);
-
-    popover.querySelector('.detail-save').addEventListener('click', async function () {
-      const explanation = popover.querySelector('.detail-explanation').value.trim();
-      const example = popover.querySelector('.detail-example').value.trim();
-      const errorEl = popover.querySelector('.detail-error');
-
-      if (!explanation) {
-        errorEl.textContent = 'Explanation is required.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      if (!state.userId) {
-        // Demo mode: just update local state.
-        state.noteDetails[noteId] = {
-          ...existing,
-          noteId,
-          sessionId: state.sessionId,
-          detailedNote: explanation,
-          exampleSentence: example,
-        };
-        renderNotes();
-        close();
-        return;
-      }
-
-      const res = await window.MandoApi.notes.saveDetail(state.userId, state.sessionId, noteId, {
-        detailedNote: explanation,
-        exampleSentence: example,
-      });
-
-      if (!res.ok) {
-        errorEl.textContent = (res.error && res.error.message) || 'Could not save detail.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      state.noteDetails[noteId] = res.data && res.data.noteDetail ? res.data.noteDetail : {
+    if (!state.userId) {
+      // Demo mode: just update local state.
+      state.noteDetails[noteId] = {
+        ...existing,
         noteId,
         sessionId: state.sessionId,
         detailedNote: explanation,
         exampleSentence: example,
       };
       renderNotes();
-      close();
       MandoUi.toast('Note detail saved.', 'success');
+      return;
+    }
+
+    const res = await window.MandoApi.notes.saveDetail(state.userId, state.sessionId, noteId, {
+      detailedNote: explanation,
+      exampleSentence: example,
     });
+
+    if (!res.ok) {
+      errorEl.textContent = (res.error && res.error.message) || 'Could not save detail.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    state.noteDetails[noteId] = res.data && res.data.noteDetail ? res.data.noteDetail : {
+      noteId,
+      sessionId: state.sessionId,
+      detailedNote: explanation,
+      exampleSentence: example,
+    };
+    renderNotes();
+    MandoUi.toast('Note detail saved.', 'success');
   }
 
   // ---------------------------------------------------------------------------
@@ -1762,6 +1732,83 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Script panel view modes: 'normal' | 'rail' | 'theater'
+  //
+  // 'rail' collapses the script column to a slim vertical strip and is
+  // persisted under `mando.videoScriptView`. 'theater' hides the script column
+  // entirely so the video spans the full grid width; it is session-only and
+  // exits back to whichever of normal/rail was active before.
+  // ---------------------------------------------------------------------------
+
+  const SCRIPT_VIEWS = ['normal', 'rail', 'theater'];
+
+  function getStoredScriptView() {
+    return safeLocalStorageGet('mando.videoScriptView') === 'rail' ? 'rail' : 'normal';
+  }
+
+  function setScriptView(view) {
+    if (!SCRIPT_VIEWS.includes(view)) return;
+
+    if (view === 'theater' && state.scriptView !== 'theater') {
+      state.previousScriptView = state.scriptView;
+    }
+    state.scriptView = view;
+
+    const videoColumn = $('video-column');
+    const scriptColumn = $('script-column');
+    const scriptPanel = $('script-panel');
+    const scriptRail = $('script-rail');
+    if (!videoColumn || !scriptColumn) return;
+
+    const isRail = view === 'rail';
+    const isTheater = view === 'theater';
+
+    // Grid column spans (desktop only; the columns stack below lg).
+    videoColumn.classList.remove('lg:col-span-8', 'lg:col-span-11', 'lg:col-span-12');
+    videoColumn.classList.add(isTheater ? 'lg:col-span-12' : isRail ? 'lg:col-span-11' : 'lg:col-span-8');
+    scriptColumn.classList.remove('lg:col-span-4', 'lg:col-span-1');
+    scriptColumn.classList.add(isRail ? 'lg:col-span-1' : 'lg:col-span-4');
+    scriptColumn.classList.toggle('hidden', isTheater);
+
+    // Panel vs rail visibility. Both use lg-scaled classes so the panel stays
+    // visible on mobile even when the rail preference is stored.
+    if (scriptPanel) scriptPanel.classList.toggle('lg:hidden', isRail);
+    if (scriptRail) scriptRail.classList.toggle('lg:flex', isRail);
+
+    // Theater is session-only; normal/rail are persisted.
+    if (!isTheater) {
+      safeLocalStorageSet('mando.videoScriptView', view);
+    }
+  }
+
+  function initScriptView() {
+    const collapseBtn = $('script-collapse-btn');
+    const expandBtn = $('script-expand-btn');
+    const theaterBtn = $('video-theater-btn');
+
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', function () {
+        setScriptView('rail');
+      });
+    }
+
+    if (expandBtn) {
+      expandBtn.addEventListener('click', function () {
+        setScriptView('normal');
+      });
+    }
+
+    if (theaterBtn) {
+      theaterBtn.addEventListener('click', function () {
+        setScriptView(state.scriptView === 'theater' ? state.previousScriptView : 'theater');
+      });
+    }
+
+    // Restore the persisted normal/rail preference; theater always starts off.
+    setScriptView(getStoredScriptView());
+  }
+
+  // ---------------------------------------------------------------------------
   // Rendering: video library sidebar
   // ---------------------------------------------------------------------------
 
@@ -1926,77 +1973,6 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Save Word modal (quick flashcard)
-  // ---------------------------------------------------------------------------
-
-  let saveWordPinyin = { reset: function () {} };
-
-  function openSaveWordModal() {
-    const modal = $('save-word-modal');
-    if (!modal) return;
-
-    const setVal = function (id, value) { const el = $(id); if (el) el.value = value; };
-    setVal('sw-character', '');
-    setVal('sw-pinyin', '');
-    setVal('sw-meaning', '');
-    setVal('sw-category', '');
-    const hsk = $('sw-hsk');
-    if (hsk) hsk.value = 'HSK3';
-    const error = $('sw-error');
-    if (error) {
-      error.classList.add('hidden');
-      error.textContent = '';
-    }
-
-    saveWordPinyin.reset({ auto: true });
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    const charInput = $('sw-character');
-    if (charInput) charInput.focus();
-  }
-
-  function closeSaveWordModal() {
-    const modal = $('save-word-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-  }
-
-  function showSaveWordError(message) {
-    const error = $('sw-error');
-    if (!error) return;
-    error.textContent = message;
-    error.classList.remove('hidden');
-  }
-
-  function submitSaveWord(event) {
-    event.preventDefault();
-
-    const character = ($('sw-character') ? $('sw-character').value : '').trim();
-    const pinyin = ($('sw-pinyin') ? $('sw-pinyin').value : '').trim();
-    const meaning = ($('sw-meaning') ? $('sw-meaning').value : '').trim();
-    const hsk = $('sw-hsk') ? $('sw-hsk').value : 'HSK3';
-    const categoryRaw = ($('sw-category') ? $('sw-category').value : '').trim();
-
-    if (!character) {
-      showSaveWordError('Chinese character(s) are required.');
-      return;
-    }
-
-    queueChange('CREATE_FLASHCARD', {
-      character: character,
-      pinyin: pinyin,
-      meaning: meaning,
-      hsk: hsk,
-      category: (categoryRaw || 'Miscellaneous').toUpperCase().replace(/\s+/g, '_'),
-    });
-
-    closeSaveWordModal();
-    MandoUi.toast(`"${character}" queued. Click Save to persist.`, 'success');
-  }
-
-  // ---------------------------------------------------------------------------
   // Keyboard shortcuts
   // ---------------------------------------------------------------------------
 
@@ -2005,6 +1981,12 @@
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
         flushPendingChanges();
+      }
+
+      if (e.key === 'Escape' && state.scriptView === 'theater' &&
+          document.activeElement && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        setScriptView(state.previousScriptView);
+        return;
       }
 
       if (e.code === 'Space' && document.activeElement && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
@@ -2042,6 +2024,7 @@
     updateSaveButtonState();
     initNavigation();
     initScriptToggles();
+    initScriptView();
     initKeyboardShortcuts();
     initPlaybackSpeedMenu();
     initSubtitleControls();
@@ -2082,34 +2065,63 @@
       });
     }
 
-    // Save Word modal (documents-style quick flashcard). The FAB only
-    // makes sense with a backend session to save into, so it stays hidden in
-    // demo mode.
+    // Save Word modal (shared component). The FAB only makes sense with a
+    // backend session to save into, so it stays hidden in demo mode.
+    if (window.MandoSaveWord) {
+      window.MandoSaveWord.init({
+        onQueue: function (data) {
+          queueChange('CREATE_FLASHCARD', {
+            character: data.character,
+            pinyin: data.pinyin,
+            meaning: data.meaning,
+            hsk: data.hsk,
+            category: data.category,
+          });
+        },
+        listPending: function () {
+          return state.pendingChanges
+            .filter(function (c) { return c.operation === 'CREATE_FLASHCARD'; })
+            .map(function (c) {
+              return {
+                id: c._id,
+                character: c.data.character,
+                pinyin: c.data.pinyin,
+                meaning: c.data.meaning,
+                hsk: c.data.hsk,
+                category: c.data.category,
+              };
+            });
+        },
+        editEntry: function (id, patch) {
+          const change = state.pendingChanges.find(function (c) { return c._id === id; });
+          if (change) {
+            Object.assign(change.data, patch);
+            updateSaveButtonState();
+          }
+        },
+        removeEntry: function (id) {
+          removePendingChange(id);
+        },
+        flush: function () { return flushPendingChanges(); },
+      });
+    }
+
     const fabSaveWord = $('fab-save-word');
     if (fabSaveWord) {
       if (state.userId) {
         fabSaveWord.classList.remove('hidden');
         fabSaveWord.classList.add('flex');
       }
-      fabSaveWord.addEventListener('click', openSaveWordModal);
-    }
-    const swCancel = $('sw-cancel');
-    if (swCancel) {
-      swCancel.addEventListener('click', closeSaveWordModal);
-    }
-    const swForm = $('sw-form');
-    if (swForm) {
-      swForm.addEventListener('submit', submitSaveWord);
-    }
-    const swModal = $('save-word-modal');
-    if (swModal) {
-      swModal.addEventListener('click', function (e) {
-        if (e.target === swModal) closeSaveWordModal();
+      fabSaveWord.addEventListener('click', function () {
+        if (window.MandoSaveWord) window.MandoSaveWord.open();
       });
     }
 
-    if (window.MandoPinyin) {
-      saveWordPinyin = window.MandoPinyin.autoFill($('sw-character'), $('sw-pinyin'));
+    const pendingChip = $('pending-words-chip');
+    if (pendingChip) {
+      pendingChip.addEventListener('click', function () {
+        if (window.MandoSaveWord) window.MandoSaveWord.openDrawer();
+      });
     }
 
     renderMeta();

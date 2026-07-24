@@ -20,26 +20,48 @@
    *
    * @param {string} message
    * @param {'success'|'error'|'info'} type
+   * @param {{actionLabel?: string, onAction?: function}} [options]
+   *        actionLabel/onAction render an inline action button; clicking it
+   *        runs onAction and dismisses the toast.
    */
-  function toast(message, type) {
+  function toast(message, type, options) {
     const existing = document.querySelector('.mando-toast');
     if (existing) existing.remove();
 
     const el = document.createElement('div');
     el.className =
-      'mando-toast fixed bottom-lg right-lg z-[100] px-md py-sm rounded-xl shadow-lg text-body-md font-medium transition-opacity duration-300 ' +
+      'mando-toast fixed bottom-lg right-lg z-[100] px-md py-sm rounded-xl shadow-lg text-body-md font-medium transition-opacity duration-300 flex items-center gap-sm ' +
       (type === 'error'
         ? 'bg-error text-on-error'
         : 'bg-primary text-on-primary');
-    el.textContent = message;
-    document.body.appendChild(el);
 
-    setTimeout(function () {
+    const text = document.createElement('span');
+    text.textContent = message;
+    el.appendChild(text);
+
+    const dismiss = function () {
       el.style.opacity = '0';
       setTimeout(function () {
         el.remove();
       }, 300);
-    }, 3000);
+    };
+
+    const timer = setTimeout(dismiss, 3000);
+
+    if (options && options.actionLabel && typeof options.onAction === 'function') {
+      const action = document.createElement('button');
+      action.type = 'button';
+      action.className = 'underline font-semibold hover:opacity-80 transition-opacity';
+      action.textContent = options.actionLabel;
+      action.addEventListener('click', function () {
+        clearTimeout(timer);
+        dismiss();
+        options.onAction();
+      });
+      el.appendChild(action);
+    }
+
+    document.body.appendChild(el);
   }
 
   // ---------------------------------------------------------------------------

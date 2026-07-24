@@ -524,7 +524,7 @@
     relatedScripts: [],
     relatedVideos: [],
     versions: [],
-    hskHighlightEnabled: safeLocalStorageGet('mando.hskHighlightEnabled') !== 'false',
+    highlightLevels: [],
   };
 
   // Persist userId and lastScriptId for subsequent visits.
@@ -569,11 +569,12 @@
 
   function updateSaveButtonState() {
     const btn = $('save-notes-btn');
-    if (!btn) return;
-    const count = state.pendingChanges.length;
-    btn.disabled = count === 0 || state.isSaving || state.demoMode;
-    const label = count > 0 ? `Save (${count})` : 'Save';
-    btn.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> ${escapeHtml(label)} (Ctrl+S)`;
+    if (btn) {
+      const count = state.pendingChanges.length;
+      btn.disabled = count === 0 || state.isSaving || state.demoMode;
+      const label = count > 0 ? `Save (${count})` : 'Save';
+      btn.innerHTML = `<span class="material-symbols-outlined text-sm">save</span> ${escapeHtml(label)} (Ctrl+S)`;
+    }
 
     // The Save Word FAB queues flashcards into the same save flow, so
     // hide it in demo mode where saving is refused.
@@ -582,6 +583,19 @@
       fab.classList.toggle('hidden', state.demoMode);
       fab.classList.toggle('flex', !state.demoMode);
     }
+
+    updatePendingWordsChip();
+  }
+
+  function updatePendingWordsChip() {
+    const chip = $('pending-words-chip');
+    if (!chip) return;
+    const count = state.pendingChanges.filter(function (c) {
+      return c.operation === 'CREATE_FLASHCARD';
+    }).length;
+    chip.textContent = `${count} pending words`;
+    chip.classList.toggle('hidden', count === 0);
+    chip.classList.toggle('flex', count > 0);
   }
 
   function validatePendingChanges() {
@@ -1029,8 +1043,8 @@
     document.title = `MandoLearning | ${script.title || 'Script Reader'}`;
 
     renderVersionSwitcher();
-    renderHskToggle();
-    renderHskLegend();
+    resetHighlightLevels();
+    renderHighlightPills();
     renderSourceAttribution();
     renderStatsPanel();
   }
@@ -1074,11 +1088,20 @@
         btn.title = 'Currently viewing this version';
         btn.onclick = null;
       } else {
+        // Versions not in the map are hidden rather than disabled.
+        btn.classList.add('hidden');
         btn.disabled = true;
-        btn.title = `${btn.textContent} version not available yet`;
+        btn.title = '';
         btn.onclick = null;
       }
     });
+
+    // Hide the whole switcher when only the current version exists.
+    let visibleCount = 0;
+    container.querySelectorAll('.version-btn').forEach(function (btn) {
+      if (!btn.classList.contains('hidden')) visibleCount++;
+    });
+    container.classList.toggle('hidden', visibleCount <= 1);
   }
 
   async function switchVersion(newScriptId) {
@@ -1118,34 +1141,90 @@
     });
   }
 
-  function renderHskToggle() {
-    const btn = $('hsk-highlight-toggle');
-    const label = $('hsk-highlight-label');
-    if (!btn || !label) return;
+  // ---------------------------------------------------------------------------
+  // Highlight level popover
+  // ---------------------------------------------------------------------------
 
-    label.textContent = state.hskHighlightEnabled ? 'HSK Highlight: On' : 'HSK Highlight: Off';
-    btn.classList.toggle('bg-primary-container', state.hskHighlightEnabled);
-    btn.classList.toggle('text-on-primary-container', state.hskHighlightEnabled);
-    btn.classList.toggle('bg-surface-container-high', !state.hskHighlightEnabled);
-    btn.classList.toggle('text-on-surface', !state.hskHighlightEnabled);
+  const HIGHLIGHT_LEVELS = ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6', 'BEYOND'];
+
+  const HIGHLIGHT_LEVEL_COLORS = {
+    HSK1: '#22c55e',
+    HSK2: '#0ea5e9',
+    HSK3: '#f59e0b',
+    HSK4: '#f97316',
+    HSK5: '#8b5cf6',
+    HSK6: '#ec4899',
+    BEYOND: '#64748b',
+  };
+
+  function highlightLevelLabel(level) {
+    return level === 'BEYOND' ? 'Beyond' : level.replace('HSK', 'HSK ');
   }
 
-  function setHskHighlightEnabled(enabled) {
-    state.hskHighlightEnabled = !!enabled;
-    safeLocalStorageSet('mando.hskHighlightEnabled', String(state.hskHighlightEnabled));
-    renderHskToggle();
-    renderLines();
-    renderHskLegend();
-  }
-
-  function renderHskLegend() {
-    const legend = $('hsk-legend');
-    if (!legend || !window.MandoComponents || !window.MandoComponents.renderHskLegend) return;
-    window.MandoComponents.renderHskLegend(legend, {
-      mode: 'focused',
-      hskLevel: (state.script || {}).hskLevel,
-      highlightEnabled: state.hskHighlightEnabled,
+  /**
+   * Reset the highlight selection to the article's focused HSK band. Called on
+   * every page load and version switch; the selection is intentionally not
+   * persisted so it resets per article visit.
+   */
+  function resetHighlightLevels() {
+    const hskLevel = (state.script || {}).hskLevel || '';
+    state.highlightLevels = focusedHskBand(hskLevel).map(function (key) {
+      return key.toUpperCase();
     });
+  }
+
+  function renderHighlightPills() {
+    const container = $('highlight-pills');
+    if (!container) return;
+
+    const allSelected = state.highlightLevels.length === HIGHLIGHT_LEVELS.length;
+
+    const pillsHtml = HIGHLIGHT_LEVELS.map(function (level) {
+      const selected = state.highlightLevels.indexOf(level) !== -1;
+      return highlightPillHtml(level, highlightLevelLabel(level), selected, HIGHLIGHT_LEVEL_COLORS[level]);
+    });
+    pillsHtml.push(highlightPillHtml('ALL', 'All', allSelected, null));
+
+    container.innerHTML = pillsHtml.join('');
+
+    container.querySelectorAll('.highlight-pill').forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        toggleHighlightLevel(pill.dataset.level);
+      });
+    });
+  }
+
+  function highlightPillHtml(level, label, selected, color) {
+    const stateClasses = selected
+      ? 'bg-primary-container text-on-primary-container'
+      : 'bg-surface-container-highest text-on-surface-variant hover:bg-surface-dim';
+    const dot = color ? `<span class="w-2 h-2 rounded-full" style="background-color:${color}"></span>` : '';
+    return `<button type="button" data-level="${level}" class="highlight-pill flex items-center gap-xs px-md py-xs rounded-full text-sm font-medium border border-outline-variant transition-all ${stateClasses}">${dot}${escapeHtml(label)}</button>`;
+  }
+
+  function toggleHighlightLevel(level) {
+    if (level === 'ALL') {
+      state.highlightLevels = state.highlightLevels.length === HIGHLIGHT_LEVELS.length
+        ? []
+        : HIGHLIGHT_LEVELS.slice();
+    } else {
+      const index = state.highlightLevels.indexOf(level);
+      if (index === -1) {
+        state.highlightLevels.push(level);
+      } else {
+        state.highlightLevels.splice(index, 1);
+      }
+    }
+    renderHighlightPills();
+    renderLines();
+  }
+
+  function toggleHighlightPopover(open) {
+    const popover = $('highlight-popover');
+    if (!popover) return;
+    const isOpen = !popover.classList.contains('hidden');
+    const shouldOpen = open !== undefined ? !!open : !isOpen;
+    popover.classList.toggle('hidden', !shouldOpen);
   }
 
   function renderSourceAttribution() {
@@ -1216,17 +1295,6 @@
       }, 0);
       wordCountEl.textContent = `Characters: ${total}`;
     }
-
-    const sourceRow = $('stats-source-row');
-    const sourceLink = $('stats-source-link');
-    if (sourceRow && sourceLink) {
-      if (script.sourceUrl) {
-        sourceRow.classList.remove('hidden');
-        sourceLink.href = script.sourceUrl;
-      } else {
-        sourceRow.classList.add('hidden');
-      }
-    }
   }
 
   function toggleStatsPanel(open) {
@@ -1268,6 +1336,16 @@
     const container = $('script-lines');
     if (!container) return;
 
+    // Gate HSK underlines per selected level: the container carries
+    // hsk-highlight-enabled plus one hl-* class per active level.
+    container.className = 'space-y-sm relative z-10';
+    if (state.highlightLevels.length > 0) {
+      container.classList.add('hsk-highlight-enabled');
+      state.highlightLevels.forEach(function (level) {
+        container.classList.add('hl-' + level.toLowerCase());
+      });
+    }
+
     if (state.lines.length === 0) {
       container.innerHTML = `
         <div class="text-center py-xl text-on-surface-variant">
@@ -1285,15 +1363,13 @@
 
     container.dataset.fontSize = fontSize;
 
-    const highlightClass = state.hskHighlightEnabled ? 'hsk-highlight-enabled' : '';
-
     container.innerHTML = state.lines.map(function (line, index) {
       const isActive = index === state.activeLineIndex;
       const tokenizedChinese = renderTokenizedChinese(line);
       return `
         <div class="script-line group cursor-pointer py-2 px-md hover:bg-surface-container-low rounded-xl transition-all duration-200 ${isActive ? 'bg-surface-container-low' : ''}" data-index="${index}">
           <div class="flex flex-col items-center text-center">
-            <div class="script-chinese font-character-display text-on-surface leading-relaxed text-center ${zhDisplay} ${classes.chinese} ${highlightClass}">
+            <div class="script-chinese font-character-display text-on-surface leading-relaxed text-center ${zhDisplay} ${classes.chinese}">
               <button class="script-play-line inline-block mr-sm text-primary hover:scale-110 transition-transform align-middle" data-index="${index}" title="Play sentence audio">
                 <span class="material-symbols-outlined text-[20px]">play_circle</span>
               </button>
@@ -1348,8 +1424,9 @@
       });
     });
 
-    // Token hover tooltip.
+    // Token hover tooltip, only for levels in the current highlight selection.
     container.querySelectorAll('.hsk-token[data-level]').forEach(function (token) {
+      if (state.highlightLevels.indexOf(token.dataset.level) === -1) return;
       token.addEventListener('mouseenter', showTokenTooltip);
       token.addEventListener('mouseleave', hideTokenTooltip);
       token.addEventListener('focus', showTokenTooltip);
@@ -1525,14 +1602,14 @@
     const safeId = note.noteId.replace(/[^a-zA-Z0-9_-]/g, '_');
 
     const wrapper = document.createElement('div');
-    wrapper.className = `note-node rounded-2xl border transition-all ${
+    wrapper.className = `note-node relative group/node rounded-2xl border transition-all ${
       isPending
         ? 'border-primary/40 bg-primary-container/10'
         : 'border-outline-variant/40 bg-surface-container-lowest'
     } ${depth > 0 ? 'ml-md mt-xs' : ''}`;
 
     const content = document.createElement('div');
-    content.className = 'p-sm';
+    content.className = 'relative group p-sm';
 
     const detailIcon = hasDetail ? 'sticky_note' : 'sticky_note_2';
     const autoPinyin = generatePinyin(note.character || '');
@@ -1547,16 +1624,31 @@
             ${autoPinyin && autoPinyin !== (note.pinyin || '').trim() ? `<span class="text-[10px] text-on-surface-variant whitespace-nowrap">↳ ${escapeHtml(autoPinyin)}</span>` : ''}
           </div>
         </div>
-        <div class="flex items-start gap-xs pt-1 shrink-0">
-          ${!isChild ? `<button class="note-detail-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" title="Details"><span class="material-symbols-outlined text-sm">${detailIcon}</span></button>` : ''}
-          ${!isChild && !note._pendingCreate ? `<button class="note-add-child-btn p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant" title="Add child note"><span class="material-symbols-outlined text-sm">add</span></button>` : ''}
-          <button class="note-delete-btn p-xs rounded-lg hover:bg-error-container transition-colors text-on-surface-variant hover:text-error" title="Delete"><span class="material-symbols-outlined text-sm">delete</span></button>
-        </div>
+      </div>
+      <div class="note-actions absolute top-xs right-xs flex items-center gap-xs opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        ${!isChild ? `<button class="note-detail-btn p-xs rounded-lg bg-surface hover:bg-surface-container transition-colors text-on-surface-variant" title="Details"><span class="material-symbols-outlined text-sm">${detailIcon}</span></button>` : ''}
+        <button class="note-delete-btn p-xs rounded-lg bg-surface hover:bg-error-container transition-colors text-on-surface-variant hover:text-error" title="Delete"><span class="material-symbols-outlined text-sm">close</span></button>
       </div>
       ${hasDetail && (detail.detailedNote || detail.exampleSentence) ? `
         <div class="mt-xs text-xs">
           ${detail.detailedNote ? `<p class="text-on-surface-variant line-clamp-2">${escapeHtml(detail.detailedNote)}</p>` : ''}
           ${detail.exampleSentence ? `<p class="text-primary italic mt-xs">${escapeHtml(detail.exampleSentence)}</p>` : ''}
+        </div>
+      ` : ''}
+      ${!isChild ? `
+        <div class="note-detail-area hidden mt-sm space-y-sm">
+          <div>
+            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Explanation</label>
+            <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="3" maxlength="1000" placeholder="Add a longer explanation...">${escapeHtml((detail && detail.detailedNote) || '')}</textarea>
+          </div>
+          <div>
+            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Example Sentence</label>
+            <input class="detail-example w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" type="text" maxlength="100" value="${escapeHtml((detail && detail.exampleSentence) || '')}" placeholder="Add an example sentence...">
+          </div>
+          <div class="detail-error text-error text-sm hidden"></div>
+          <div class="flex justify-end pt-xs">
+            <button class="detail-save px-sm py-xs rounded-lg bg-primary text-on-primary font-body-md text-sm hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save details</button>
+          </div>
         </div>
       ` : ''}
     `;
@@ -1572,10 +1664,21 @@
       wrapper.appendChild(childWrap);
     }
 
+    // Hover-revealed "+" at the bottom edge for adding a child note (roots only).
+    if (!isChild && !note._pendingCreate) {
+      wrapper.insertAdjacentHTML('beforeend', `
+        <button class="note-add-child-fab absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-surface border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary shadow-sm flex items-center justify-center opacity-0 group-hover/node:opacity-100 transition-opacity z-10" title="Add child note"><span class="material-symbols-outlined text-sm">add</span></button>
+      `);
+    }
+
     const charInput = content.querySelector(`#note-char-${safeId}`);
     const pyInput = content.querySelector(`#note-py-${safeId}`);
+    let charBeforeFocus = note.character || '';
 
     if (charInput) {
+      charInput.addEventListener('focus', function () {
+        charBeforeFocus = charInput.value;
+      });
       charInput.addEventListener('input', function () {
         updateNoteField(note.noteId, 'character', charInput.value);
         const generated = generatePinyin(charInput.value);
@@ -1583,6 +1686,19 @@
           pyInput.value = generated;
           updateNoteField(note.noteId, 'pinyin', generated);
         }
+      });
+      charInput.addEventListener('blur', function () {
+        if (charInput.value.trim() !== '') return;
+        const liveChildren = (childrenMap[note.noteId] || []).filter(function (child) {
+          return !child._pendingDelete;
+        });
+        if (liveChildren.length > 0) {
+          charInput.value = charBeforeFocus;
+          updateNoteField(note.noteId, 'character', charBeforeFocus);
+          MandoUi.toast('Delete all child notes first.', 'info');
+          return;
+        }
+        deleteNote(note.noteId);
       });
     }
     if (pyInput) {
@@ -1593,15 +1709,23 @@
     }
 
     const detailBtn = content.querySelector('.note-detail-btn');
-    if (detailBtn) {
+    const detailArea = content.querySelector('.note-detail-area');
+    if (detailBtn && detailArea) {
       detailBtn.addEventListener('click', function () {
-        openDetailPopover(note.noteId, detailBtn);
+        detailArea.classList.toggle('hidden');
       });
     }
 
-    const addChildBtn = content.querySelector('.note-add-child-btn');
-    if (addChildBtn) {
-      addChildBtn.addEventListener('click', function () {
+    const saveDetailBtn = content.querySelector('.detail-save');
+    if (saveDetailBtn && detailArea) {
+      saveDetailBtn.addEventListener('click', function () {
+        saveNoteDetail(note.noteId, detailArea);
+      });
+    }
+
+    const addChildFab = wrapper.querySelector(':scope > .note-add-child-fab');
+    if (addChildFab) {
+      addChildFab.addEventListener('click', function () {
         createEmptyNote(note.noteId);
       });
     }
@@ -1609,9 +1733,14 @@
     const deleteBtn = content.querySelector('.note-delete-btn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', function () {
-        promptDeleteNote(note.noteId);
+        deleteNote(note.noteId);
       });
     }
+
+    // Touch devices: first tap reveals the hover-only actions.
+    content.addEventListener('touchstart', function () {
+      wrapper.classList.toggle('note-actions-visible');
+    }, { passive: true });
 
     return wrapper;
   }
@@ -1711,186 +1840,93 @@
     if (input) input.focus();
   }
 
-  function promptDeleteNote(noteId) {
-    const note = state.notes.find(function (n) {
-      return n.noteId === noteId;
-    });
-    if (!note) return;
-
-    MandoUi.confirm(
-      `Delete "${note.character || 'this note'}"?`,
-      'This will also remove any child notes. You can undo by clicking away until you save.'
-    ).then(function (confirmed) {
-      if (confirmed) confirmDeleteNote(noteId);
-    });
-  }
-
-  function confirmDeleteNote(noteId) {
+  function deleteNote(noteId) {
     const note = state.notes.find(function (n) {
       return n.noteId === noteId;
     });
     if (!note) return;
 
     const children = state.notes.filter(function (n) {
-      return n.parentNoteId === noteId;
+      return n.parentNoteId === noteId && !n._pendingDelete;
     });
-
-    function removeNoteAndChanges(id, isExisting) {
-      state.notes = state.notes.filter(function (n) {
-        return n.noteId !== id;
-      });
-      state.pendingChanges = state.pendingChanges.filter(function (c) {
-        return !((c.operation === 'CREATE_NOTE' && c.data._tempId === id) ||
-                 (c.operation === 'UPDATE_NOTE' && c.data.noteId === id));
-      });
-      if (isExisting) {
-        queueChange('DELETE_NOTE', { noteId: id });
-      }
+    if (children.length > 0) {
+      MandoUi.toast('Delete all child notes first.', 'info');
+      return;
     }
+
+    // Drop any queued CREATE/UPDATE for this note.
+    state.pendingChanges = state.pendingChanges.filter(function (c) {
+      return !((c.operation === 'CREATE_NOTE' && c.data._tempId === noteId) ||
+               (c.operation === 'UPDATE_NOTE' && c.data.noteId === noteId));
+    });
 
     if (note._pendingCreate) {
-      removeNoteAndChanges(note.noteId, false);
+      state.notes = state.notes.filter(function (n) {
+        return n.noteId !== noteId;
+      });
     } else {
       note._pendingDelete = true;
-      removeNoteAndChanges(note.noteId, true);
+      state.notes = state.notes.filter(function (n) {
+        return n.noteId !== noteId;
+      });
+      queueChange('DELETE_NOTE', { noteId: noteId });
     }
-
-    children.forEach(function (child) {
-      if (child._pendingCreate) {
-        removeNoteAndChanges(child.noteId, false);
-      } else {
-        child._pendingDelete = true;
-        removeNoteAndChanges(child.noteId, true);
-      }
-    });
 
     renderNotes();
     updateSaveButtonState();
   }
 
   // ---------------------------------------------------------------------------
-  // Note detail popover
+  // Note detail inline editor
   // ---------------------------------------------------------------------------
 
-  function openDetailPopover(noteId, anchorBtn) {
+  async function saveNoteDetail(noteId, area) {
     const note = state.notes.find(function (n) {
       return n.noteId === noteId;
     });
-    if (!note || !anchorBtn) return;
+    if (!note || !area) return;
 
     const existing = state.noteDetails[noteId] || {};
+    const explanation = area.querySelector('.detail-explanation').value.trim();
+    const example = area.querySelector('.detail-example').value.trim();
+    const errorEl = area.querySelector('.detail-error');
 
-    const existingPopover = document.querySelector('.mando-detail-popover');
-    if (existingPopover) existingPopover.remove();
-
-    const popover = document.createElement('div');
-    popover.className = 'mando-detail-popover fixed z-[70] bg-surface rounded-2xl shadow-2xl w-80 p-md border border-outline-variant';
-    popover.innerHTML = `
-      <div class="flex items-center justify-between mb-sm">
-        <h3 class="font-headline-sm text-headline-sm text-on-surface">${escapeHtml(note.character || 'Note')} Details</h3>
-        <button class="detail-close p-xs rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">close</span></button>
-      </div>
-      <div class="space-y-sm">
-        <div>
-          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Explanation</label>
-          <textarea class="detail-explanation w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="3" maxlength="1000" placeholder="Add a longer explanation...">${escapeHtml(existing.detailedNote || '')}</textarea>
-        </div>
-        <div>
-          <label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs uppercase text-xs">Example Sentence</label>
-          <textarea class="detail-example w-full bg-surface-container-lowest rounded-xl p-sm border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-sm" rows="2" maxlength="100" placeholder="Add an example sentence...">${escapeHtml(existing.exampleSentence || '')}</textarea>
-        </div>
-        <div class="detail-error text-error text-sm hidden"></div>
-        <div class="flex justify-end gap-sm pt-xs">
-          <button class="detail-cancel px-sm py-xs rounded-lg border border-outline-variant text-on-surface font-body-md text-sm hover:bg-surface-container transition-all">Cancel</button>
-          <button class="detail-save px-sm py-xs rounded-lg bg-primary text-on-primary font-body-md text-sm hover:bg-primary-dim transition-all shadow-md"><span class="material-symbols-outlined text-sm">save</span> Save</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(popover);
-
-    function positionPopover() {
-      const rect = anchorBtn.getBoundingClientRect();
-      const popoverRect = popover.getBoundingClientRect();
-      let top = rect.bottom + 8;
-      let left = rect.left;
-
-      if (left + popoverRect.width > window.innerWidth - 16) {
-        left = window.innerWidth - popoverRect.width - 16;
-      }
-      if (left < 16) left = 16;
-
-      if (top + popoverRect.height > window.innerHeight - 16) {
-        top = rect.top - popoverRect.height - 8;
-      }
-
-      popover.style.top = `${top}px`;
-      popover.style.left = `${left}px`;
+    if (!explanation) {
+      errorEl.textContent = 'Explanation is required.';
+      errorEl.classList.remove('hidden');
+      return;
     }
 
-    requestAnimationFrame(positionPopover);
-
-    function close() {
-      popover.remove();
-      document.removeEventListener('click', outsideClickHandler);
-    }
-
-    function outsideClickHandler(e) {
-      if (!popover.contains(e.target) && e.target !== anchorBtn) {
-        close();
-      }
-    }
-
-    popover.querySelector('.detail-close').addEventListener('click', close);
-    popover.querySelector('.detail-cancel').addEventListener('click', close);
-
-    setTimeout(function () {
-      document.addEventListener('click', outsideClickHandler);
-    }, 0);
-
-    popover.querySelector('.detail-save').addEventListener('click', async function () {
-      const explanation = popover.querySelector('.detail-explanation').value.trim();
-      const example = popover.querySelector('.detail-example').value.trim();
-      const errorEl = popover.querySelector('.detail-error');
-
-      if (!explanation) {
-        errorEl.textContent = 'Explanation is required.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      if (state.demoMode) {
-        state.noteDetails[noteId] = {
-          ...existing,
-          noteId,
-          detailedNote: explanation,
-          exampleSentence: example,
-        };
-        renderNotes();
-        close();
-        return;
-      }
-
-      const res = await window.MandoApi.notes.saveScriptDetail(state.userId, state.scriptId, noteId, {
-        detailedNote: explanation,
-        exampleSentence: example,
-      });
-
-      if (!res.ok) {
-        errorEl.textContent = (res.error && res.error.message) || 'Could not save detail.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-
-      state.noteDetails[noteId] = res.data && res.data.noteDetail ? res.data.noteDetail : {
+    if (state.demoMode) {
+      state.noteDetails[noteId] = {
+        ...existing,
         noteId,
         detailedNote: explanation,
         exampleSentence: example,
       };
       renderNotes();
-      close();
       MandoUi.toast('Note detail saved.', 'success');
+      return;
+    }
+
+    const res = await window.MandoApi.notes.saveScriptDetail(state.userId, state.scriptId, noteId, {
+      detailedNote: explanation,
+      exampleSentence: example,
     });
+
+    if (!res.ok) {
+      errorEl.textContent = (res.error && res.error.message) || 'Could not save detail.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    state.noteDetails[noteId] = res.data && res.data.noteDetail ? res.data.noteDetail : {
+      noteId,
+      detailedNote: explanation,
+      exampleSentence: example,
+    };
+    renderNotes();
+    MandoUi.toast('Note detail saved.', 'success');
   }
 
 
@@ -2073,20 +2109,6 @@
       });
     }
 
-    const pinyinBtn = $('toolbar-pinyin');
-    if (pinyinBtn) {
-      pinyinBtn.addEventListener('click', function () {
-        setReaderMode(state.readerMode === 'py' ? 'zh' : 'py');
-      });
-    }
-
-    const translateBtn = $('toolbar-translate');
-    if (translateBtn) {
-      translateBtn.addEventListener('click', function () {
-        setReaderMode(state.readerMode === 'en' ? 'zh' : 'en');
-      });
-    }
-
     const volumeBtn = $('toolbar-volume');
     if (volumeBtn) {
       volumeBtn.addEventListener('click', function () {
@@ -2136,77 +2158,6 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Save Word modal (quick flashcard)
-  // ---------------------------------------------------------------------------
-
-  let saveWordPinyin = { reset: function () {} };
-
-  function openSaveWordModal(prefill) {
-    const modal = $('save-word-modal');
-    if (!modal) return;
-
-    const setVal = function (id, value) { const el = $(id); if (el) el.value = value; };
-    setVal('sw-character', prefill && prefill.character ? prefill.character : '');
-    setVal('sw-pinyin', prefill && prefill.pinyin ? prefill.pinyin : '');
-    setVal('sw-meaning', '');
-    setVal('sw-category', '');
-    const hsk = $('sw-hsk');
-    if (hsk) hsk.value = 'HSK3';
-    const error = $('sw-error');
-    if (error) {
-      error.classList.add('hidden');
-      error.textContent = '';
-    }
-
-    saveWordPinyin.reset({ auto: true });
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    const charInput = $('sw-character');
-    if (charInput) charInput.focus();
-  }
-
-  function closeSaveWordModal() {
-    const modal = $('save-word-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-  }
-
-  function showSaveWordError(message) {
-    const error = $('sw-error');
-    if (!error) return;
-    error.textContent = message;
-    error.classList.remove('hidden');
-  }
-
-  function submitSaveWord(event) {
-    event.preventDefault();
-
-    const character = ($('sw-character') ? $('sw-character').value : '').trim();
-    const pinyin = ($('sw-pinyin') ? $('sw-pinyin').value : '').trim();
-    const meaning = ($('sw-meaning') ? $('sw-meaning').value : '').trim();
-    const hsk = $('sw-hsk') ? $('sw-hsk').value : 'HSK3';
-    const categoryRaw = ($('sw-category') ? $('sw-category').value : '').trim();
-
-    if (!character) {
-      showSaveWordError('Chinese character(s) are required.');
-      return;
-    }
-
-    queueChange('CREATE_FLASHCARD', {
-      character: character,
-      pinyin: pinyin,
-      meaning: meaning,
-      hsk: hsk,
-      category: (categoryRaw || 'Miscellaneous').toUpperCase().replace(/\s+/g, '_'),
-    });
-
-    closeSaveWordModal();
-    MandoUi.toast(`"${character}" queued. Click Save to persist.`, 'success');
-  }
-
-  // ---------------------------------------------------------------------------
   // Event listeners
   // ---------------------------------------------------------------------------
 
@@ -2218,13 +2169,31 @@
       });
     });
 
-    // HSK highlight toggle.
-    const hskToggle = $('hsk-highlight-toggle');
-    if (hskToggle) {
-      hskToggle.addEventListener('click', function () {
-        setHskHighlightEnabled(!state.hskHighlightEnabled);
+    // Highlight button opens the level-selection popover.
+    const highlightBtn = $('highlight-btn');
+    if (highlightBtn) {
+      highlightBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        renderHighlightPills();
+        toggleHighlightPopover();
       });
     }
+    const highlightPopover = $('highlight-popover');
+    if (highlightPopover) {
+      highlightPopover.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+    }
+
+    // Close the highlight popover on outside click and Esc.
+    document.addEventListener('click', function () {
+      toggleHighlightPopover(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        toggleHighlightPopover(false);
+      }
+    });
 
     // Info button opens stats panel.
     const infoBtn = $('reader-info-btn');
@@ -2266,30 +2235,59 @@
       saveBtn.addEventListener('click', flushPendingChanges);
     }
 
-    // Save Word modal.
-    const fabSaveWord = $('fab-save-word');
-    if (fabSaveWord) {
-      fabSaveWord.addEventListener('click', function () {
-        openSaveWordModal();
-      });
-    }
-    const swCancel = $('sw-cancel');
-    if (swCancel) {
-      swCancel.addEventListener('click', closeSaveWordModal);
-    }
-    const swForm = $('sw-form');
-    if (swForm) {
-      swForm.addEventListener('submit', submitSaveWord);
-    }
-    const swModal = $('save-word-modal');
-    if (swModal) {
-      swModal.addEventListener('click', function (e) {
-        if (e.target === swModal) closeSaveWordModal();
+    // Save Word modal (shared component). The FAB is hidden in demo mode by
+    // updateSaveButtonState().
+    if (window.MandoSaveWord) {
+      window.MandoSaveWord.init({
+        onQueue: function (data) {
+          queueChange('CREATE_FLASHCARD', {
+            character: data.character,
+            pinyin: data.pinyin,
+            meaning: data.meaning,
+            hsk: data.hsk,
+            category: data.category,
+          });
+        },
+        listPending: function () {
+          return state.pendingChanges
+            .filter(function (c) { return c.operation === 'CREATE_FLASHCARD'; })
+            .map(function (c) {
+              return {
+                id: c._id,
+                character: c.data.character,
+                pinyin: c.data.pinyin,
+                meaning: c.data.meaning,
+                hsk: c.data.hsk,
+                category: c.data.category,
+              };
+            });
+        },
+        editEntry: function (id, patch) {
+          const change = state.pendingChanges.find(function (c) { return c._id === id; });
+          if (change) {
+            Object.assign(change.data, patch);
+            updateSaveButtonState();
+          }
+        },
+        removeEntry: function (id) {
+          removePendingChange(id);
+        },
+        flush: function () { return flushPendingChanges(); },
       });
     }
 
-    if (window.MandoPinyin) {
-      saveWordPinyin = window.MandoPinyin.autoFill($('sw-character'), $('sw-pinyin'));
+    const fabSaveWord = $('fab-save-word');
+    if (fabSaveWord) {
+      fabSaveWord.addEventListener('click', function () {
+        if (window.MandoSaveWord) window.MandoSaveWord.open();
+      });
+    }
+
+    const pendingChip = $('pending-words-chip');
+    if (pendingChip) {
+      pendingChip.addEventListener('click', function () {
+        if (window.MandoSaveWord) window.MandoSaveWord.openDrawer();
+      });
     }
 
     // Ctrl/Cmd + S shortcut.

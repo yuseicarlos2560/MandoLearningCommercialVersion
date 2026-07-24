@@ -47,14 +47,6 @@
     { flashCardId: 'DEMO_FC_008', character: '尴尬', pinyin: 'gāngà', meaning: 'awkward; embarrassed', hsk: 'HSK5', category: 'MISCELLANEOUS', masteryStatus: 'LEARNING', createdTime: '2026-07-03T10:00:00Z' },
   ];
 
-  const FALLBACK_FOCUS = [
-    { character: '旅', pinyin: 'Lǚ', meaning: 'Travel', hsk: 'HSK3' },
-    { character: '商', pinyin: 'Shāng', meaning: 'Business', hsk: 'HSK4' },
-    { character: '话', pinyin: 'Huà', meaning: 'Speech', hsk: 'HSK3' },
-    { character: '易', pinyin: 'Yì', meaning: 'Easy', hsk: 'HSK3' },
-    { character: '难', pinyin: 'Nán', meaning: 'Difficult', hsk: 'HSK4' },
-  ];
-
   // ---------------------------------------------------------------------------
   // Shared utilities (js/utils.js)
   // ---------------------------------------------------------------------------
@@ -338,27 +330,25 @@
     if (!row) return;
     row.innerHTML = '';
 
-    let items;
-    if (state.demoMode) {
-      items = FALLBACK_FOCUS;
-    } else {
-      items = state.cards
-        .slice()
-        .sort(function (a, b) {
-          return String(b.createdTime || '').localeCompare(String(a.createdTime || ''));
-        })
-        .slice(0, 5);
-    }
+    // Struggling words: cards still in LEARNING state, most recent first.
+    // In demo mode state.cards holds the FALLBACK_CARDS fixture (which includes
+    // LEARNING entries), so the same filter covers both paths.
+    const items = state.cards
+      .filter(function (c) { return c.masteryStatus === 'LEARNING'; })
+      .sort(function (a, b) {
+        return String(b.createdTime || '').localeCompare(String(a.createdTime || ''));
+      })
+      .slice(0, 5);
 
     if (!items.length) {
-      row.innerHTML = '<p class="text-sm text-on-surface-variant">Save some words during a video session to see focus characters here.</p>';
+      row.innerHTML = '<p class="text-sm text-on-surface-variant">Words you\'re still learning will appear here as you study.</p>';
       return;
     }
 
     items.forEach(function (card) {
       const tile = document.createElement('button');
       tile.type = 'button';
-      const hskLevel = String(card.hsk || '').replace(/\D/g, '') || '3';
+      tile.title = 'Quick look up';
       tile.className = 'min-w-[160px] aspect-square bg-surface-container-low rounded-2xl flex flex-col items-center justify-center border border-outline-variant/30 hover:border-primary transition-all cursor-pointer';
       tile.innerHTML = `
         <span class="font-character-display text-headline-lg text-primary">${escapeHtml(card.character || '')}</span>
@@ -366,7 +356,9 @@
         <p class="text-xs text-on-surface-variant">${escapeHtml(card.meaning || displayCategory(card.category))}</p>
       `;
       tile.addEventListener('click', function () {
-        window.location.href = `study-mode.html?mode=random&hsk=${encodeURIComponent(hskLevel)}`;
+        if (window.MandoWordLookup) {
+          window.MandoWordLookup.show(tile, card);
+        }
       });
       row.appendChild(tile);
     });
